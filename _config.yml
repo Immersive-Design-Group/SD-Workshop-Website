@@ -1,0 +1,15 @@
+title: SD Workshop Space
+markdown: kramdown
+plugins: []
+
+collections:
+  equipment:
+    output: true
+    permalink: /equipment/:slug/
+
+defaults:
+  - scope:
+      path: ""
+      type: equipment
+    values:
+      layout: equipment

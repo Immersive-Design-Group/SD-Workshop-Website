@@ -1,0 +1,1157 @@
+/* =========================
+   Base / Reset
+========================= */
+:root {
+  --header-h: 84px; /* real header height */
+  --space-x: 5%;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+body {
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  color: #1a2238;
+  line-height: 1.5;
+  background-color: #f7f9fc;
+}
+a {
+  text-decoration: none;
+}
+
+/* =========================
+   Header & Nav
+========================= */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-h);
+  background: #fff;
+  z-index: 1000;
+}
+.header-inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-x);
+}
+
+.logo-left,
+.logo-right {
+  display: flex;
+  align-items: center;
+}
+.logo-left img,
+.logo-right img {
+  height: 56px;
+  object-fit: contain;
+}
+.logo-left span,
+.logo-right span {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+}
+
+.site-nav {
+  display: flex;
+  gap: 6rem;
+}
+
+.nav-link {
+  position: relative;
+  /* Adjust padding to control spacing around the text, and use this space for the lines. */
+  padding: 1rem 0;
+  color: #020202;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+  overflow: hidden; /* This will prevent the lines from being seen outside the link's bounds */
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #3b52a0;
+}
+
+/* Create the top line */
+.nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0.8rem; /* This moves the line closer to the text */
+  left: 0;
+  right: 100%; /* Initially hide the line */
+  height: 2px;
+  background: #000000;
+  transition: right 0.3s ease; /* Animate the line's expansion */
+}
+
+/* Create the bottom line */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0.8rem; /* This moves the line closer to the text */
+  left: 0;
+  right: 100%; /* Initially hide the line */
+  height: 1px;
+  background: #000000;
+  transition: right 0.3s ease; /* Animate the line's expansion */
+}
+
+/* When the link is active or hovered, show the lines */
+.nav-link:hover::before,
+.nav-link.active::before,
+.nav-link:hover::after,
+.nav-link.active::after {
+  right: -1.5rem; /* This makes the line span the full width */
+}
+
+/* Ensure content sits exactly under the fixed header (no extra gap) */
+.page-content {
+  padding-top: var(--header-h);
+}
+
+/* --- Hamburger button --- */
+.hamburger{
+  display:none;
+  width:44px; height:44px;
+  border:0; background:transparent; cursor:pointer;
+  position:relative;
+}
+.hamburger .bar{
+  position:absolute; left:10px; right:10px; height:2px;
+  background:#000; border-radius:2px; transition:transform .3s ease, opacity .2s ease, top .3s ease;
+}
+.hamburger .bar:nth-child(1){ top:14px; }
+.hamburger .bar:nth-child(2){ top:21px; }
+.hamburger .bar:nth-child(3){ top:28px; }
+
+/* transform to X when open */
+.nav-open .hamburger .bar:nth-child(1){ top:21px; transform:rotate(45deg); }
+.nav-open .hamburger .bar:nth-child(2){ opacity:0; }
+.nav-open .hamburger .bar:nth-child(3){ top:21px; transform:rotate(-45deg); }
+
+/* --- Mobile drawer + backdrop --- */
+.mobile-nav{
+  position:fixed; top:var(--header-h); right:0; bottom:0; width:min(84vw, 360px);
+  background:#ffffff; box-shadow:-8px 0 24px rgba(0,0,0,.12);
+  transform:translateX(100%); transition:transform .35s ease;
+  z-index:999; display:flex; flex-direction:column; padding:1rem 1.25rem 2rem;
+}
+.mobile-nav-inner{ display:flex; flex-direction:column; gap:.25rem; }
+.mobile-link{
+  display:block; padding:.9rem 0; font-size:1.05rem; color:#0f1219; text-decoration:none;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+.mobile-link.active{ color:#3b52a0; font-weight:700; }
+
+.nav-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.28);
+  backdrop-filter:saturate(120%) blur(1px);
+  z-index:998;
+  opacity:0; transition:opacity .25s ease;
+}
+
+/* when open */
+.nav-open .mobile-nav{ transform:translateX(0%); }
+.nav-open .nav-backdrop{ opacity:1; }
+.nav-open .nav-backdrop[hidden]{ display:block; } /* let it transition */
+
+/* --- Hide desktop nav / show hamburger on small screens --- */
+@media (max-width: 1024px){
+  .site-nav{ display:none; }      /* hide your desktop links */
+  .hamburger{ display:inline-flex; align-items:center; justify-content:center; }
+}
+
+/* Motion respect */
+@media (prefers-reduced-motion: reduce){
+  .mobile-nav, .hamburger .bar, .nav-backdrop{ transition:none; }
+}
+
+
+/* =========================
+   Hero Section
+========================= */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: auto;
+  position: relative;
+  overflow: visible; /* let the cube poke out */
+  /* This is the corrected padding. It adds a top gap while keeping the side gutters. */
+  padding: 4rem var(--space-x) 0;
+  background: #fff;
+}
+
+/* Text block */
+.hero-text {
+  flex: 0 1 44%;
+  padding-right: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cn-title {
+  font-family: 'Noto Sans SC', sans-serif;
+  /* responsive: small → big */
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  word-break: keep-all; /* keep Chinese readable */
+}
+.en-subtitle {
+  font-size: clamp(1.1rem, 2.2vw, 2rem);
+  color: #7f8a9b;
+  margin-bottom: 1.25rem;
+}
+.meta {
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  color: #9aa3b0;
+  line-height: 1.7;
+  margin-top: 0.5rem;
+}
+
+/* Image + cube */
+.hero-image {
+  flex: 0 1 56%; /* wider image area like your ref */
+  position: relative;
+  min-width: 0;
+  height: max(62vh, 640px); /* deep but capped for huge screens */
+  border-radius: 1rem;
+  overflow: visible;
+}
+.hero-photo {
+  position: relative;
+  width: 100%;
+  height: 80%;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+  z-index: 2; /* above the cube */
+}
+
+.hero-cube {
+  position: absolute;
+  left: 80%;
+  transform: translateX(-50%);
+
+  /* Set a top position to anchor the cube relative to the image's top edge. */
+  top: -15vh;
+
+  /* Increase the width to make the cube bigger overall. */
+  width: clamp(500px, 100%, 900px);
+
+  /* Increase the height to make it extend further downward. */
+  height: 120%; /* You may need to experiment with this value. */
+
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 1280px) {
+  .site-nav {
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .site-nav {
+    width: 100%;
+    justify-content: space-around;
+    gap: 0;
+  }
+
+  .hero {
+    flex-direction: column;
+    min-height: auto;
+    padding: 2rem var(--space-x) 2rem; /* Adjusted padding for smaller screens */
+  }
+  .hero-text {
+    width: 100%;
+    padding: 0;
+    text-align: center;
+    margin: 2rem 0 1.25rem;
+  }
+  .hero-text .meta {
+    text-align: left;
+    margin: 0 auto;
+    max-width: 520px;
+  }
+
+  .hero-image {
+    width: min(92%, 820px);
+    height: min(52vh, 520px);
+  }
+
+  /* keep cube but nudge slightly closer for midsize screens */
+  .hero-cube {
+    bottom: -14vh;
+    width: clamp(360px, 70%, 820px);
+  }
+}
+
+@media (max-width: 768px) {
+  .header-inner {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    height: var(--header-h);
+  }
+  .logo-left,
+  .logo-right {
+    flex: 1 0 50%;
+    justify-content: center;
+  }
+  .site-nav {
+    order: 1;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+  }
+
+  .hero-text {
+    text-align: left;
+    margin: 1.25rem 0;
+  }
+  .hero-image {
+    width: 96%;
+    height: 46vh;
+  }
+
+  /* optional: if cube crowds small screens, hide it */
+  .hero-cube {
+    display: none;
+  }
+}
+
+/* ---- About block ---- */
+.about-wrap {
+  background: #f6f7f9; /* light gray band like screenshot */
+  margin-top: 0;
+}
+.about-inner {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  padding: 2.5rem var(--space-x); /* matches page side gutters */
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* left side kept empty for composition */
+.about-spacer {
+  flex: 1 1 50%;
+  min-height: 280px; /* ensures tall band on large screens */
+}
+
+/* right column text */
+.about-text {
+  flex: 1 1 50%;
+  max-width: 680px;
+  margin-left: auto; /* hugs the right edge */
+}
+.about-title {
+  font-size: clamp(2rem, 4.2vw, 4rem);
+  font-weight: 300;
+  color: #a7afb8; /* soft gray title like the image */
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.about-cn {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  color: #7c8794;
+  line-height: 2;
+  margin: 0 0 1.5rem;
+}
+.about-en {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  color: #97a2af;
+  line-height: 2;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .about-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 4rem var(--space-x);
+  }
+  .about-spacer {
+    display: none;
+  } /* remove empty left area on tablet/phone */
+  .about-text {
+    max-width: 720px;
+    margin: 0;
+  }
+}
+@media (max-width: 640px) {
+  .about-inner {
+    padding: 3rem var(--space-x);
+  }
+  .about-cn,
+  .about-en {
+    line-height: 1.9;
+  }
+}
+
+/* =========================
+  Space Section
+========================= */
+
+.space-section{
+  padding: 4rem 5%;
+  background:#fff;
+}
+
+.section-title{
+  font-size: clamp(2rem, 6vw, 5rem);
+  font-weight: 200;
+  color: rgba(0,0,0,0.1);
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.space-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2.5rem;
+}
+
+.space-item{
+  /* Reserve space for the big number */
+  --num-w: 7.5rem;
+  position:relative;
+  flex:1 1 45%;
+  padding-left: var(--num-w);
+}
+
+.space-number{
+  position:absolute;
+  left:0;
+  top:.2rem;
+  font-size: clamp(6rem, 14vw, 11rem);
+  font-weight:800;
+  line-height:1;
+  color: rgba(0,0,0,0.06);
+  z-index:0;                 /* behind content */
+  pointer-events:none;
+  user-select:none;
+}
+
+.space-content{
+  position:relative;
+  z-index:1;                 /* above number */
+}
+
+.space-content h3{
+  font-size:1.45rem;
+  margin:0 0 .8rem;
+}
+
+.space-content p{
+  font-size:1rem;
+  line-height:1.8;
+  margin:.5rem 0;
+}
+
+.space-content p.en{ color:#5f6b7a; }
+
+/* --------- Responsive --------- */
+@media (max-width: 1200px){
+  .space-item{ --num-w: 6rem; }
+}
+
+@media (max-width: 900px){
+  .space-item{ --num-w: 4.5rem; }
+  .space-number{ font-size: clamp(5rem, 18vw, 8rem); }
+}
+
+@media (max-width: 768px){
+  .space-item{
+    flex:1 1 100%;
+    --num-w: 0;
+    padding-left: 0;
+  }
+  .space-number{ display:none; }   /* optional: hide on phones */
+}
+
+
+/* =========================
+ How to use workshop section
+========================= */
+
+.howto-section{
+  padding: 3rem 5% 2rem;
+  background:#fff;
+}
+
+/* Pale title like your style */
+.howto-ghost{
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  font-weight:200;
+  color: rgba(0,0,0,.12);
+  margin: 0 0 1rem;
+  line-height:1;
+}
+
+/* Grids */
+.howto-grid{
+  display:grid;
+  gap: 1.5rem;
+}
+
+/* Row 1: 2 columns */
+.howto-top{
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 1.5rem;
+}
+
+/* Row 2: 3 columns */
+.howto-bottom{
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Card base */
+.howto-card{
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  display: block;
+  box-shadow: 0 12px 28px rgba(0,0,0,.08);
+}
+
+/* Keep aspect ratios similar to your screenshot */
+.howto-top .howto-card{ aspect-ratio: 16 / 9; }
+.howto-bottom .howto-card{ aspect-ratio: 16 / 9; }
+
+.howto-card img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transform: scale(1.001); /* avoid hairline gaps */
+}
+
+/* Hero overlay */
+.howto-hero .howto-overlay{
+  position:absolute; inset:0;
+  background: linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.55));
+  color:#fff;
+  display:flex; flex-direction:column; justify-content:center;
+  padding: clamp(1rem, 4vw, 2.5rem);
+}
+
+.howto-hero h3{
+  font-size: clamp(1.8rem, 4.6vw, 3.2rem);
+  line-height:1.1; margin:0 0 1.25rem; font-weight:800;
+}
+
+.howto-cta{
+  display:inline-flex; align-items:center; gap:.6rem;
+  font-size: .95rem; letter-spacing:.12em;
+  padding:.6rem 1rem; border:1px solid rgba(255,255,255,.5);
+  border-radius:999px; background: rgba(255,255,255,.08);
+  transition: .25s ease;
+}
+.howto-hero:hover .howto-cta{ background: rgba(255,255,255,.18); transform: translateY(-1px); }
+
+/* Hover zoom for all cards (subtle) */
+.howto-card:hover img{ transform: scale(1.03); transition: transform .5s ease; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px){
+  .howto-top{ grid-template-columns: 1fr; }      /* 2 → 1 */
+  .howto-bottom{ grid-template-columns: 1fr 1fr; }/* 3 → 2 */
+}
+
+@media (max-width: 640px){
+  .howto-section{ padding: 2rem 5% 1.5rem; }
+  .howto-bottom{ grid-template-columns: 1fr; }   /* 2 → 1 */
+  .howto-cta{ font-size:.9rem; padding:.55rem .9rem; }
+}
+
+
+/* Section + ghost title */
+.ta-section { padding: 2rem 5% 3rem; background:#fff; }
+.ta-ghost{
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  font-weight:300;
+  color: rgba(0,0,0,.12);
+  line-height:1;
+  margin: 0 0 1.25rem;
+}
+
+/* Grid table */
+.ta-grid{
+  --sep: 3px;                   /* thick vertical separators */
+  --line: #0f1219;
+  --bd: rgba(0,0,0,.15);
+
+  display:grid;
+  grid-template-columns: 220px repeat(5, 1fr); /* time + 5 days */
+  border-top: 1px solid var(--bd);
+  border-left: 1px solid var(--bd);
+  border-right: 1px solid var(--bd);
+  overflow:hidden;
+}
+
+/* Cells */
+.ta-cell{
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid var(--bd);
+  background:#fff;
+  min-height: 96px;
+  display:flex; flex-direction:column; justify-content:center;
+  gap:.25rem;
+  font-size: clamp(.95rem, 1.4vw, 1.05rem);
+  color:#1a2238;
+}
+
+/* Header cells */
+.ta-head{
+  font-weight:800;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  color:#131a26;
+  background:#fff;
+}
+
+/* Time column */
+.ta-time, .time{
+  font-weight:800;
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  color:#10151e;
+}
+
+/* English name (lighter) */
+.ta-en{ color:#5b6675; }
+
+/* Thick vertical separators after each column (desktop) */
+.ta-grid > :nth-child(6n + 1),  /* time column cells */
+.ta-grid > :nth-child(6n + 2),
+.ta-grid > :nth-child(6n + 3),
+.ta-grid > :nth-child(6n + 4),
+.ta-grid > :nth-child(6n + 5),
+.ta-grid > :nth-child(6n + 6) { position: relative; }
+
+.ta-grid > :nth-child(6n + 1)::after,
+.ta-grid > :nth-child(6n + 2)::after,
+.ta-grid > :nth-child(6n + 3)::after,
+.ta-grid > :nth-child(6n + 4)::after,
+.ta-grid > :nth-child(6n + 5)::after {
+  content:"";
+  position:absolute; top:0; right:0; bottom:0;
+  width: var(--sep);
+  background: var(--line);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px){
+  .ta-grid{ grid-template-columns: 180px repeat(5, 1fr); }
+}
+
+/* Phones: stack as cards by time slot */
+@media (max-width: 768px){
+  .ta-grid{
+    border: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Convert each time row into a card */
+  .ta-grid .ta-head{ display:none; } /* hide table headers on mobile */
+
+  /* Group rows manually: each "card" = time + 5 day cells */
+  .ta-grid > .ta-time{
+    border: 1px solid var(--bd);
+    border-radius: 12px 12px 0 0;
+    padding: .9rem 1rem;
+    background:#fafbfc;
+  }
+  /* following 5 cells for that time slot */
+  .ta-grid > .ta-time + .ta-cell,
+  .ta-grid > .ta-time + .ta-cell + .ta-cell,
+  .ta-grid > .ta-time + .ta-cell + .ta-cell + .ta-cell,
+  .ta-grid > .ta-time + .ta-cell + .ta-cell + .ta-cell + .ta-cell,
+  .ta-grid > .ta-time + .ta-cell + .ta-cell + .ta-cell + .ta-cell + .ta-cell{
+    border-left: 1px solid var(--bd);
+    border-right: 1px solid var(--bd);
+  }
+  /* last of the 5 cells */
+  .ta-grid > .ta-time + .ta-cell + .ta-cell + .ta-cell + .ta-cell + .ta-cell{
+    border-bottom: 1px solid var(--bd);
+    border-radius: 0 0 12px 12px;
+  }
+
+  /* add mini headers for days inside cards */
+  .ta-grid .ta-cell::before{
+    content: attr(data-day);
+    display:block;
+    font-size:.8rem;
+    font-weight:700;
+    color:#7a8595;
+    margin-bottom:.25rem;
+    letter-spacing:.02em;
+  }
+
+  /* remove desktop separators */
+  .ta-grid > *::after{ display:none; }
+}
+
+
+
+/* =========================
+   Footer
+========================= */
+
+.site-footer {
+  background-color: #2c2c2c;
+  color: #fff;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.footer-top {
+  display: flex;
+  justify-content: flex-start; /* left on desktop */
+  align-items: center;
+  padding: 2rem 5%;
+}
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.footer-left img {
+  height: 72px;
+  max-width: 160px;
+  object-fit: contain;
+}
+.footer-divider {
+  width: 1px;
+  height: 52px;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.footer-text h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.footer-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  padding: 0.9rem 5%;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------Footer Responsive --------- */
+
+/* Tablets: keep left-align, reduce sizes a bit */
+@media (max-width: 1024px) {
+  .footer-top {
+    padding: 1.5rem 5%;
+  }
+  .footer-left img {
+    height: 60px;
+    max-width: 130px;
+  }
+  .footer-divider {
+    height: 44px;
+  }
+  .footer-text h3 {
+    font-size: 1.1rem;
+  }
+  .footer-text p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Phones: stack vertically, center for balance */
+@media (max-width: 768px) {
+  .footer-top {
+    justify-content: center; /* center the block on small screens */
+    padding: 1.25rem 6%;
+  }
+  .footer-left {
+    flex-direction: column; /* stack logo, divider, text */
+    gap: 0.6rem;
+    text-align: center;
+  }
+  .footer-left img {
+    height: 56px;
+    max-width: 120px;
+  }
+  .footer-divider {
+    display: none;
+  } /* hide thin line when stacked */
+  .footer-text h3 {
+    font-size: 1rem;
+  }
+  .footer-text p {
+    font-size: 0.9rem;
+  }
+  .footer-bottom {
+    font-size: 0.85rem;
+    padding: 0.8rem 6%;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .footer-left img {
+    height: 48px;
+    max-width: 100px;
+  }
+  .footer-text h3 {
+    font-size: 0.95rem;
+  }
+  .footer-text p {
+    font-size: 0.85rem;
+  }
+}
+
+
+/* --- Homepage CSS Code Ended --- */
+
+
+
+/* =========================
+   Equipments Page
+========================= */
+
+/* Headings */
+.equip-hero{padding:2.25rem 5% 0;background: white;}
+.equip-ghost{font-size:clamp(2.2rem,7vw,4rem);font-weight:300;color:rgba(0,0,0,.15);margin:0;line-height:1;}
+.equip-title{margin:.25rem 0 1.25rem;font-size:clamp(1.5rem,3vw,2.25rem);font-weight:800;color:#1a2238; margin-bottom: 0 !important;}
+
+/* Grid: same size cards, narrower columns, taller rows */
+.equip-row{
+  position:relative;
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* narrower cards */
+  gap: 1.5rem;
+  padding: 1rem 5% 2rem;
+  background:white;
+  grid-auto-rows: 380px;         /* taller cards */
+  align-items: stretch;
+}
+
+/* ---------- Room tile (lighter blue + optional bg image) ---------- */
+.equip-roomcard{
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 10px 24px rgba(0,0,0,.06);
+  height:100%;                   /* fill grid cell just like cards */
+}
+.equip-roomcard-media{
+  position:relative;
+  height:100%;                   /* fill the cell */
+  aspect-ratio: 4 / 3;           /* keeps proportion when grid-auto-rows grows */
+  background-color:#e9f1ff;      /* fallback if no image */
+  background-size:cover;         /* image if provided via style="background-image:url(...)" */
+  background-position:center;
+  background-repeat:no-repeat;
+}
+/* light blue tint */
+.equip-roomcard-tint{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,
+    rgba(14, 26, 201, 0.38) 0%,
+    rgba(14, 26, 201, 0.38) 55%,
+    rgba(14, 26, 201, 0.38) 100%
+  );
+}
+.equip-room-badge{
+  position:absolute; top:.65rem; left:.65rem;
+  display:inline-flex; align-items:center; gap:.4rem;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff; font-size:.8rem; padding:.25rem .5rem; border-radius:999px;
+}
+.equip-roomcard-text{
+  position:absolute; left:.9rem; bottom:.9rem; right:.9rem; color:#fff;
+}
+.equip-roomcard-cn{
+  font-family:'Noto Sans SC',sans-serif; font-weight:800; font-size:clamp(1.05rem,2.4vw,1.5rem);
+}
+.equip-roomcard-en{
+  margin-top:.25rem; font-weight:700; opacity:.95; font-size:clamp(.95rem,1.8vw,1.15rem);
+}
+
+/* ---------- Equip cards ---------- */
+.equip-card{
+  /* keep your existing visuals, but change layout */
+  display: grid !important;
+  grid-template-rows: 1fr auto !important; /* image fills first row, meta sits below */
+  height: 100% !important;
+  overflow: hidden; /* fine to keep */
+}
+.equip-card:hover{ transform:translateY(-3px); box-shadow:0 16px 32px rgba(0,0,0,.10); }
+
+.equip-media{
+  position:relative;
+  height:100%;
+  width: 100%;
+  aspect-ratio: 4/3;
+  min-height: 0 !important;
+  overflow:hidden;
+}
+.equip-media img{
+  width:100%; 
+  height:100%; 
+  object-fit:cover;
+  object-position: center; 
+  display:block;
+  transform:scale(1.001); 
+  transition:transform .6s ease;
+}
+.equip-card:hover .equip-media img{ transform:scale(1.04); }
+
+/* Number badge */
+.equip-number{
+  position:absolute; top:.5rem; left:.5rem;
+  width:28px; height:28px; border-radius:999px;
+  background:#000; color:#fff;
+  display:grid; place-items:center; font-weight:800; font-size:.9rem;
+  box-shadow:0 2px 0 rgba(0,0,0,.2);
+}
+
+/* Meta text */
+.equip-meta{
+  display: block !important;
+  padding: .9rem .9rem 1.1rem !important;
+  background: transparent !important;
+}
+.equip-name-cn{ margin:0 0 .25rem; font-weight:800; color:#0f1219; font-size:1.05rem; }
+.equip-name{ margin:0 0 .35rem; font-weight:800; color:#151b28; font-size:1.05rem; }
+.equip-sub{ margin:0; color:#6a7483; font-size:.92rem; }
+
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1280px){
+  .equip-row{ grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+@media (max-width: 900px){
+  .equip-row{ grid-template-columns: 1fr; }
+}
+
+
+.equip-hero,
+.equip-row,
+.equip-section,
+.equip-wrap {
+  background:#fff !important;
+}
+
+/* Larger cards on desktop */
+.equip-row{
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important; /* wider */
+  grid-auto-rows: 360px !important; /* taller */
+  gap: 1.5rem !important;
+  padding: 1rem 5% 2rem !important;
+}
+
+/* Cards fill their grid cell */
+.equip-card,
+.equip-roomcard {
+  height: 100% !important;
+  overflow: hidden; /* clip anything extra */
+}
+
+.equip-media,
+.equip-roomcard-media{
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+
+  aspect-ratio: auto !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* IMG should fill the box, no distortion */
+.equip-media img{
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;     /* fill without stretching */
+  object-position: center !important;
+  transform: none !important;       /* optional: remove tiny scale if it bothers crop */
+}
+
+/* Keep the light blue tint on the room tile */
+.equip-roomcard-tint{
+  pointer-events: none;
+}
+
+/* Optional: slightly larger on very wide screens */
+@media (min-width: 1600px){
+  .equip-row{
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+    grid-auto-rows: 380px !important;
+  }
+}
+
+/* Mobile/tablet balance */
+@media (max-width: 900px){
+  .equip-row{
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: 280px !important;
+  }
+}
+
+/* ===== Equipment Detail ===== */
+
+
+.eqtop { 
+  background:#fff; 
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+
+.eqtop-wrap { 
+  max-width:1200px; 
+  margin:0 auto; 
+  padding:24px 24px 24px; }
+
+/* Titles */
+.eqtop-ghost{
+  margin:0 0 6px;
+  font-weight:400;
+  color:rgba(0,0,0,.18);
+  letter-spacing:.2px;
+  line-height:1.1;
+  font-size:clamp(2rem,6vw,3.4rem);
+}
+.eqtop-cn{
+  margin:0;
+  font-weight:1100;
+  color:#222;
+  line-height:1.1;
+  font-size:clamp(1.6rem,4.6vw,3rem);
+}
+
+/* Divider line under CN title across the content width */
+.eqtop-divider{
+  height:3px; 
+  background:#e7e7e7; 
+  margin:22px 0 22px;
+}
+
+/* Two-column grid (image left / spec box right) */
+.eqtop-grid{
+  display:grid;
+  grid-template-columns:minmax(600px, 1fr) minmax(360px, 520px);
+  gap:32px;
+  align-items:stretch;
+}
+
+/* Left image */
+.eqtop-media{ 
+  overflow:hidden;  
+}
+
+.eqtop-media img{ 
+  width:100%; 
+  object-fit: cover;
+ 
+}
+
+/* Spec box (right) */
+.eqtop-spec{
+  border:none;  
+  background:#fff;
+  padding:0; 
+}
+.eqtop-spec-h{
+  margin:0 0 14px; 
+  display:flex; 
+  gap:.5rem; 
+  align-items:baseline;
+  border-bottom: 1px solid #e7e7e7;
+  color:#111; 
+  font-size:28px; 
+  font-weight:800;
+  padding-bottom:6px;
+}
+.eqtop-spec-h .cn{ font-weight:900; }
+.eqtop-spec-h .en{ font-weight:800; }
+
+/* Specification list */
+.eqtop-spec-list{
+  display:grid; 
+  grid-template-columns:1fr;
+  gap:.8rem .75rem;
+  margin:0 0 8px;
+}
+
+.eqtop-spec-list div {
+  /* Add the grid property to the inner div */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem; /* This will be the gap between 'Model' and 'FX-888D' */
+}
+
+.eqtop-spec-list dt{ 
+  font-weight:600; 
+  color:#222; 
+  font-size:22px;
+}
+
+.eqtop-spec-list dd{ 
+  margin:0; 
+  color:#111;
+  display:inline;
+  font-size:22px;
+}
+
+/* Red safety notes with "※" */
+.eqtop-notes{ margin:10px 0 0; padding-left:1.25rem; }
+.eqtop-notes li{
+  list-style:none; position:relative; margin:.4rem 0;
+  color:#fa4646; font-weight:700; line-height:1.6;
+}
+.eqtop-notes li::before{
+  content:"※"; position:absolute; left:-1.1rem; top:0;
+  color:#fa4646; font-weight:900;
+}
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 980px){
+  .eqtop-grid{ grid-template-columns:1fr; }
+}

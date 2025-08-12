@@ -1,0 +1,67 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ page.title }} | Equipment</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  {% include header.html %}
+
+  <main class="page-content equip-detail">
+
+
+  <section class="eqtop">
+  <div class="eqtop-wrap">
+    <!-- Ghost EN title + bold CN title -->
+    <h1 class="eqtop-ghost">{{ page.title }}</h1>
+    {% if page.title_cn %}
+      <h2 class="eqtop-cn">{{ page.title_cn }}</h2>
+    {% endif %}
+
+    <!-- thin divider under the CN title (spans full content width) -->
+    <div class="eqtop-divider" aria-hidden="true"></div>
+
+    <!-- grid: image left, spec box right -->
+    <div class="eqtop-grid">
+      {% if page.hero and page.hero.image %}
+      <figure class="eqtop-media">
+        <img src="{{ page.hero.image | relative_url }}"
+             alt="{{ page.hero.alt | default: page.title | escape }}">
+      </figure>
+      {% endif %}
+
+      <aside class="eqtop-spec">
+        <h3 class="eqtop-spec-h">
+          <span class="cn">规格</span>
+          <span class="en">Specification</span>
+        </h3>
+
+        <dl class="eqtop-spec-list">
+          {% if page.model %}<div><dt>型号 Model:</dt><dd>{{ page.model }}</dd></div>{% endif %}
+          {% if page.power %}<div><dt>功率 Power:</dt><dd>{{ page.power }}</dd></div>{% endif %}
+          {% if page.temp_range %}<div><dt>温度范围 Temperature Range:</dt><dd>{{ page.temp_range }}</dd></div>{% endif %}
+          {% if page.purpose %}<div><dt>用途 Purpose:</dt><dd>{{ page.purpose }}</dd></div>{% endif %}
+        </dl>
+
+        {% if page.spec_notes %}
+        <ul class="eqtop-notes">
+          {% for n in page.spec_notes %}
+            <li>{{ n }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+
+
+  </main>
+
+  {% include footer.html %}
+</body>
+</html>

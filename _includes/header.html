@@ -1,0 +1,43 @@
+
+<header class="site-header">
+  <div class="header-inner container">
+    <div class="logo-left">
+      <a href="{{ '/' | relative_url }}">
+        <img src="{{ '/assets/images/SDlogo_black.svg' | relative_url }}" alt="SUSTech Logo">
+      </a>
+    </div>
+
+    <!-- Desktop nav stays -->
+    <nav class="site-nav">
+      {% assign current = page.url | replace:'index.html','' %}
+      {% for item in site.data.navigation %}
+        {% assign target = item.url | replace:'index.html','' %}
+        <a href="{{ item.url | relative_url }}"
+           class="nav-link{% if current == target %} active{% endif %}">
+          {{ item.title }}
+        </a>
+      {% endfor %}
+    </nav>
+
+    <!-- Hamburger (shown on small screens) -->
+    <button class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div id="mobile-nav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Mobile menu">
+    <nav class="mobile-nav-inner">
+      {% for item in site.data.navigation %}
+        <a href="{{ item.url | relative_url }}"
+           class="mobile-link{% if page.url == item.url %} active{% endif %}">
+          {{ item.title }}
+        </a>
+      {% endfor %}
+    </nav>
+  </div>
+
+  <!-- Backdrop -->
+  <div class="nav-backdrop" hidden></div>
+</header>
+

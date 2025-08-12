@@ -1,0 +1,19 @@
+title: TA Schedule
+days: [Mon, Tues, Wed, Tur, Fri]
+
+slots:
+  - time: "09:00–12:00"
+    people:
+      Mon: { cn: "解天择", en: "Xie Tianze" }
+      Tues: { en: "Xie Tianze" }
+      Wed: { en: "Xie Tianze" }
+      Tur: { en: "Xie Tianze" }
+      Fri: { en: "Xie Tianze" }
+
+  - time: "14:00–17:00"
+    people:
+      Mon: { en: "Xie Tianze" }
+      Tues: { cn: "王可卓", en: "Wang Kezhuo" }
+      Wed: { en: "Xie Tianze" }
+      Tur: { en: "Xie Tianze" }
+      Fri: { en: "Xie Tianze" }

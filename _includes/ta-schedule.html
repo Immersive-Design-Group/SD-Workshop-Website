@@ -1,0 +1,27 @@
+<section class="ta-section" id="ta-schedule">
+  <h2 class="ta-ghost">{{ site.data.ta_schedule.title }}</h2>
+
+  <div class="ta-grid" role="table" aria-label="{{ site.data.ta_schedule.title }}">
+    <!-- Header -->
+    <div class="ta-cell ta-head time" role="columnheader">Time</div>
+    {% for d in site.data.ta_schedule.days %}
+      <div class="ta-cell ta-head" role="columnheader">{{ d }}</div>
+    {% endfor %}
+
+    <!-- Rows -->
+    {% for slot in site.data.ta_schedule.slots %}
+      <div class="ta-cell ta-time" role="rowheader">{{ slot.time }}</div>
+      {% for d in site.data.ta_schedule.days %}
+        {% assign p = slot.people[d] %}
+        <div class="ta-cell" data-day="{{ d }}">
+          {% if p and p.cn %}
+            <div>{{ p.cn }}</div>
+          {% endif %}
+          {% if p and p.en %}
+            <div class="ta-en">{{ p.en }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</section>

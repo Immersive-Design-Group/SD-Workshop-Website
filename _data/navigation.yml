@@ -1,0 +1,8 @@
+- title: 首页 HOME
+  url: "/"
+- title: 设备介绍 EQUIPMENTS
+  url: "/equipments/"
+- title: 预约使用 RESERVATION
+  url: "/reservation.html"
+- title: 学院官网 SCHOOL OF DESIGN
+  url: "https://design.sustech.edu.cn"
