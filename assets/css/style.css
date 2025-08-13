@@ -1598,7 +1598,7 @@ a {
   color:#222;
   font-size:clamp(1.2rem,3.6vw,1.8rem);
   text-align:center;
-  padding: 0 24px;
+  padding: 24px 24px;
 }
 
 /* Hero with overlay card in top-left */
@@ -1606,33 +1606,34 @@ a {
   position:relative;
   margin:0 24px 28px;
   border-radius:12px;
-  overflow:hidden;
+  overflow:visible;
   box-shadow:0 12px 26px rgba(0,0,0,.08);
 }
 .rt-hero img{
   width:100%;
   height:auto;
   display:block;
+  border-radius:12px;        
 }
 .rt-hero-overlay{
   position:absolute;
-  left:24px;
-  top:-14px;                 /* lift it a little outside the image */
-  max-width:min(520px, 60%);
+  left:-18px;
+  top:-16px;                 /* lift it a little outside the image */
+  max-width:min(580px, 65%);
   color:#fff;
-  background: linear-gradient(180deg, rgba(0,0,0,.55) 0, rgba(0,0,0,.55) 100%);
-  padding:16px 18px;
+  background: linear-gradient(180deg, rgba(0,0,0,.35) 0, rgba(0,0,0,.35) 100%);
+  padding: clamp(20px, 5vw, 60px) clamp(6px, 3vw, 24px);
   border-radius:8px;
   filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); /* subtle floating effect */
 }
 .rt-hero-title .cn{
-  font-weight:900; font-size:clamp(1.05rem,2.6vw,1.4rem); 
+  font-weight:900; font-size:clamp(1.05rem,2.6vw,1.4rem); margin-left:10px;
 }
 .rt-hero-title .en{
   margin-top:2px; opacity:.95;
-  font-weight:700; font-size:clamp(.95rem,2.2vw,1.2rem);
+  font-weight:700; font-size:clamp(.95rem,2.2vw,1.2rem); margin-left:10px;
 }
-.rt-hero-overlay p{ margin:.5rem 0 0; }
+.rt-hero-overlay p{ margin:.5rem 0 0; margin-top:6px; margin-left:10px;}
 
 /* Row = two columns */
 .rt-row{
@@ -1669,5 +1670,14 @@ a {
   }
   .rt-row.right .rt-media{ order:1; }
   .rt-row.right .rt-text{ order:2; }
-  .rt-hero-overlay{ max-width: 86%; }
+
+  /* on mobile the text sits below, so don't force vertical centering */
+  .rt-row{ align-items:stretch; }
+  .rt-text{ justify-content:flex-start; }
+
+  .rt-hero-overlay{
+    left:16px;
+    top:-10px;              /* still slightly outside, but tighter on small screens */
+    max-width:86%;
+  }
 }
