@@ -50,13 +50,24 @@
         {% if page.spec_notes %}
         <ul class="eqtop-notes">
           {% for n in page.spec_notes %}
-            <li>{{ n }}</li>
+            <li>
+              {% assign parts = n | split: " · " %}
+              {% if parts.size == 2 %}
+                <span class="cn">{{ parts[0] }}</span>
+                <span class="en">{{ parts[1] }}</span>
+              {% else %}
+                {{ n }}
+              {% endif %}
+            </li>
           {% endfor %}
         </ul>
         {% endif %}
       </aside>
     </div>
-    {% if page.process and page.process.steps %}
+    </div>
+  </section>
+
+  {% if page.process and page.process.steps %}
   <img class="eq-arrow" src="{{ page.process.arrow | default: '/assets/images/arrow-down.svg' | relative_url }}" alt="" />
 
   <section class="proc-wrap">
@@ -172,9 +183,6 @@
     {% endfor %}
   </section>
 {% endif %}
-
-  </div>
-</section>
 
 
   </main>
