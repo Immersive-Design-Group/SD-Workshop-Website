@@ -56,6 +56,123 @@
         {% endif %}
       </aside>
     </div>
+    {% if page.process and page.process.steps %}
+  <img class="eq-arrow" src="{{ page.process.arrow | default: '/assets/images/arrow-down.svg' | relative_url }}" alt="" />
+
+  <section class="proc-wrap">
+    <h2 class="proc-ghost">{{ page.process.title_en }}</h2>
+    <h3 class="proc-cn">{{ page.process.title_cn }}</h3>
+    <div class="proc-divider"></div>
+
+    {% for step in page.process.steps %}
+      <section class="proc-step">
+        <h4 class="proc-step-title">
+          <span class="num">{{ forloop.index }}.</span>
+          {{ step.title_cn }} <span class="en">{{ step.title_en }}</span>
+        </h4>
+
+        <div class="proc-grid">
+          <!-- images (1..N) -->
+          <div class="proc-media">
+            {% for it in step.items %}
+              {% if it.img %}
+                <figure><img src="{{ it.img | relative_url }}" alt=""></figure>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <!-- texts (1..N) -->
+          <div class="proc-text">
+            <span class="proc-watermark">{{ forloop.index }}</span>
+            {% for it in step.items %}
+              {% if it.cn %}<p class="cn">{{ it.cn }}</p>{% endif %}
+              {% if it.en %}<p class="en">{{ it.en }}</p>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endfor %}
+  </section>
+{% endif %}
+
+
+{% if page.safety %}
+  <img class="eq-arrow" src="{{ page.safety.arrow | default: '/assets/images/arrow-down.svg' | relative_url }}" alt="">
+
+  <section class="safety-wrap">
+    <!-- subtle watermark word behind the header -->
+    <div class="safety-watermark">{{ page.safety.title_en | default: 'Safety Note' }}</div>
+
+    <h2 class="safety-title">
+      {{ page.safety.title_en | default: 'Safety Note' }}
+    </h2>
+    <h3 class="safety-title-cn">
+      {{ page.safety.title_cn | default: '' }}
+    </h3>
+
+    <div class="safety-divider"></div>
+
+    {% if page.safety.notes %}
+      <ul class="safety-list">
+        {% for n in page.safety.notes %}
+          <li>
+            {% if n.cn %}<p class="cn">{{ n.cn }}</p>{% endif %}
+            {% if n.en %}<p class="en">{{ n.en }}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+{% endif %}
+
+{% if page.related_tools %}
+  <img class="eq-arrow" src="{{ page.related_tools.arrow | default: '/assets/images/arrow-down.svg' | relative_url }}" alt="">
+
+  <section class="rt-wrap">
+    <h2 class="rt-ghost">{{ page.related_tools.title_en | default: 'Related Tools' }}</h2>
+    <h3 class="rt-title-cn">{{ page.related_tools.title_cn | default: '' }}</h3>
+
+    {% for tool in page.related_tools.items %}
+      {% if tool.hero %}
+        <figure class="rt-hero">
+          <img src="{{ tool.hero.image | relative_url }}" alt="">
+          <figcaption class="rt-hero-overlay">
+            {% if tool.hero.overlay_title_cn or tool.hero.overlay_title_en %}
+              <div class="rt-hero-title">
+                {% if tool.hero.overlay_title_cn %}<div class="cn">{{ tool.hero.overlay_title_cn }}</div>{% endif %}
+                {% if tool.hero.overlay_title_en %}<div class="en">{{ tool.hero.overlay_title_en }}</div>{% endif %}
+              </div>
+            {% endif %}
+            {% if tool.hero.overlay_desc_cn %}<p class="cn">{{ tool.hero.overlay_desc_cn }}</p>{% endif %}
+            {% if tool.hero.overlay_desc_en %}<p class="en">{{ tool.hero.overlay_desc_en }}</p>{% endif %}
+          </figcaption>
+        </figure>
+      {% endif %}
+
+      {% for st in tool.steps %}
+        <div class="rt-row {% if st.side == 'right' %}right{% else %}left{% endif %}">
+          <div class="rt-media">
+            {% if st.image %}<img src="{{ st.image | relative_url }}" alt="">{% endif %}
+          </div>
+
+          <div class="rt-text">
+            {% if st.title_cn %}<p class="cn strong">{{ st.title_cn }}</p>{% endif %}
+            {% if st.title_en %}<p class="en">{{ st.title_en }}</p>{% endif %}
+
+            {% if st.paras_cn %}
+              {% for p in st.paras_cn %}<p class="cn">{{ p }}</p>{% endfor %}
+            {% endif %}
+
+            {% if st.paras_en %}
+              {% for p in st.paras_en %}<p class="en">{{ p }}</p>{% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </section>
+{% endif %}
+
   </div>
 </section>
 
