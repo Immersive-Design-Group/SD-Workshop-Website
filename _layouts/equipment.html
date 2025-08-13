@@ -124,7 +124,7 @@
       {% if pair.cn or pair.en %}
         <div class="proc-mobile-text">
           {% if forloop.first %}
-            <!-- Watermark now inside the text area, not over the image -->
+           
             <div class="proc-mobile-watermark">{{ forloop.parentloop.index }}</div>
           {% endif %}
 
@@ -240,5 +240,6 @@
   </main>
 
   {% include footer.html %}
+  <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </body>
 </html>

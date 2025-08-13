@@ -871,19 +871,19 @@ a {
 .equip-roomcard{
   border-radius:14px;
   overflow:hidden;
-  box-shadow:0 10px 24px rgba(0,0,0,.06);
+  /* box-shadow:0 10px 24px rgba(0,0,0,.06); */
   height:100%;                   /* fill grid cell just like cards */
 }
 .equip-roomcard-media{
   position:relative;
-  height:100%;                   /* fill the cell */
-  aspect-ratio: 4 / 3;           /* keeps proportion when grid-auto-rows grows */
-  background-color:#e9f1ff;      /* fallback if no image */
-  background-size:cover;         /* image if provided via style="background-image:url(...)" */
+  height:100%;                   
+  aspect-ratio: 4 / 3;           
+  background-color:#e9f1ff;      
+  background-size:cover;        
   background-position:center;
   background-repeat:no-repeat;
 }
-/* light blue tint */
+/* light blue tint
 .equip-roomcard-tint{
   position:absolute;
   inset:0;
@@ -892,12 +892,12 @@ a {
     rgba(14, 26, 201, 0.38) 55%,
     rgba(14, 26, 201, 0.38) 100%
   );
-}
+} */
 .equip-room-badge{
   position:absolute; top:.65rem; left:.65rem;
   display:inline-flex; align-items:center; gap:.4rem;
-  background:rgba(255,255,255,.16);
-  border:1px solid rgba(255,255,255,.35);
+  /* background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.35); */
   color:#fff; font-size:.8rem; padding:.25rem .5rem; border-radius:999px;
 }
 .equip-roomcard-text{
@@ -912,7 +912,6 @@ a {
 
 /* ---------- Equip cards ---------- */
 .equip-card{
-  /* keep your existing visuals, but change layout */
   display: grid !important;
   grid-template-rows: 1fr auto !important; /* image fills first row, meta sits below */
   height: 100% !important;
@@ -1681,3 +1680,9 @@ a {
     max-width:86%;
   }
 }
+
+
+/* =========================
+   Reservation Page
+========================= */
+
