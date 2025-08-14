@@ -1,0 +1,90 @@
+
+
+<section class="reservation-schedule" aria-label="Equipment reservation schedule">
+  <div class="now-line-global" id="rsv-now-line-global"></div>
+
+  <!-- Header: date + arrows + timeline -->
+<div class="schedule-header">
+  <div class="equip-col equip-col--header">
+    <div class="date-dropdown" id="rsv-date">
+      <button class="date-button" id="rsv-date-btn">
+        <span id="rsv-date-label">--</span>
+      </button>
+      <div class="date-menu" id="rsv-date-menu"></div>
+    </div>
+  </div>
+
+  <button class="nav-arrow" id="rsv-arrow-left" aria-label="Previous time">‹</button>
+
+  <div class="slots-viewport" id="rsv-header-viewport">
+    <div class="timebar" id="rsv-timebar"></div>
+    <div class="now-line" id="rsv-now-line"></div>
+  </div>
+
+  <button class="nav-arrow" id="rsv-arrow-right" aria-label="Next time">›</button>
+
+  </div>
+
+
+
+
+
+  <!-- Equipment rows are injected here -->
+  <div id="rsv-rows"></div>
+</section>
+
+<!-- Booking modal -->
+<div class="modal" id="rsv-modal" aria-hidden="true">
+  <div class="modal__backdrop" id="rsv-modal-backdrop"></div>
+  <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rsv-modal-title">
+    <button class="modal__close" id="rsv-modal-close" aria-label="Close">×</button>
+    <h2 id="rsv-modal-title" class="modal__title">
+      <span id="rsv-modal-equip">3D Printer 1</span><br />
+      <span class="modal__subtitle" id="rsv-modal-model">X1E</span>
+    </h2>
+
+    <form id="rsv-form" class="form">
+      <label class="form__row">
+        <span class="form__label">Name <em>*</em></span>
+        <input class="form__input" name="name" required>
+      </label>
+
+      <label class="form__row">
+        <span class="form__label">Phone <em>*</em></span>
+        <input class="form__input" name="phone" required>
+      </label>
+
+      <label class="form__row">
+        <span class="form__label">Email <em>*</em></span>
+        <input type="email" class="form__input" name="email" required>
+      </label>
+
+      <label class="form__row">
+        <span class="form__label">Purpose</span>
+        <textarea class="form__input form__textarea" name="purpose"></textarea>
+      </label>
+
+      <div class="form__row">
+        <span class="form__label">Time <em>*</em></span>
+        <div class="time-pills">
+          <div class="time-pill" id="rsv-pill-date">0712</div>
+          <div class="time-pill" id="rsv-pill-start">10:00</div>
+          <div class="time-arrow">→</div>
+          <div class="time-pill" id="rsv-pill-end">11:00</div>
+        </div>
+      </div>
+
+      <label class="form__check">
+        <input type="checkbox" id="rsv-agree" required>
+        <span>I have accepted the training instructions.</span>
+      </label>
+
+      <button type="submit" class="btn-submit">SUBMIT</button>
+    </form>
+  </div>
+</div>
+<script>
+  window.RSV_EQUIPMENT = {{ site.data.reservation.equipment | jsonify }};
+  window.RSV_BASEURL = "{{ site.baseurl | default: '' }}";
+  window.RSV_ASSETS    = "{{ '/assets/reservation/' | relative_url }}";
+</script>

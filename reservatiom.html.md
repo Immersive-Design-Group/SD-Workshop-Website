@@ -1,24 +1,16 @@
 ---
 layout: default
 title: 预约使用 Equipment Reservation
-permalink: /reservation.html/
+permalink: /reservation/
 ---
 
-<div class="reservation-main">
-  {% include booking-system.html %}
+<link rel="stylesheet" href="{{ '/assets/css/reservation.css' | relative_url }}">
+
+<div class="reservation-container">
+{% include reservation-hero.html %}
+ {% include reservation-rules.html rules=page.rules %}
+ {% include reservation-system.html %}
+
+
 </div>
-
-<style>
-.reservation-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0;
-}
-
-/* Hide the Jekyll default page title */
-.page-content h1:first-child,
-.post-content h1:first-child,
-h1:first-child {
-  display: none !important;
-}
-</style>
+  <script src="{{ '/assets/js/reservation.js' | relative_url }}"></script>

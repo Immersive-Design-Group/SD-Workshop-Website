@@ -1,0 +1,39 @@
+{% comment %}
+Renders CN/ENG rule lists if present.
+Priority: include.rules (per-page override) → site.data.reservation.rules
+Usage: {% include reservation-rules.html %}  OR
+       {% include reservation-rules.html rules=page.rules %}
+{% endcomment %}
+
+{% assign rules_obj = include.rules | default: site.data.reservation.rules %}
+
+{% if rules_obj and (rules_obj.cn or rules_obj.eng) %}
+<section class="rules-card">
+  <h3 class="rules-heading">预约规则</h3>
+  <div class="rules-md">
+
+    {% if rules_obj.cn and rules_obj.cn.size > 0 %}
+    <div class="rules-group cn">
+      <div class="rules-label"></div>
+      <ul>
+        {% for item in rules_obj.cn %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if rules_obj.eng and rules_obj.eng.size > 0 %}
+    <div class="rules-group eng">
+      <div class="rules-label"></div>
+      <ul>
+        {% for item in rules_obj.eng %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endif %}

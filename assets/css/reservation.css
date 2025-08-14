@@ -1,0 +1,271 @@
+/* =========================
+   Header and Rules
+========================= */
+
+:root{
+  --ink-900:#1a2238;  /* Reservation */
+  --ink-300:#c9ced6;  /* Our */
+  --ink-700:#394150;
+  --line:#e6e8eb;
+  --panel:#f6f7f9;
+  --page-gutter: 24px;
+}
+
+.reservation-container{ max-width:1400px; margin:0 auto; padding:24px 0 64px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--ink-900); }
+
+.reservation-hero{ padding:56px 0 18px; }
+.reservation-title{ margin:0 0 18px 0; line-height:0.7;letter-spacing:-.5px; display:block !important; }
+.title-our{ display:block; font-size:56px; font-weight:800; color:var(--ink-300); }
+.title-reservation{ display:block; font-size:56px; font-weight:700; color:var(--ink-900); }
+.reservation-rule{ border:0; border-top:1px solid var(--line); }
+
+/* Rules card + CN/ENG groups with gap */
+.rules-card{ margin-top:18px; background:var(--panel); border:1px solid var(--line);
+  border-radius:12px; padding:22px 24px; }
+.rules-heading{ font-size:22px; font-weight:800; margin:0 0 10px; }
+
+.rules-md{ display:flex; flex-direction:column; gap:16px; }
+.rules-group{ position:relative; padding-top:6px; }
+.rules-group ul{ margin:0; padding-left:22px; }
+.rules-group li{ font-size:16px; color:var(--ink-700); line-height:1.9; }
+
+.rules-label{
+  position:absolute; top:-10px; left:6px;
+  display:inline-block; padding:2px 8px; border-radius:999px;
+}
+
+
+/* =========================
+  Booking Table
+========================= */
+
+/* ==== SCHEDULE (scoped) ==== */
+:root{
+  --rsv-slot-w: 80px;      /* width per 30-min cell (bigger than reference) */
+  --rsv-slot-h: 120px;       /* cell height */
+  --rsv-row-gap: 10px;      /* gap between equipment rows */
+  --rsv-equip-w: 120px;
+  --rsv-equip-h: 120px;     /* fixed left column width */
+  --rsv-bar-h: 40px;        /* time header height */
+  --rsv-now: #e60072;       /* pink now line */
+  --rsv-line: #e8edf3;
+  --rsv-panel: #f9fafb;
+  --rsv-slot-bg: #fafbfc;
+  --rsv-slot-bd: #e6ebf1;
+  --rsv-booked: #e8f1ff;
+  --rsv-booked-bd: #cfe0ff;
+  --rsv-leftpad: 0px;  
+  --rsv-gap: 10px;  
+}
+
+*{ box-sizing: border-box; }
+
+.reservation-schedule{
+  margin: 18px 0 60px;
+}
+
+.schedule-header {
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  gap: 12px; /* ← ADD this to create space between date/arrows/timeline */
+}
+
+
+.reservation-schedule { position: relative; overflow: hidden; } /* clip the global line */
+
+.equip-col{ width:var(--rsv-equip-w); flex:0 0 var(--rsv-equip-w); padding-left: 0 !important;
+  padding-right: 0 !important;}
+.equip-col--header{ display:flex; align-items:center; gap:10px; padding-left: 0 !important;}
+
+
+.nav-arrow{
+  width:32px; height:32px; border-radius:50%;
+  border:1px solid #e5e7eb; background:#f1f3f5; cursor:pointer;
+  font-size:18px; line-height:30px; text-align:center;
+}
+.nav-arrow:hover{ background:#e9ecef; }
+
+.slots-viewport{
+  position:relative; overflow-x:auto; overflow-y:hidden; flex:1;
+  height:var(--rsv-bar-h); border-radius:12px; background:var(--rsv-panel);
+  border:1px solid var(--rsv-line);
+}
+/* Hide horizontal scrollbars but keep programmatic scrolling */
+.slots-viewport, #rsv-rows .row-viewport { scrollbar-width: none; }
+.slots-viewport::-webkit-scrollbar, #rsv-rows .row-viewport::-webkit-scrollbar { display: none; }
+
+/* Make the pink line clearly visible above everything */
+.now-line {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.timebar{ position:absolute; inset:0; display:flex; align-items:center; padding-left: var(--rsv-leftpad); gap: var(--rsv-gap);   }
+.timebar .time-label {
+  min-width: var(--rsv-slot-w);
+  text-align: center; /* ← CHANGE from 'left' to 'center' */
+  font-size: 12px;    /* ← Optional: A smaller font size fits the range better */
+  color: black;
+  font-weight: 400;
+  white-space: nowrap; /* ← Add this to prevent text from wrapping to a new line */
+}
+
+
+.date-dropdown{ position:relative; }
+.date-button {
+  background: #0b0b0b;
+  color: #fff;
+  font-weight: 800;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 28px;
+  cursor: pointer;
+  text-align: center; 
+}
+/* Scrollable date menu */
+.date-menu{
+  position:absolute; left:0; top:calc(100% + 8px);
+  background:#fff; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.12);
+  padding:8px; min-width:140px;
+  max-height: 280px;           /* <= shows scrollbar when list is longer */
+  overflow-y: auto;            /* <-- important */
+  overscroll-behavior: contain;
+  display:none; z-index:10;
+}
+.date-dropdown.open .date-menu{ display:block; }
+
+.date-item{
+  display:block; width:100%; text-align:left; background:transparent; border:0;
+  padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600;
+}
+.date-item:hover{ background:#f3f4f6;  }
+.date-item.is-selected{ background:#0b0b0b; color:#fff; }  /* selected date */
+.date-item.is-today{ outline:1px dashed #111; }            /* today hint (optional) */
+
+/* Optional: nicer scrollbar */
+.date-menu::-webkit-scrollbar{ width:8px; }
+.date-menu::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:999px; }
+
+
+/* Pink live time indicator */
+.now-line{ position:absolute; top:0; bottom:0; width:2px; background:var(--rsv-now); }
+.now-line::before{ content:""; position:absolute; top:0; left:-3px; right:-3px; height:6px; border-radius:6px; background:var(--rsv-now); }
+
+/* Rows */
+#rsv-rows .equip-row{ display:flex; align-items:stretch; margin-top:0; padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);}
+#rsv-rows .equip-row + .equip-row{ margin-top: var(--rsv-row-gap); }
+/* left column wrapper stays the same width */
+#rsv-rows .equip-left{
+  width: var(--rsv-equip-w);
+  flex: 0 0 var(--rsv-equip-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* remove inner padding so the image can use the full box area */
+#rsv-rows .equip-card{
+  width: 100%;
+  padding: 0;                 /* ← was 16px */
+  background: transparent;    /* we’ll make the image box the visual card */
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* image box = the card */
+:root{
+  --rsv-equip-h: 120px;       /* raise to make the image taller (160–200 works great) */
+}
+#rsv-rows .equip-thumb{
+  width: 100%;
+  height: var(--rsv-equip-h);
+  border: 1px solid #e6ebf1;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+#rsv-rows .equip-thumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* fills the box; use `contain` if you prefer no crop */
+}
+
+/* name & model sit outside the card, tighter spacing */
+#rsv-rows .equip-meta-below{ text-align:center; margin-top: 6px; }
+#rsv-rows .equip-name{ font-weight: 600; font-size: 14px; line-height: 1.1; }
+#rsv-rows .equip-model{ font-weight: 600; font-size: 14px; }
+
+
+/* ===== Remove the big border/background panel behind slots ===== */
+#rsv-rows .row-viewport{
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  border: 0;                 /* ← no border */
+  background: transparent;   /* ← no background panel */
+  border-radius: 0;          /* ← no rounded container */
+  box-shadow: none;
+}
+#rsv-rows .row-slots{
+  display: flex;
+  width: max-content;
+  background: transparent;   /* ← transparent row strip */
+  padding-left: var(--rsv-leftpad);
+  gap: var(--rsv-gap);
+}
+
+/* Slot boxes keep their white tile appearance */
+#rsv-rows .slot{
+  width: var(--rsv-slot-w);
+  height: var(--rsv-slot-h);
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,.04);
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+#rsv-rows .slot.available:hover{
+  background: #f5f7fb;
+  border-color: #d7e4ff;
+  box-shadow: 0 4px 10px rgba(0, 89, 255, .08);
+}
+
+#rsv-rows .slot.booked{
+  background:var(--rsv-booked); border-color:var(--rsv-booked-bd); color:#1d4ed8;
+  display:flex; align-items:flex-end; padding:10px; font-size:12px; font-weight:600;
+}
+
+/* Equipment images */
+#rsv-rows .equip-thumb { display:flex; align-items:center; justify-content:center; overflow:hidden; }
+#rsv-rows .equip-thumb img { width:100%; height:100%; object-fit: contain; }
+
+/* Global pink line spanning header + all rows */
+.now-line-global { position:absolute; top:0; bottom:0; width:2px; background:var(--rsv-now); z-index:4; pointer-events:none; }
+.now-line-global::before { content:""; position:absolute; top:0; left:-3px; right:-3px; height:6px; border-radius:6px; background:var(--rsv-now); }
+
+/* Modal  */
+.modal{ position:fixed; inset:0; display:none }
+.modal[aria-hidden="false"]{ display:block }
+.modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.4) }
+.modal__dialog{ position:relative; width:min(680px,92vw); margin:40px auto; background:#fff; border-radius:16px; padding:26px 28px 30px; }
+.modal__close{ position:absolute; right:18px; top:10px; font-size:28px; border:0; background:none; cursor:pointer; color:#777 }
+.modal__title{ color:#333; text-align:center; margin:4px 0 18px 0; font-size:32px; font-weight:800; letter-spacing:.2px }
+.modal__subtitle{ font-size:28px; font-weight:800; color:#333 }
+.form{ display:flex; flex-direction:column; gap:16px }
+.form__row{ display:grid; grid-template-columns:120px 1fr; align-items:center; gap:18px }
+.form__label{ font-weight:700; color:#333 }
+.form__label em{ color:#d00; font-style:normal; margin-left:4px }
+.form__input{ width:100%; background:#f2f2f2; border:0; border-radius:6px; padding:18px 16px; font-size:16px }
+.form__textarea{ height:110px; resize:vertical }
+.time-pills{ display:flex; gap:18px; align-items:center }
+.time-pill{ min-width:120px; text-align:center; background:#f2f2f2; padding:18px 10px; border-radius:6px; font-weight:700; font-size:18px }
+.time-arrow{ font-size:26px; color:#333 }
+.form__check{ display:flex; align-items:center; gap:12px; margin-top:8px; color:#333; font-size:18px }
+.form__check input{ width:22px; height:22px }
+.btn-submit{ margin-top:10px; background:#333; color:#fff; border:0; width:100%; padding:18px 16px; border-radius:6px; letter-spacing:4px; font-weight:700; cursor:pointer }
+.btn-submit:hover{ filter:brightness(.93) }
