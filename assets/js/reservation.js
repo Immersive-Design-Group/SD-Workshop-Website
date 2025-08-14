@@ -59,12 +59,11 @@
   // Loop through the timeline to create a label for each slot
   for (let i = 0; i < timeline.length - 1; i++) {
     const startTime = timeline[i];
-    const endTime = timeline[i + 1]; // Get the end time for the slot
 
     const d = document.createElement('div');
     d.className = 'time-label';
-    // Create the label text like "09:00 - 09:30"
-    d.textContent = `${startTime} - ${endTime}`;
+    // Create the label text with just the start time like "09:00"
+    d.textContent = startTime;
     timebar.appendChild(d);
   }
 }
@@ -168,6 +167,18 @@ let menuEnd      = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 7
 labelEl.textContent = fmtCN(selectedDate);
 
 function makeItem(d){
+  // Check if it's a weekend (Saturday = 6, Sunday = 0)
+  const dayOfWeek = d.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  
+  // Check if it's a Chinese holiday
+  const isChineseHoliday = isChineseHolidayDate(d);
+  
+  // If it's a weekend or Chinese holiday, return null to skip it
+  if (isWeekend || isChineseHoliday) {
+    return null;
+  }
+  
   const b = document.createElement('button');
   b.className = 'date-item';
   if (sameDay(d, selectedDate)) b.classList.add('is-selected');
@@ -177,11 +188,51 @@ function makeItem(d){
   return b;
 }
 
+// Function to check if a date is a Chinese holiday
+function isChineseHolidayDate(date) {
+  const month = date.getMonth() + 1; // getMonth() returns 0-11
+  const day = date.getDate();
+  const year = date.getFullYear();
+  
+  // Chinese New Year (Lunar calendar - approximate dates for 2024-2025)
+  // 2024: Feb 10-17, 2025: Jan 29-Feb 4
+  if (year === 2024 && month === 2 && day >= 10 && day <= 17) return true;
+  if (year === 2025 && month === 1 && day >= 29) return true;
+  if (year === 2025 && month === 2 && day <= 4) return true;
+  
+  // Qingming Festival (Tomb Sweeping Day) - April 5
+  if (month === 4 && day === 5) return true;
+  
+  // Labor Day - May 1
+  if (month === 5 && day === 1) return true;
+  
+  // Dragon Boat Festival (Lunar calendar - approximate dates)
+  // 2024: June 10, 2025: May 31
+  if (year === 2024 && month === 6 && day === 10) return true;
+  if (year === 2025 && month === 5 && day === 31) return true;
+  
+  // National Day - October 1-7
+  if (month === 10 && day >= 1 && day <= 7) return true;
+  
+  // Mid-Autumn Festival (Lunar calendar - approximate dates)
+  // 2024: Sep 17, 2025: Oct 6
+  if (year === 2024 && month === 9 && day === 17) return true;
+  if (year === 2025 && month === 10 && day === 6) return true;
+  
+  // New Year's Day - January 1
+  if (month === 1 && day === 1) return true;
+  
+  return false;
+}
+
 function renderRange(start, end, {prepend=false}={}){
   const frag = document.createDocumentFragment();
   const cur = new Date(start);
   while(cur <= end){
-    frag.appendChild(makeItem(new Date(cur)));
+    const item = makeItem(new Date(cur));
+    if (item) { // Only add non-weekend dates
+      frag.appendChild(item);
+    }
     cur.setDate(cur.getDate()+1);
   }
   if (prepend) menu.prepend(frag); else menu.appendChild(frag);
@@ -263,7 +314,7 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
   // Layout numbers from CSS so we don't depend on other JS globals
   const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
   const GAP      = cssNumber('--rsv-gap', 10);
-  const SLOT_W   = cssNumber('--rsv-slot-w', 120);
+  const SLOT_W   = cssNumber('--rsv-slot-w', 80); // Use the correct slot width from CSS
   const SEG_W    = SLOT_W + GAP;
 
   const totalSeg = (timeline.length - 1);
@@ -299,10 +350,6 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
 }
 
 })();
-
- 
-positionNowLine();
-setInterval(positionNowLine, 60*1000);
 
 /* ----- Modal ----- */
 const modal = el('rsv-modal');

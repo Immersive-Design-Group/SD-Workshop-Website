@@ -44,7 +44,7 @@
 :root{
   --rsv-slot-w: 80px;      /* width per 30-min cell (bigger than reference) */
   --rsv-slot-h: 120px;       /* cell height */
-  --rsv-row-gap: 10px;      /* gap between equipment rows */
+  --rsv-row-gap: 0px;       /* no gap between equipment rows */
   --rsv-equip-w: 120px;
   --rsv-equip-h: 120px;     /* fixed left column width */
   --rsv-bar-h: 40px;        /* time header height */
@@ -74,6 +74,11 @@
   gap: 12px; /* ← ADD this to create space between date/arrows/timeline */
 }
 
+/* Adjust left arrow positioning to align better with time header */
+.schedule-header .nav-arrow:first-of-type {
+  margin-top: 2px; /* Fine-tune vertical alignment with time header */
+}
+
 
 .reservation-schedule { position: relative; overflow: hidden; } /* clip the global line */
 
@@ -83,16 +88,29 @@
 
 
 .nav-arrow{
-  width:32px; height:32px; border-radius:50%;
-  border:1px solid #e5e7eb; background:#f1f3f5; cursor:pointer;
-  font-size:18px; line-height:30px; text-align:center;
+  width: 24px; 
+  height: 24px; 
+  border-radius: 50%;
+  border: 1px solid #e5e7eb; 
+  background: #f1f3f5; 
+  cursor: pointer;
+  font-size: 14px; 
+  line-height: 22px; 
+  text-align: center;
+  color: #6b7280;
+  transition: all 0.2s ease;
 }
-.nav-arrow:hover{ background:#e9ecef; }
+.nav-arrow:hover{ 
+  background: #e9ecef; 
+  border-color: #d1d5db;
+  transform: scale(1.05);
+}
 
 .slots-viewport{
   position:relative; overflow-x:auto; overflow-y:hidden; flex:1;
-  height:var(--rsv-bar-h); border-radius:12px; background:var(--rsv-panel);
-  border:1px solid var(--rsv-line);
+  height:var(--rsv-bar-h); border-radius:12px; background:#f8f9fa;
+  border:3px solid #6c757d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 /* Hide horizontal scrollbars but keep programmatic scrolling */
 .slots-viewport, #rsv-rows .row-viewport { scrollbar-width: none; }
@@ -104,14 +122,90 @@
   pointer-events: none;
 }
 
-.timebar{ position:absolute; inset:0; display:flex; align-items:center; padding-left: var(--rsv-leftpad); gap: var(--rsv-gap);   }
+.timebar{ position:absolute; inset:0; display:flex; align-items:center; padding-left: 0; gap: var(--rsv-gap); }
 .timebar .time-label {
   min-width: var(--rsv-slot-w);
-  text-align: center; /* ← CHANGE from 'left' to 'center' */
-  font-size: 12px;    /* ← Optional: A smaller font size fits the range better */
-  color: black;
-  font-weight: 400;
-  white-space: nowrap; /* ← Add this to prevent text from wrapping to a new line */
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+  font-weight: 700;
+  white-space: nowrap;
+  /* Center the time label over its corresponding slot */
+  position: relative;
+  left: 30px; /* Match the slot padding-left */
+  transform: none;
+  /* Force remove all borders and styling */
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Maximum specificity override for time labels */
+body .reservation-container .timebar .time-label,
+body .reservation-container .slots-viewport .timebar .time-label {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Nuclear option - override absolutely everything */
+.timebar .time-label,
+.timebar .time-label *,
+.timebar .time-label::before,
+.timebar .time-label::after {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  border-width: 0 !important;
+  border-style: none !important;
+}
+
+/* Target the specific visual appearance from the image */
+.timebar .time-label {
+  /* Force remove the white box appearance */
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  
+  /* Additional properties to ensure no styling */
+  margin: 0 !important;
+  display: inline !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  list-style: none !important;
+}
+
+/* Override any possible inherited styles */
+.timebar .time-label,
+.slots-viewport .timebar .time-label,
+.reservation-schedule .timebar .time-label {
+  all: unset !important;
+  display: inline-block !important;
+  min-width: var(--rsv-slot-w) !important;
+  text-align: center !important;
+  font-size: 16px !important; /* Increased from 14px for better visibility */
+  color: #333 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  position: relative !important;
+  left: 0 !important;
+  transform: none !important;
+  line-height: 1.2 !important; /* Better vertical centering */
 }
 
 
@@ -142,9 +236,18 @@
   display:block; width:100%; text-align:left; background:transparent; border:0;
   padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600;
 }
-.date-item:hover{ background:#f3f4f6;  }
+.date-item:hover{ 
+  background:#0b0b0b; 
+  color:#fff; 
+  transition: all 0.2s ease;
+}
 .date-item.is-selected{ background:#0b0b0b; color:#fff; }  /* selected date */
 .date-item.is-today{ outline:1px dashed #111; }            /* today hint (optional) */
+
+/* Hide weekend dates (Saturday = 6, Sunday = 0) */
+.date-item[data-weekend="true"] {
+  display: none !important;
+}
 
 /* Optional: nicer scrollbar */
 .date-menu::-webkit-scrollbar{ width:8px; }
@@ -155,10 +258,45 @@
 .now-line{ position:absolute; top:0; bottom:0; width:2px; background:var(--rsv-now); }
 .now-line::before{ content:""; position:absolute; top:0; left:-3px; right:-3px; height:6px; border-radius:6px; background:var(--rsv-now); }
 
-/* Rows */
-#rsv-rows .equip-row{ display:flex; align-items:stretch; margin-top:0; padding-left: var(--page-gutter);
-  padding-right: var(--page-gutter);}
-#rsv-rows .equip-row + .equip-row{ margin-top: var(--rsv-row-gap); }
+/* Rows - Override main CSS with maximum specificity */
+#rsv-rows .equip-row{ 
+  display: flex !important; 
+  align-items: stretch !important; 
+  margin-top: 0 !important; 
+  padding-left: var(--page-gutter) !important;
+  padding-right: var(--page-gutter) !important;
+  gap: 0 !important;
+  position: static !important;
+  grid-template-columns: none !important;
+  grid-auto-rows: auto !important;
+  /* Override all grid properties */
+  grid: none !important;
+  grid-area: unset !important;
+  grid-column: unset !important;
+  grid-row: unset !important;
+  /* Override any flexbox gaps */
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+}
+
+/* Maximum specificity override for reservation equipment rows */
+body .reservation-container #rsv-rows .equip-row {
+  gap: 0 !important;
+  margin: 20px 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  grid: none !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  grid-auto-columns: auto !important;
+  grid-auto-rows: auto !important;
+  grid-template-areas: none !important;
+  grid-area: unset !important;
+  grid-column: unset !important;
+  grid-row: unset !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+}
 /* left column wrapper stays the same width */
 #rsv-rows .equip-left{
   width: var(--rsv-equip-w);
@@ -166,6 +304,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-left: 0;
+  padding-left: 0;
+  margin-right: 24px; /* Add gap between equipment and slots */
 }
 
 /* remove inner padding so the image can use the full box area */
@@ -215,7 +356,7 @@
   display: flex;
   width: max-content;
   background: transparent;   /* ← transparent row strip */
-  padding-left: var(--rsv-leftpad);
+  padding-left: 30px;        /* Move slots further right for optimal alignment with time labels */
   gap: var(--rsv-gap);
 }
 
@@ -230,9 +371,12 @@
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 #rsv-rows .slot.available:hover{
-  background: #f5f7fb;
-  border-color: #d7e4ff;
-  box-shadow: 0 4px 10px rgba(0, 89, 255, .08);
+  background: #e8f1ff;
+  border-color: #3b82f6;
+  border-width: 2px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
 }
 
 #rsv-rows .slot.booked{
