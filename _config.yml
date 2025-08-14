@@ -13,3 +13,19 @@ defaults:
       type: equipment
     values:
       layout: equipment
+
+
+# Add these to your existing _config.yml
+
+# Booking System Configuration
+booking_system:
+  supabase_url: "https://ovuiailpucqhfqhxbvtk.supabase.co"
+  supabase_key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92dWlhaWxwdWNxaGZxaHhidnRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwOTI3ODgsImV4cCI6MjA3MDY2ODc4OH0.6nzETZ-yXtprmIP85Uur5CoZldgpW3vsP0aKeP2t7uk"
+  emailjs_service_id: "YOUR_EMAILJS_SERVICE_ID"
+  emailjs_template_id: "YOUR_EMAILJS_TEMPLATE_ID"
+  emailjs_user_id: "YOUR_EMAILJS_USER_ID"
+
+# Add Supabase script to head
+head_scripts:
+  - "https://unpkg.com/@supabase/supabase-js@2"
+  - "https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
