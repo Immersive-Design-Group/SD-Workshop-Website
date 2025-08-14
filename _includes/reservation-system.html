@@ -25,12 +25,22 @@
 
   </div>
 
-
-
-
-
   <!-- Equipment rows are injected here -->
   <div id="rsv-rows"></div>
+  
+  <!-- Selection summary and booking button -->
+  <div id="selection-summary" style="display: none;" class="selection-summary">
+    <div class="selection-info">
+      <span id="selected-slots-count">0</span> slots selected • 
+      <span id="selected-time-total">0</span> hours
+      <div id="limit-warning" style="display: none; color: #dc3545; font-size: 12px; margin-top: 4px;">
+        ⚠️ 5-hour limit reached
+      </div>
+    </div>
+    <button id="book-selected-btn" class="btn-book-selected" disabled>
+      Book Selected Slots
+    </button>
+  </div>
 </section>
 
 <!-- Booking modal -->
@@ -60,8 +70,8 @@
       </label>
 
       <label class="form__row">
-        <span class="form__label">Purpose</span>
-        <textarea class="form__input form__textarea" name="purpose"></textarea>
+        <span class="form__label">Purpose <em>*</em></span>
+        <textarea class="form__input form__textarea" name="purpose" required></textarea>
       </label>
 
       <div class="form__row">
@@ -71,6 +81,21 @@
           <div class="time-pill" id="rsv-pill-start">10:00</div>
           <div class="time-arrow">→</div>
           <div class="time-pill" id="rsv-pill-end">11:00</div>
+        </div>
+      </div>
+      
+      <div class="form__row" id="duration-info" style="display: none;">
+        <span class="form__label">Duration</span>
+        <div class="duration-display">
+          <span id="total-slots">1 slot</span> • <span id="total-hours">0.5 hours</span>
+        </div>
+      </div>
+      
+      <!-- Admin view - shows who booked the slot -->
+      <div class="form__row" id="admin-info" style="display: none;">
+        <span class="form__label">Booked By</span>
+        <div class="admin-display">
+          <span id="booked-by-name">--</span> • <span id="booked-by-phone">--</span> • <span id="booked-by-email">--</span>
         </div>
       </div>
 

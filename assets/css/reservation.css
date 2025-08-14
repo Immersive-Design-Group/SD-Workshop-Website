@@ -369,6 +369,103 @@ body .reservation-container #rsv-rows .equip-row {
   background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,.04);
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+  cursor: pointer; /* Make it clear slots are clickable */
+  position: relative;
+}
+
+/* Add visual hint for interaction */
+#rsv-rows .slot::after {
+  content: "Click to select • Click selected to undo • Drag for multiple";
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: #6c757d;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+#rsv-rows .slot:hover::after {
+  opacity: 1;
+}
+
+/* Continuous booking blocks - spans multiple slots */
+#rsv-rows .slot.booked{
+  background: var(--rsv-booked);
+  border-color: var(--rsv-booked-bd);
+  color: #1d4ed8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+}
+
+/* Remove borders between consecutive booked slots for continuous appearance */
+#rsv-rows .slot.booked + .slot.booked {
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+}
+
+#rsv-rows .slot.booked:has(+ .slot.booked) {
+  border-radius: 12px 0 0 12px;
+}
+
+/* First and last slots in a booking block */
+#rsv-rows .slot.booked:not(:has(+ .slot.booked)):not(.slot.booked + .slot.booked) {
+  border-radius: 12px;
+}
+
+/* Booking info display */
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.booking-time {
+  font-size: 10px;
+  color: #1d4ed8;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.booking-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.user-initial {
+  width: 20px;
+  height: 20px;
+  background: #1d4ed8;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.booking-purpose {
+  font-size: 10px;
+  color: #1d4ed8;
+  font-weight: 500;
+  line-height: 1.2;
+  word-break: break-word;
 }
 #rsv-rows .slot.available:hover{
   background: #e8f1ff;
@@ -384,6 +481,31 @@ body .reservation-container #rsv-rows .equip-row {
   display:flex; align-items:flex-end; padding:10px; font-size:12px; font-weight:600;
 }
 
+/* Selected slots styling - light blue like booked slots */
+#rsv-rows .slot.selected{
+  background: #e8f1ff;
+  border-color: #3b82f6;
+  border-width: 2px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+  position: relative;
+}
+
+/* Remove borders between consecutive selected slots for continuous appearance */
+#rsv-rows .slot.selected + .slot.selected {
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+}
+
+#rsv-rows .slot.selected:has(+ .slot.selected) {
+  border-radius: 12px 0 0 12px;
+}
+
+/* First and last slots in a selection block */
+#rsv-rows .slot.selected:not(:has(+ .slot.selected)):not(.slot.selected + .slot.selected) {
+  border-radius: 12px;
+}
+
 /* Equipment images */
 #rsv-rows .equip-thumb { display:flex; align-items:center; justify-content:center; overflow:hidden; }
 #rsv-rows .equip-thumb img { width:100%; height:100%; object-fit: contain; }
@@ -393,7 +515,7 @@ body .reservation-container #rsv-rows .equip-row {
 .now-line-global::before { content:""; position:absolute; top:0; left:-3px; right:-3px; height:6px; border-radius:6px; background:var(--rsv-now); }
 
 /* Modal  */
-.modal{ position:fixed; inset:0; display:none }
+.modal{ position:fixed; inset:0; display:none; z-index:1000; }
 .modal[aria-hidden="false"]{ display:block }
 .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.4) }
 .modal__dialog{ position:relative; width:min(680px,92vw); margin:40px auto; background:#fff; border-radius:16px; padding:26px 28px 30px; }
@@ -405,11 +527,194 @@ body .reservation-container #rsv-rows .equip-row {
 .form__label{ font-weight:700; color:#333 }
 .form__label em{ color:#d00; font-style:normal; margin-left:4px }
 .form__input{ width:100%; background:#f2f2f2; border:0; border-radius:6px; padding:18px 16px; font-size:16px }
+.form__input:invalid{ border:2px solid #dc3545; background:#fff5f5; }
 .form__textarea{ height:110px; resize:vertical }
 .time-pills{ display:flex; gap:18px; align-items:center }
+.duration-display{ 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-weight: 600; 
+  color: #3b82f6; 
+  background: #f0f9ff; 
+  padding: 12px 16px; 
+  border-radius: 8px; 
+  border: 1px solid #bae6fd;
+}
+
+.admin-display{ 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-weight: 600; 
+  color: #dc2626; 
+  background: #fef2f2; 
+  padding: 12px 16px; 
+  border-radius: 8px; 
+  border: 1px solid #fecaca;
+}
 .time-pill{ min-width:120px; text-align:center; background:#f2f2f2; padding:18px 10px; border-radius:6px; font-weight:700; font-size:18px }
 .time-arrow{ font-size:26px; color:#333 }
 .form__check{ display:flex; align-items:center; gap:12px; margin-top:8px; color:#333; font-size:18px }
 .form__check input{ width:22px; height:22px }
 .btn-submit{ margin-top:10px; background:#333; color:#fff; border:0; width:100%; padding:18px 16px; border-radius:6px; letter-spacing:4px; font-weight:700; cursor:pointer }
 .btn-submit:hover{ filter:brightness(.93) }
+
+/* Selection summary styling */
+.selection-summary {
+  margin: 20px var(--page-gutter);
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.selection-info {
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.btn-book-selected {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-book-selected:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.btn-book-selected:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Visual feedback for limit reached */
+.selection-limit-reached {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* Tooltip for limit reached */
+.slot.limit-reached {
+  position: relative;
+}
+
+.slot.limit-reached::after {
+  content: "5-hour limit reached";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #dc3545;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.slot.limit-reached:hover::after {
+  opacity: 1;
+}
+
+/* Limit message popup */
+.limit-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 2px solid #dc3545;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 2000;
+  animation: slideIn 0.3s ease-out;
+}
+
+.limit-message-content {
+  text-align: center;
+  position: relative;
+}
+
+.limit-message-content span {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #dc3545;
+  margin-bottom: 10px;
+}
+
+.limit-message-content p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.limit-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.limit-message-content p strong {
+  color: #333;
+}
+
+/* Close button for limit message */
+.limit-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.limit-close-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
