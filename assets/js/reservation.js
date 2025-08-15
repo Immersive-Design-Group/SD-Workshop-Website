@@ -36,17 +36,16 @@
   }
 
   /* DOM refs */
-  let headerViewport, timebar, nowLineHeader, nowLineGlobal, rowsRoot, timeline;
+  let headerViewport, timebar, nowLineGlobal, rowsRoot, timeline;
   
-  /* Multi-slot selection */
-  let selectedSlots = new Set();
-  let isSelecting = false;
-  let currentEquipment = null;
+     /* Multi-slot selection */
+   let selectedSlots = new Set();
+   let isSelecting = false;
+   let currentEquipment = null;
 
   function init() {
     headerViewport = el('rsv-header-viewport');
     timebar        = el('rsv-timebar');
-    nowLineHeader  = el('rsv-now-line');
     nowLineGlobal  = el('rsv-now-line-global'); // from the include
     rowsRoot       = el('rsv-rows');
 
@@ -56,17 +55,33 @@
     renderRows();
     setupSync();
     positionNowLine();
+    
+    // Scroll to current time slot on page load
+    setTimeout(() => {
+      scrollToCurrentTime();
+    }, 100); // Small delay to ensure DOM is fully rendered
+    
     setInterval(positionNowLine, 60 * 1000);
     
-         // Add keyboard shortcuts
-     document.addEventListener('keydown', (e) => {
-       if (e.key === 'Escape') {
-         clearSelection();
-       }
-       if (e.key === 'Enter' && selectedSlots.size > 0 && currentEquipment) {
-         openModalWithSelectedSlots(currentEquipment);
-       }
-     });
+                 // Add keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          clearSelection();
+        }
+        if (e.key === 'Enter' && selectedSlots.size > 0 && currentEquipment) {
+          openModalWithSelectedSlots(currentEquipment);
+        }
+      });
+     
+           // Handle window resize for responsive scroll step
+      window.addEventListener('resize', () => {
+        // Debounce resize events to avoid excessive recalculations
+        clearTimeout(window.resizeTimeout);
+        window.resizeTimeout = setTimeout(() => {
+          // Force reflow to ensure accurate measurements
+          headerViewport.offsetHeight;
+        }, 100);
+      });
   }
 
   function renderHeader() {
@@ -160,24 +175,42 @@ row.appendChild(left);
         cell.dataset.slotIndex = i;
         cell.dataset.equipmentId = eq.name;
         
-                 // Multi-slot selection events
-         cell.addEventListener('mousedown', (e) => startSelection(e, eq, i));
-         cell.addEventListener('mouseenter', (e) => updateSelection(e, eq, i));
-         cell.addEventListener('mouseup', (e) => endSelection(e, eq, i));
-         
-                   // Single click handler for selecting/deselecting slots
-          cell.addEventListener('click', (e) => {
-            // Handle single click for selection/deselection
-            toggleSlotSelection(eq, i);
+                                 // Multi-slot selection events
+          cell.addEventListener('mousedown', (e) => {
+            startSelection(e, eq, i);
           });
-         
-         // Double-click handler for opening the modal (alternative way)
-         cell.addEventListener('dblclick', (e) => {
-           e.preventDefault();
-           if (selectedSlots.size > 0) {
-             openModalWithSelectedSlots(eq);
-           }
-         });
+          
+          cell.addEventListener('mouseenter', (e) => {
+            if (isSelecting) {
+              updateSelection(e, eq, i);
+            }
+          });
+          
+          cell.addEventListener('mouseup', (e) => {
+            endSelection(e, eq, i);
+          });
+          
+          // Single click handler for selecting slots only
+          cell.addEventListener('click', (e) => {
+            // Single click only selects (doesn't toggle)
+            if (!selectedSlots.has(i)) {
+              addSlotToSelection(eq, i);
+            }
+          });
+          
+          // Double-click handler for unselecting slots
+          cell.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            // Double-click unselects the slot
+            if (selectedSlots.has(i)) {
+              selectedSlots.delete(i);
+              const slotElement = document.querySelector(`[data-slot-index="${i}"][data-equipment-id="${eq.name}"]`);
+              if (slotElement) {
+                slotElement.classList.remove('selected');
+                slotElement.classList.add('available');
+              }
+            }
+          });
       }
       
       strip.appendChild(cell);
@@ -205,9 +238,23 @@ row.appendChild(left);
     });
 
     // arrows
-    const step = slotW() * 6; // ~6 slots
-    el('rsv-arrow-left') .addEventListener('click', () => headerViewport.scrollBy({ left: -step, behavior: 'smooth' }));
-    el('rsv-arrow-right').addEventListener('click', () => headerViewport.scrollBy({ left:  step, behavior: 'smooth' }));
+    // Responsive scroll step: fewer slots on smaller devices
+    const getScrollStep = () => {
+      const viewportWidth = window.innerWidth;
+      if (viewportWidth <= 480) return slotW() * 1;      // 1 slot on mobile
+      if (viewportWidth <= 768) return slotW() * 2;      // 2 slots on tablet
+      if (viewportWidth <= 1024) return slotW() * 3;     // 3 slots on small desktop
+      return slotW() * 6;                                 // 6 slots on large desktop
+    };
+    
+    el('rsv-arrow-left') .addEventListener('click', () => {
+      const step = getScrollStep();
+      headerViewport.scrollBy({ left: -step, behavior: 'smooth' });
+    });
+    el('rsv-arrow-right').addEventListener('click', () => {
+      const step = getScrollStep();
+      headerViewport.scrollBy({ left: step, behavior: 'smooth' });
+    });
   }
 
     /* ===== Multi-Slot Selection Functions ===== */
@@ -217,6 +264,9 @@ row.appendChild(left);
       // Set selection mode immediately for drag operations
       isSelecting = true;
       currentEquipment = eq;
+      
+      // Start with the initial slot - this fixes the "first slot not selectable" issue
+      addSlotToSelection(eq, slotIndex);
       
       // Add visual feedback
       document.body.style.userSelect = 'none';
@@ -229,17 +279,22 @@ row.appendChild(left);
      addSlotToSelection(eq, slotIndex);
    }
    
-       function endSelection(e, eq, slotIndex) {
-      if (!isSelecting) return;
-      
-      isSelecting = false;
-      document.body.style.userSelect = '';
-      
-      // Add final slot if not already selected
-      if (!selectedSlots.has(slotIndex)) {
-        addSlotToSelection(eq, slotIndex);
-      }
-    }
+               function endSelection(e, eq, slotIndex) {
+       if (!isSelecting) return;
+       
+       isSelecting = false;
+       document.body.style.userSelect = '';
+       
+       // Add final slot if not already selected
+       if (!selectedSlots.has(slotIndex)) {
+         addSlotToSelection(eq, slotIndex);
+       }
+       
+       // Reset dragging state after a short delay to allow click events to process
+       setTimeout(() => {
+         isDragging = false;
+       }, 100);
+     }
    
        function addSlotToSelection(eq, slotIndex) {
       // Check 5-hour limit (10 slots) - but allow if we're under the limit
@@ -259,9 +314,6 @@ row.appendChild(left);
           slotElement.classList.remove('available');
         }
       }
-      
-      // Update selection summary
-      updateSelectionSummary();
     }
    
        function toggleSlotSelection(eq, slotIndex) {
@@ -290,62 +342,19 @@ row.appendChild(left);
           return;
         }
       }
-      
-      // Update selection summary
-      updateSelectionSummary();
     }
   
-     function clearSelection() {
-     selectedSlots.clear();
-     
-     // Remove visual selection from all slots
-     document.querySelectorAll('.slot.selected').forEach(slot => {
-       slot.classList.remove('selected');
-       slot.classList.add('available');
-     });
-     
-     // Hide selection summary
-     updateSelectionSummary();
-   }
+           function clearSelection() {
+      selectedSlots.clear();
+      
+      // Remove visual selection from all slots
+      document.querySelectorAll('.slot.selected').forEach(slot => {
+        slot.classList.remove('selected');
+        slot.classList.add('available');
+      });
+    }
    
-   function updateSelectionSummary() {
-     const summary = document.getElementById('selection-summary');
-     const countEl = document.getElementById('selected-slots-count');
-     const timeEl = document.getElementById('selected-time-total');
-     const bookBtn = document.getElementById('book-selected-btn');
-     
-     if (selectedSlots.size > 0) {
-       const totalHours = selectedSlots.size * 0.5;
-       countEl.textContent = selectedSlots.size;
-       timeEl.textContent = totalHours;
-       
-       // Enable/disable book button based on selection
-       bookBtn.disabled = selectedSlots.size === 0;
-       
-       // Add visual feedback for limit reached
-       if (selectedSlots.size >= 10) {
-         summary.classList.add('selection-limit-reached');
-         setTimeout(() => summary.classList.remove('selection-limit-reached'), 500);
-         
-         // Show limit warning
-         const limitWarning = document.getElementById('limit-warning');
-         if (limitWarning) {
-           limitWarning.style.display = 'block';
-         }
-       } else {
-         // Hide limit warning
-         const limitWarning = document.getElementById('limit-warning');
-         if (limitWarning) {
-           limitWarning.style.display = 'none';
-         }
-       }
-       
-       summary.style.display = 'flex';
-     } else {
-       summary.style.display = 'none';
-       bookBtn.disabled = true;
-     }
-   }
+   
    
                    // Show helpful message when trying to select at limit
     function showLimitMessage() {
@@ -363,7 +372,7 @@ row.appendChild(left);
           <span>⚠️ 5-hour limit reached</span>
           <p>You've selected the maximum 5 hours (10 slots)</p>
           <p><strong>To select different slots:</strong></p>
-          <p>1. Click on any selected slot to remove it</p>
+          <p>1. Double-click on any selected slot to remove it</p>
           <p>2. Then click on the new slot you want</p>
         </div>
       `;
@@ -574,22 +583,30 @@ initialMenu();
 btn.addEventListener('click', (e)=>{ e.stopPropagation(); dd.classList.toggle('open'); });
 document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classList.remove('open'); });
 
-// Choose a date
-menu.addEventListener('click', (e)=>{
-  const t = e.target.closest('.date-item'); if(!t) return;
-  const d = new Date(t.dataset.date); if (isNaN(d)) return;
+  // Choose a date
+  menu.addEventListener('click', (e)=>{
+    const t = e.target.closest('.date-item'); if(!t) return;
+    const d = new Date(t.dataset.date); if (isNaN(d)) return;
 
-  selectedDate = d;
-  labelEl.textContent = fmtCN(selectedDate);
+    selectedDate = d;
+    labelEl.textContent = fmtCN(selectedDate);
 
-  // Update selection styles
-  menu.querySelectorAll('.date-item.is-selected').forEach(x => x.classList.remove('is-selected'));
-  t.classList.add('is-selected');
+    // Update selection styles
+    menu.querySelectorAll('.date-item.is-selected').forEach(x => x.classList.remove('is-selected'));
+    t.classList.add('is-selected');
 
-  dd.classList.remove('open');
+    dd.classList.remove('open');
 
-  // TODO: re-fetch your bookings for 'selectedDate' + re-render rows
-});
+    // TODO: re-fetch your bookings for 'selectedDate' + re-render rows
+    
+    // If it's today's date, scroll to current time
+    const today = new Date();
+    if (sameDay(d, today)) {
+      setTimeout(() => {
+        scrollToCurrentTime();
+      }, 100);
+    }
+  });
 
 // Infinite scroll (prepend older / append newer)
 menu.addEventListener('scroll', ()=>{
@@ -623,7 +640,7 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
   function positionNowLine(){
   // Bail out quietly if key DOM nodes aren't there yet
   const schedule = document.querySelector('.reservation-schedule');
-  if (!schedule || !headerViewport || !nowLineHeader) return;
+  if (!schedule || !headerViewport) return;
   // timeline must exist and have at least 2 items
   if (!Array.isArray(timeline) || timeline.length < 2) return;
 
@@ -648,14 +665,6 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
   const xInView  = xInside - headerViewport.scrollLeft;
   const inView   = xInView >= 0 && xInView <= headerViewport.clientWidth;
 
-  // Small header line (only when visible)
-  if (inView) {
-    nowLineHeader.style.display = 'block';
-    nowLineHeader.style.left = `${xInView}px`;
-  } else {
-    nowLineHeader.style.display = 'none';
-  }
-
   // Tall global line (spans all rows), only when visible
   if (typeof nowLineGlobal !== 'undefined' && nowLineGlobal) {
     if (inView) {
@@ -664,13 +673,59 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
       const headerLeft = headerViewport.getBoundingClientRect().left + window.scrollX;
       const xPage      = headerLeft + xInView;          // absolute page X of the header line
       const xSched     = xPage - schedLeft;             // schedule container coords
+      
+      // Calculate the correct starting position for the indicator line
+      // Position it to start from the time header level, not from the very top
+      const scheduleTop = schedule.getBoundingClientRect().top + window.scrollY;
+      const headerTop = headerViewport.getBoundingClientRect().top + window.scrollY;
+      const indicatorStartTop = headerTop - scheduleTop;
+      
       nowLineGlobal.style.display = 'block';
       nowLineGlobal.style.left = `${xSched}px`;
+      nowLineGlobal.style.top = `${indicatorStartTop}px`;
     } else {
       nowLineGlobal.style.display = 'none';
     }
   }
 }
+
+  // Function to scroll to current time slot
+  function scrollToCurrentTime() {
+    if (!headerViewport || !Array.isArray(timeline) || timeline.length < 2) return;
+    
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const startMin = t2m(RSV_START_TIME);
+    const endMin = t2m(RSV_END_TIME);
+    
+    // Clamp current time to valid range
+    const m = Math.min(Math.max(nowMin, startMin), endMin);
+    
+    // Calculate which slot we should scroll to
+    const slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+    
+    // Calculate the scroll position to center the current time slot
+    const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
+    const GAP = cssNumber('--rsv-gap', 10);
+    const SLOT_W = cssNumber('--rsv-slot-w', 80);
+    const SEG_W = SLOT_W + GAP;
+    
+    // Calculate the position of the current time slot
+    const slotPosition = LEFT_PAD + (slotIndex * SEG_W);
+    
+    // Calculate viewport width and center the slot
+    const viewportWidth = headerViewport.clientWidth;
+    const targetScrollLeft = slotPosition - (viewportWidth / 2) + (SLOT_W / 2);
+    
+    // Ensure we don't scroll past the beginning
+    const finalScrollLeft = Math.max(0, targetScrollLeft);
+    
+    // Smooth scroll to the current time slot
+    headerViewport.scrollTo({
+      left: finalScrollLeft,
+      behavior: 'smooth'
+    });
+  }
 
 })();
 
@@ -730,17 +785,7 @@ function closeModal(){
 el('rsv-modal-close').addEventListener('click', closeModal);
 el('rsv-modal-backdrop').addEventListener('click', closeModal);
 
-// Add event listener for the booking button
-document.addEventListener('DOMContentLoaded', () => {
-  const bookBtn = document.getElementById('book-selected-btn');
-  if (bookBtn) {
-    bookBtn.addEventListener('click', () => {
-      if (selectedSlots.size > 0 && currentEquipment) {
-        openModalWithSelectedSlots(currentEquipment);
-      }
-    });
-  }
-});
+
 
 el('rsv-form').addEventListener('submit', async (e)=>{
   e.preventDefault();

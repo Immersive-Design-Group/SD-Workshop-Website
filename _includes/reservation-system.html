@@ -3,9 +3,19 @@
 <section class="reservation-schedule" aria-label="Equipment reservation schedule">
   <div class="now-line-global" id="rsv-now-line-global"></div>
 
+  <!-- User Instructions Banner -->
+  <div class="user-instructions">
+    <div class="instruction-content">
+      <span class="instruction-icon">💡</span>
+      <span class="instruction-text">
+        <strong>How to use:</strong> Click to select • Double-click to unselect • Drag across multiple slots for continuous selection • Maximum 5 hours (10 slots) per booking
+      </span>
+    </div>
+  </div>
+
   <!-- Header: date + arrows + timeline -->
-<div class="schedule-header">
-  <div class="equip-col equip-col--header">
+  <div class="schedule-header">
+    <div class="equip-col equip-col--header">
     <div class="date-dropdown" id="rsv-date">
       <button class="date-button" id="rsv-date-btn">
         <span id="rsv-date-label">--</span>
@@ -18,7 +28,6 @@
 
   <div class="slots-viewport" id="rsv-header-viewport">
     <div class="timebar" id="rsv-timebar"></div>
-    <div class="now-line" id="rsv-now-line"></div>
   </div>
 
   <button class="nav-arrow" id="rsv-arrow-right" aria-label="Next time">›</button>
@@ -27,20 +36,6 @@
 
   <!-- Equipment rows are injected here -->
   <div id="rsv-rows"></div>
-  
-  <!-- Selection summary and booking button -->
-  <div id="selection-summary" style="display: none;" class="selection-summary">
-    <div class="selection-info">
-      <span id="selected-slots-count">0</span> slots selected • 
-      <span id="selected-time-total">0</span> hours
-      <div id="limit-warning" style="display: none; color: #dc3545; font-size: 12px; margin-top: 4px;">
-        ⚠️ 5-hour limit reached
-      </div>
-    </div>
-    <button id="book-selected-btn" class="btn-book-selected" disabled>
-      Book Selected Slots
-    </button>
-  </div>
 </section>
 
 <!-- Booking modal -->

@@ -16,14 +16,32 @@
 
 .reservation-hero{ padding:56px 0 18px; }
 .reservation-title{ margin:0 0 18px 0; line-height:0.7;letter-spacing:-.5px; display:block !important; }
-.title-our{ display:block; font-size:56px; font-weight:800; color:var(--ink-300); }
-.title-reservation{ display:block; font-size:56px; font-weight:700; color:var(--ink-900); }
+.title-our{ 
+  display:block; 
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size:66px; 
+  font-weight:600; 
+  color:#9ca3af; /* Same as other ghost titles */
+}
+.title-reservation{ 
+  display:block; 
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size:66px; 
+  font-weight:800; 
+  color:#1a2238; /* Dark color for main title */
+}
 .reservation-rule{ border:0; border-top:1px solid var(--line); }
 
 /* Rules card + CN/ENG groups with gap */
 .rules-card{ margin-top:18px; background:var(--panel); border:1px solid var(--line);
   border-radius:12px; padding:22px 24px; }
-.rules-heading{ font-size:22px; font-weight:800; margin:0 0 10px; }
+.rules-heading{ 
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size:42px; 
+  font-weight:600; 
+  color:#9ca3af; /* Same as other ghost titles */
+  margin:0 0 10px; 
+}
 
 .rules-md{ display:flex; flex-direction:column; gap:16px; }
 .rules-group{ position:relative; padding-top:6px; }
@@ -37,7 +55,59 @@
 
 
 /* =========================
-  Booking Table
+   User Instructions Banner
+========================= */
+
+.user-instructions {
+  margin: 20px var(--page-gutter) 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.instruction-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #0369a1;
+}
+
+.instruction-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.instruction-text {
+  line-height: 1.4;
+}
+
+.instruction-text strong {
+  color: #0c4a6e;
+}
+
+/* Responsive design for instruction banner */
+@media (max-width: 768px) {
+  .user-instructions {
+    margin: 16px 16px 12px;
+    padding: 10px 12px;
+  }
+  
+  .instruction-content {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .instruction-text {
+    font-size: 13px;
+  }
+}
+
+/* =========================
+   Booking Table
 ========================= */
 
 /* ==== SCHEDULE (scoped) ==== */
@@ -162,12 +232,10 @@ body .reservation-container .slots-viewport .timebar .time-label {
   border: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
-  box-shadow: none !important;
   outline: none !important;
   background-color: transparent !important;
   border-color: transparent !important;
-  border-width: 0 !important;
-  border-style: none !important;
+  
 }
 
 /* Target the specific visual appearance from the image */
@@ -254,9 +322,7 @@ body .reservation-container .slots-viewport .timebar .time-label {
 .date-menu::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:999px; }
 
 
-/* Pink live time indicator */
-.now-line{ position:absolute; top:0; bottom:0; width:2px; background:var(--rsv-now); }
-.now-line::before{ content:""; position:absolute; top:0; left:-3px; right:-3px; height:6px; border-radius:6px; background:var(--rsv-now); }
+
 
 /* Rows - Override main CSS with maximum specificity */
 #rsv-rows .equip-row{ 
@@ -373,23 +439,28 @@ body .reservation-container #rsv-rows .equip-row {
   position: relative;
 }
 
-/* Add visual hint for interaction */
-#rsv-rows .slot::after {
-  content: "Click to select • Click selected to undo • Drag for multiple";
+/* Add visual hint for interaction - only on hover and only on available slots */
+#rsv-rows .slot.available::after {
+  content: "Click to select • Double-click to unselect • Drag for multiple";
   position: absolute;
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 8px;
+  font-size: 10px;
   color: #6c757d;
   white-space: nowrap;
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-#rsv-rows .slot:hover::after {
+#rsv-rows .slot.available:hover::after {
   opacity: 1;
+  background: rgba(255, 255, 255, 1);
 }
 
 /* Continuous booking blocks - spans multiple slots */
@@ -489,21 +560,18 @@ body .reservation-container #rsv-rows .equip-row {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
   transform: translateY(-1px);
   position: relative;
+  animation: slotSelected 0.2s ease-out;
 }
 
-/* Remove borders between consecutive selected slots for continuous appearance */
-#rsv-rows .slot.selected + .slot.selected {
-  border-left: none;
-  border-radius: 0 12px 12px 0;
-}
-
-#rsv-rows .slot.selected:has(+ .slot.selected) {
-  border-radius: 12px 0 0 12px;
-}
-
-/* First and last slots in a selection block */
-#rsv-rows .slot.selected:not(:has(+ .slot.selected)):not(.slot.selected + .slot.selected) {
-  border-radius: 12px;
+@keyframes slotSelected {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Equipment images */
@@ -511,8 +579,26 @@ body .reservation-container #rsv-rows .equip-row {
 #rsv-rows .equip-thumb img { width:100%; height:100%; object-fit: contain; }
 
 /* Global pink line spanning header + all rows */
-.now-line-global { position:absolute; top:0; bottom:0; width:2px; background:var(--rsv-now); z-index:4; pointer-events:none; }
-.now-line-global::before { content:""; position:absolute; top:0; left:-3px; right:-3px; height:6px; border-radius:6px; background:var(--rsv-now); }
+.now-line-global { 
+  position:absolute; 
+  top: 0; /* Will be positioned dynamically by JavaScript */
+  bottom:0; 
+  width:2px; 
+  background:var(--rsv-now); 
+  z-index:4; 
+  pointer-events:none; 
+  border-radius: 0;
+}
+.now-line-global::before { 
+  content:""; 
+  position:absolute; 
+  top:0; 
+  left:-2px; 
+  width:6px; 
+  height:6px; 
+  border-radius:50%; 
+  background:var(--rsv-now); 
+}
 
 /* Modal  */
 .modal{ position:fixed; inset:0; display:none; z-index:1000; }
@@ -560,47 +646,7 @@ body .reservation-container #rsv-rows .equip-row {
 .btn-submit{ margin-top:10px; background:#333; color:#fff; border:0; width:100%; padding:18px 16px; border-radius:6px; letter-spacing:4px; font-weight:700; cursor:pointer }
 .btn-submit:hover{ filter:brightness(.93) }
 
-/* Selection summary styling */
-.selection-summary {
-  margin: 20px var(--page-gutter);
-  padding: 16px 20px;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-}
 
-.selection-info {
-  font-size: 16px;
-  font-weight: 600;
-  color: #495057;
-}
-
-.btn-book-selected {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-book-selected:hover:not(:disabled) {
-  background: #0056b3;
-  transform: translateY(-1px);
-}
-
-.btn-book-selected:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
 
 /* Visual feedback for limit reached */
 .selection-limit-reached {

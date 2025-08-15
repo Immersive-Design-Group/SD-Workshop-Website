@@ -1076,8 +1076,9 @@ a {
 /* Titles */
 .eqtop-ghost{
   margin:0 0 6px;
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
   font-weight:400;
-  color:rgba(0,0,0,.18);
+  color:#9ca3af; /* Same as other ghost titles */
   letter-spacing:.2px;
   line-height:1.1;
   font-size:clamp(2rem,6vw,3.4rem);
@@ -1313,9 +1314,12 @@ a {
   box-sizing: border-box;
 }
 .proc-ghost{
-  margin:0 0 6px; font-weight:400;
-  color:rgba(0,0,0,.18);
-  letter-spacing:.2px; line-height:1.1;
+  margin:0 0 6px; 
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-weight:400;
+  color:#9ca3af; /* Same as other ghost titles */
+  letter-spacing:.2px; 
+  line-height:1.1;
   font-size:clamp(1.8rem,5.5vw,3rem);
   padding: 0 24px;
 }
@@ -1509,8 +1513,9 @@ a {
 
 .safety-title{
   margin:26px 0 2px;
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
   font-weight:400;                 /* slightly lighter than 900 for a cleaner look */
-  color:rgba(0,0,0,.18);                 /* deeper neutral (close to black, like the ref) */
+  color:#9ca3af; /* Same as other ghost titles */
   font-size:clamp(1.35rem,3.2vw,4rem);
   text-align:center;
   letter-spacing:.2px;
@@ -1603,8 +1608,9 @@ a {
 
 .rt-ghost{
   margin:0 0 4px;
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
   font-weight:400;
-  color:rgba(0,0,0,.18);
+  color:#9ca3af; /* Same as other ghost titles */
   letter-spacing:.2px;
   line-height:1.1;
   font-size:clamp(1.8rem,6vw,3rem);
@@ -1705,4 +1711,27 @@ a {
 /* =========================
    Reservation Page
 ========================= */
+
+/* =========================
+   Equipment Page
+========================= */
+
+/* Equipment ghost title - same style as other section titles */
+.equip-ghost {
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: #9ca3af; /* Same as TA Schedule, About, etc. */
+  line-height: 1;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+/* Responsive adjustments for equipment title */
+@media (max-width: 640px) {
+  .equip-ghost {
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
+    margin-bottom: 1.5rem;
+  }
+}
 
