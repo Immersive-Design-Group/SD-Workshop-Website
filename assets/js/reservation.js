@@ -85,6 +85,9 @@
       
       // Initialize selection counter
       updateSelectionCounter();
+
+      window.addEventListener('mouseup', cancelDrag, true);
+      window.addEventListener('blur', cancelDrag, true);
   }
 
   function renderHeader() {
@@ -192,6 +195,8 @@ row.appendChild(left);
           cell.addEventListener('mouseup', (e) => {
             endSelection(e, eq, i);
           });
+
+          
           
           // Single click handler for selecting slots only
           cell.addEventListener('click', (e) => {
@@ -278,18 +283,20 @@ row.appendChild(left);
       document.body.style.userSelect = 'none';
     }
    
-       function updateSelection(e, eq, slotIndex) {
-      if (!isSelecting || currentEquipment?.name !== eq.name) return;
-      
-      // Check if we're at the limit before adding more slots during drag
-      if (selectedSlots.size >= 10) {
-        return; // Don't add more slots if at limit
-      }
-      
-      // Add slot to selection (don't toggle during drag)
-      addSlotToSelection(eq, slotIndex);
-    }
-   
+                function updateSelection(e, eq, slotIndex) {
+        if (!isSelecting || e.buttons !== 1 || currentEquipment?.name !== eq.name) return;
+        if (selectedSlots.size >= 10) return;
+        addSlotToSelection(eq, slotIndex);
+}
+
+                  function cancelDrag(){
+              if (isSelecting) {
+                isSelecting = false;
+                document.body.style.userSelect = '';
+              }
+            }
+
+
                function endSelection(e, eq, slotIndex) {
        if (!isSelecting) return;
        
@@ -308,33 +315,31 @@ row.appendChild(left);
      }
    
                function addSlotToSelection(eq, slotIndex) {
-       // Check 5-hour limit (10 slots) - strictly enforce the limit
-       if (selectedSlots.size >= 10) {
-         // At limit - show message and don't add more slots
-         if (!document.querySelector('.limit-message')) {
-           showLimitMessage();
-         }
-         return;
-       }
-       
-       // Only add if not already selected
-       if (!selectedSlots.has(slotIndex)) {
-         selectedSlots.add(slotIndex);
-         
-         // Update visual state
-         const slotElement = document.querySelector(`[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`);
-         if (slotElement && slotElement.classList.contains('available')) {
-           slotElement.classList.add('selected');
-           slotElement.classList.remove('available');
-         }
-         
-         // Open modal when slot is selected
-         openModalWithSelectedSlots(eq);
-         
-         // Update selection counter display
-         updateSelectionCounter();
-       }
-     }
+  if (selectedSlots.size >= 10) {
+    if (!document.querySelector('.limit-message')) showLimitMessage();
+    return;
+  }
+  if (!selectedSlots.has(slotIndex)) {
+    const wasEmpty = selectedSlots.size === 0;
+    selectedSlots.add(slotIndex);
+
+    const slotEl = document.querySelector(
+      `[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`
+    );
+    if (slotEl && slotEl.classList.contains('available')) {
+      slotEl.classList.add('selected');
+      slotEl.classList.remove('available');
+    }
+
+    if (wasEmpty) {
+      openModalWithSelectedSlots(eq);  // open once
+    } else {
+      updateModalFromSelection(eq);    // then just refresh the pills
+    }
+    updateSelectionCounter();
+  }
+}
+
    
        function toggleSlotSelection(eq, slotIndex) {
       const slotElement = document.querySelector(`[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`);
@@ -440,17 +445,19 @@ row.appendChild(left);
       }, 3000);
     }
   
-  function openModalWithSelectedSlots(eq) {
+  function openModalWithSelectedSlots(eq){
   if (selectedSlots.size === 0) return;
-  
-  // Sort slots by index
-  const sortedSlots = Array.from(selectedSlots).sort((a, b) => a - b);
-  const startTime = timeline[sortedSlots[0]];
-  const endTime = timeline[sortedSlots[sortedSlots.length - 1] + 1];
-  const totalHours = selectedSlots.size * 0.5; // 30 min = 0.5 hours
-  
-  openModal(eq, startTime, endTime, totalHours, sortedSlots);
+
+  const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
+  const start  = timeline[sorted[0]];
+  const end    = timeline[sorted[sorted.length-1] + 1];
+  const hours  = sorted.length * 0.5;
+
+  const isOpen = el('rsv-modal').getAttribute('aria-hidden') === 'false';
+  if (!isOpen) openModal(eq, start, end, hours, sorted);
+  else updateModalFromSelection(eq);
 }
+
 
 // Helper functions
 function getInitial(name) {
@@ -680,7 +687,147 @@ menu.addEventListener('scroll', ()=>{
 
 document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classList.remove('open'); });
 
+/* ====== Apps Script endpoint ====== */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvQ1grlJ2vGt6SQEkI7KYUcCBHaeGJhTFHW6KkHfM6vBgoV9qOqeIx7MczQPMQ7bFryQ/exec';  // from your Apps Script deployment
 
+/* ====== Modal helpers & state ====== */
+let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
+
+function mmddLabel(d) {
+  return `${String(d.getMonth()+1).padStart(2, '0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+function openModal(eq, start, end, hours, sorted) {
+  lastModal.eq = eq;
+  lastModal.sorted = sorted.slice();
+  lastModal.start = start;
+  lastModal.end = end;
+  lastModal.hours = hours;
+  lastModal.slots = sorted.map(i => ({
+    device: eq.name,
+    date: fmtISO(selectedDate), // from your date dropdown section
+    start: timeline[i],
+    end: timeline[i+1]
+  }));
+
+  // Fill title + pills
+  el('rsv-modal-equip').textContent = eq.name || '';
+  el('rsv-modal-model').textContent = eq.model || '';
+  el('rsv-pill-date').textContent  = mmddLabel(selectedDate);
+  el('rsv-pill-start').textContent = start;
+  el('rsv-pill-end').textContent   = end;
+
+  el('total-slots').textContent = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
+  el('total-hours').textContent = `${hours.toFixed(1)} hours`;
+  el('duration-info').style.display = 'block';
+
+  // Show modal
+  el('rsv-success').hidden = true;
+  el('rsv-form').style.display = '';
+  el('rsv-modal').setAttribute('aria-hidden', 'false');
+}
+function closeModal() {
+  el('rsv-modal').setAttribute('aria-hidden', 'true');
+  el('rsv-form').reset();
+}
+el('rsv-modal-close').addEventListener('click', closeModal);
+el('rsv-modal-backdrop').addEventListener('click', closeModal);
+
+/* Keep the time pills in sync while the user is dragging across slots */
+function updateModalFromSelection(eq) {
+  if (el('rsv-modal').getAttribute('aria-hidden') === 'true') return;
+  if (selectedSlots.size === 0) return;
+  const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
+  const start = timeline[sorted[0]];
+  const end   = timeline[sorted[sorted.length-1] + 1];
+  const hours = sorted.length * 0.5;
+
+  lastModal.sorted = sorted;
+  lastModal.start  = start;
+  lastModal.end    = end;
+  lastModal.hours  = hours;
+  lastModal.slots  = sorted.map(i => ({
+    device: eq.name,
+    date: fmtISO(selectedDate),
+    start: timeline[i],
+    end: timeline[i+1]
+  }));
+
+  el('rsv-pill-start').textContent = start;
+  el('rsv-pill-end').textContent   = end;
+  el('total-slots').textContent    = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
+  el('total-hours').textContent    = `${hours.toFixed(1)} hours`;
+}
+
+/* Hook your existing selection flow to update the open modal */
+const _origUpdateSelection = updateSelection;
+updateSelection = function(e, eq, i) {
+  _origUpdateSelection.call(this, e, eq, i);
+  updateModalFromSelection(eq);
+};
+
+/* Submit to Apps Script, send email, update UI */
+el('rsv-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const name    = e.target.name.value.trim();
+  const email   = e.target.email.value.trim();
+  const purpose = e.target.purpose.value.trim();
+  const training = el('rsv-agree').checked;
+
+  if (!name || !email || !purpose || !training) {
+    alert('Please complete all fields and accept training.');
+    return;
+  }
+  if (!lastModal.slots.length) {
+    alert('No slots selected.');
+    return;
+  }
+
+  const body = new URLSearchParams({
+    action: 'create_booking',
+    name, email, purpose,
+    training: training ? 'true' : 'false',
+    slots: JSON.stringify(lastModal.slots)
+  });
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+      body
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+    // Visually block the selected slots (your grid renderer supports dynamic data)
+    window.demoBookings = window.demoBookings || {};
+    const dev = lastModal.eq.name;
+    window.demoBookings[dev] = window.demoBookings[dev] || [];
+    window.demoBookings[dev].push({
+      startSlot: lastModal.sorted[0],
+      endSlot:   lastModal.sorted[lastModal.sorted.length-1] + 1,
+      name, purpose
+    });
+    renderRows(); // re-render with the new booking block
+
+    // Success screen (matches your design)
+    el('rsv-success-start').textContent =
+      `${mmddLabel(selectedDate)} ${lastModal.start}`;
+    el('rsv-success-email').textContent = email;
+    el('rsv-form').style.display = 'none';
+    el('rsv-success').hidden = false;
+
+    // Clear selection so user can’t submit again accidentally
+    clearSelection();
+  } catch (err) {
+    alert('Booking failed: ' + err.message);
+  }
+});
+el('rsv-success-back').addEventListener('click', () => {
+  el('rsv-success').hidden = true;
+  el('rsv-form').style.display = '';
+  closeModal();
+});
 
   function positionNowLine(){
   // Bail out quietly if key DOM nodes aren't there yet
@@ -773,4 +920,5 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
   }
 
 })();
+
 

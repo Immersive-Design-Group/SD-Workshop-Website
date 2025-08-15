@@ -52,58 +52,55 @@
     </h2>
 
     <form id="rsv-form" class="form">
-      <label class="form__row">
-        <span class="form__label">Name <em>*</em></span>
-        <input class="form__input" name="name" required>
-      </label>
+  <label class="form__row">
+    <span class="form__label">Name <em>*</em></span>
+    <input class="form__input" name="name" required>
+  </label>
 
-      <label class="form__row">
-        <span class="form__label">Phone <em>*</em></span>
-        <input class="form__input" name="phone" required>
-      </label>
+  <label class="form__row">
+    <span class="form__label">Email <em>*</em></span>
+    <input type="email" class="form__input" name="email" required>
+  </label>
 
-      <label class="form__row">
-        <span class="form__label">Email <em>*</em></span>
-        <input type="email" class="form__input" name="email" required>
-      </label>
+  <label class="form__row">
+    <span class="form__label">Purpose <em>*</em></span>
+    <textarea class="form__input form__textarea" name="purpose" required></textarea>
+  </label>
 
-      <label class="form__row">
-        <span class="form__label">Purpose <em>*</em></span>
-        <textarea class="form__input form__textarea" name="purpose" required></textarea>
-      </label>
+  <div class="form__row">
+    <span class="form__label">Time <em>*</em></span>
+    <div class="time-pills">
+      <div class="time-pill" id="rsv-pill-date">--</div>
+      <div class="time-pill" id="rsv-pill-start">--:--</div>
+      <div class="time-arrow">→</div>
+      <div class="time-pill" id="rsv-pill-end">--:--</div>
+    </div>
+  </div>
 
-      <div class="form__row">
-        <span class="form__label">Time <em>*</em></span>
-        <div class="time-pills">
-          <div class="time-pill" id="rsv-pill-date">0712</div>
-          <div class="time-pill" id="rsv-pill-start">10:00</div>
-          <div class="time-arrow">→</div>
-          <div class="time-pill" id="rsv-pill-end">11:00</div>
-        </div>
-      </div>
-      
-      <div class="form__row" id="duration-info" style="display: none;">
-        <span class="form__label">Duration</span>
-        <div class="duration-display">
-          <span id="total-slots">1 slot</span> • <span id="total-hours">0.5 hours</span>
-        </div>
-      </div>
-      
-      <!-- Admin view - shows who booked the slot -->
-      <div class="form__row" id="admin-info" style="display: none;">
-        <span class="form__label">Booked By</span>
-        <div class="admin-display">
-          <span id="booked-by-name">--</span> • <span id="booked-by-phone">--</span> • <span id="booked-by-email">--</span>
-        </div>
-      </div>
+  <div class="form__row" id="duration-info" style="display: none;">
+    <span class="form__label">Duration</span>
+    <div class="duration-display">
+      <span id="total-slots">1 slot</span> • <span id="total-hours">0.5 hours</span>
+    </div>
+  </div>
 
-      <label class="form__check">
-        <input type="checkbox" id="rsv-agree" required>
-        <span>I have accepted the training instructions.</span>
-      </label>
+  <label class="form__check">
+    <input type="checkbox" id="rsv-agree" name="training" required>
+    <span>I have accepted the training instructions.</span>
+  </label>
 
-      <button type="submit" class="btn-submit">SUBMIT</button>
-    </form>
+  <button type="submit" class="btn-submit">SUBMIT</button>
+</form>
+
+<!-- Success screen (hidden initially) -->
+<div id="rsv-success" class="success-view" hidden>
+  <div class="success-icon">✔</div>
+  <h2 class="modal__title">Awesome!</h2>
+  <p>Your reservation will start from <b id="rsv-success-start"></b>.</p>
+  <p>We’ve emailed a confirmation to <b id="rsv-success-email"></b>.</p>
+  <button id="rsv-success-back" class="btn-submit">BACK</button>
+</div>
+
   </div>
 </div>
 <script>
