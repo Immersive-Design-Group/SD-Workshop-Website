@@ -82,6 +82,9 @@
           headerViewport.offsetHeight;
         }, 100);
       });
+      
+      // Initialize selection counter
+      updateSelectionCounter();
   }
 
   function renderHeader() {
@@ -198,19 +201,22 @@ row.appendChild(left);
             }
           });
           
-          // Double-click handler for unselecting slots
-          cell.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            // Double-click unselects the slot
-            if (selectedSlots.has(i)) {
-              selectedSlots.delete(i);
-              const slotElement = document.querySelector(`[data-slot-index="${i}"][data-equipment-id="${eq.name}"]`);
-              if (slotElement) {
-                slotElement.classList.remove('selected');
-                slotElement.classList.add('available');
-              }
-            }
-          });
+                     // Double-click handler for unselecting slots
+           cell.addEventListener('dblclick', (e) => {
+             e.preventDefault();
+             // Double-click unselects the slot
+             if (selectedSlots.has(i)) {
+               selectedSlots.delete(i);
+               const slotElement = document.querySelector(`[data-slot-index="${i}"][data-equipment-id="${eq.name}"]`);
+               if (slotElement) {
+                 slotElement.classList.remove('selected');
+                 slotElement.classList.add('available');
+               }
+               
+               // Update selection counter display
+               updateSelectionCounter();
+             }
+           });
       }
       
       strip.appendChild(cell);
@@ -272,12 +278,17 @@ row.appendChild(left);
       document.body.style.userSelect = 'none';
     }
    
-   function updateSelection(e, eq, slotIndex) {
-     if (!isSelecting || currentEquipment?.name !== eq.name) return;
-     
-     // Add slot to selection (don't toggle during drag)
-     addSlotToSelection(eq, slotIndex);
-   }
+       function updateSelection(e, eq, slotIndex) {
+      if (!isSelecting || currentEquipment?.name !== eq.name) return;
+      
+      // Check if we're at the limit before adding more slots during drag
+      if (selectedSlots.size >= 10) {
+        return; // Don't add more slots if at limit
+      }
+      
+      // Add slot to selection (don't toggle during drag)
+      addSlotToSelection(eq, slotIndex);
+    }
    
                function endSelection(e, eq, slotIndex) {
        if (!isSelecting) return;
@@ -296,25 +307,34 @@ row.appendChild(left);
        }, 100);
      }
    
-       function addSlotToSelection(eq, slotIndex) {
-      // Check 5-hour limit (10 slots) - but allow if we're under the limit
-      if (selectedSlots.size >= 10) {
-        // At limit - don't show message during drag, just return silently
-        return;
-      }
-      
-      // Only add if not already selected
-      if (!selectedSlots.has(slotIndex)) {
-        selectedSlots.add(slotIndex);
-        
-        // Update visual state
-        const slotElement = document.querySelector(`[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`);
-        if (slotElement && slotElement.classList.contains('available')) {
-          slotElement.classList.add('selected');
-          slotElement.classList.remove('available');
-        }
-      }
-    }
+               function addSlotToSelection(eq, slotIndex) {
+       // Check 5-hour limit (10 slots) - strictly enforce the limit
+       if (selectedSlots.size >= 10) {
+         // At limit - show message and don't add more slots
+         if (!document.querySelector('.limit-message')) {
+           showLimitMessage();
+         }
+         return;
+       }
+       
+       // Only add if not already selected
+       if (!selectedSlots.has(slotIndex)) {
+         selectedSlots.add(slotIndex);
+         
+         // Update visual state
+         const slotElement = document.querySelector(`[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`);
+         if (slotElement && slotElement.classList.contains('available')) {
+           slotElement.classList.add('selected');
+           slotElement.classList.remove('available');
+         }
+         
+         // Open modal when slot is selected
+         openModalWithSelectedSlots(eq);
+         
+         // Update selection counter display
+         updateSelectionCounter();
+       }
+     }
    
        function toggleSlotSelection(eq, slotIndex) {
       const slotElement = document.querySelector(`[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`);
@@ -344,15 +364,40 @@ row.appendChild(left);
       }
     }
   
-           function clearSelection() {
-      selectedSlots.clear();
+                                               function clearSelection() {
+        selectedSlots.clear();
+        
+        // Remove visual selection from all slots
+        document.querySelectorAll('.slot.selected').forEach(slot => {
+          slot.classList.remove('selected');
+          slot.classList.add('available');
+        });
+        
+        // Update selection counter display
+        updateSelectionCounter();
+      }
       
-      // Remove visual selection from all slots
-      document.querySelectorAll('.slot.selected').forEach(slot => {
-        slot.classList.remove('selected');
-        slot.classList.add('available');
-      });
-    }
+      // Function to update the selection counter display
+      function updateSelectionCounter() {
+        const counter = document.querySelector('.selection-counter');
+        if (counter) {
+          if (selectedSlots.size === 0) {
+            counter.style.display = 'none';
+          } else {
+            counter.style.display = 'block';
+            counter.textContent = `${selectedSlots.size} slot${selectedSlots.size === 1 ? '' : 's'} selected (${(selectedSlots.size * 0.5).toFixed(1)}h)`;
+            
+            // Change color based on limit
+            if (selectedSlots.size >= 10) {
+              counter.style.color = '#ef4444'; // Red when at limit
+            } else if (selectedSlots.size >= 8) {
+              counter.style.color = '#f59e0b'; // Orange when approaching limit
+            } else {
+              counter.style.color = '#10b981'; // Green when under limit
+            }
+          }
+        }
+      }
    
    
    
@@ -729,115 +774,3 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
 
 })();
 
-/* ----- Modal ----- */
-const modal = el('rsv-modal');
-function openModal(eq, start, end, totalHours = 0.5, selectedSlotIndices = []) {
-  el('rsv-modal-equip').textContent = eq.name;
-  el('rsv-modal-model').textContent = eq.model;
-  // Show the currently selected date
-  el('rsv-pill-date').textContent = fmtCN(selectedDate);
-  el('rsv-pill-start').textContent = start;
-  el('rsv-pill-end').textContent = end;
-  
-  // Show duration info for multiple slots
-  const durationInfo = el('duration-info');
-  const totalSlotsEl = el('total-slots');
-  const totalHoursEl = el('total-hours');
-  
-  if (totalHours > 0.5) {
-    totalSlotsEl.textContent = `${selectedSlotIndices.length} slots`;
-    totalHoursEl.textContent = `${totalHours} hours`;
-    durationInfo.style.display = 'grid';
-  } else {
-    durationInfo.style.display = 'none';
-  }
-  
-  // Check if this is admin view (check if slots are already booked)
-  const isAdminView = checkIfSlotsBooked(eq, selectedSlotIndices);
-  const adminInfo = el('admin-info');
-  const form = el('rsv-form');
-  
-  if (isAdminView) {
-    // Show admin info, hide form
-    showAdminInfo(eq, selectedSlotIndices);
-    adminInfo.style.display = 'grid';
-    form.style.display = 'none';
-  } else {
-    // Show form, hide admin info
-    adminInfo.style.display = 'none';
-    form.style.display = 'grid';
-  }
-  
-  modal.setAttribute('aria-hidden','false');
-}
-
-function closeModal(){ 
-  modal.setAttribute('aria-hidden','true');
-  clearSelection(); // Clear selection when modal closes
-  
-  // Reset form display
-  const form = el('rsv-form');
-  const adminInfo = el('admin-info');
-  form.style.display = 'grid';
-  adminInfo.style.display = 'none';
-}
-
-el('rsv-modal-close').addEventListener('click', closeModal);
-el('rsv-modal-backdrop').addEventListener('click', closeModal);
-
-
-
-el('rsv-form').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if(!el('rsv-agree').checked) return;
-
-  const form = new FormData(e.target);
-  const sortedSlots = Array.from(selectedSlots).sort((a, b) => a - b);
-  
-  const payload = {
-    name: form.get('name'),
-    phone: form.get('phone'),
-    email: form.get('email'),
-    purpose: form.get('purpose') || '',
-    equipment: el('rsv-modal-equip').textContent,
-    model: el('rsv-modal-model').textContent,
-    date: el('rsv-pill-date').textContent,
-    start: el('rsv-pill-start').textContent,
-    end: el('rsv-pill-end').textContent,
-    totalSlots: selectedSlots.size,
-    totalHours: selectedSlots.size * 0.5,
-    selectedSlotIndices: sortedSlots
-  };
-
-  /* TODO: Replace with Supabase insert */
-  console.log('Reservation payload →', payload);
-
-  // Create new booking in demo data
-  createNewBooking(payload);
-
-  closeModal();
-  alert(`Booked ${selectedSlots.size} slots (${selectedSlots.size * 0.5}h) successfully! Hook this to Supabase.`);
-  
-  // Re-render rows to show new booking
-  renderRows();
-});
-
-// Create new booking (demo function)
-function createNewBooking(payload) {
-  // In real implementation, this would be a database insert
-  // For demo, we'll add to our demo data
-  const equipmentName = payload.equipment;
-  const startSlot = payload.selectedSlotIndices[0];
-  const endSlot = payload.selectedSlotIndices[payload.selectedSlotIndices.length - 1] + 1;
-  
-  // Add to demo bookings (this would be database insert in production)
-  if (!window.demoBookings) window.demoBookings = {};
-  if (!window.demoBookings[equipmentName]) window.demoBookings[equipmentName] = [];
-  
-  window.demoBookings[equipmentName].push({
-    startSlot: startSlot,
-    endSlot: endSlot,
-    name: payload.name,
-    purpose: payload.purpose
-  });
-}
