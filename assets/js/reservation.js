@@ -7,7 +7,7 @@
   const RSV_STEP_MIN   = 30;
 
   /* layout constants (must match CSS) */
-  const GAP    = cssNumber('--rsv-gap', 10);         // gap between boxes
+  const GAP    = cssNumber('--rsv-gap', 10);
   const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
   const equipW = () => parseInt(getComputedStyle(document.documentElement)
                      .getPropertyValue('--rsv-equip-w')) || 180;
@@ -21,211 +21,694 @@
   const m2t = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
   const buildTimeline = (s,e,step) => { const out=[]; for(let m=t2m(s); m<=t2m(e); m+=step) out.push(m2t(m)); return out; };
 
-  function normalizeImage(url) {
-  if (!url) return "";
-  if (/^https?:\/\//i.test(url)) return url;     // full URL
-  if (url.startsWith("/")) return (window.RSV_BASEURL || "") + url;  // absolute site path
-  // otherwise treat as filename in /assets/reservation/
-  return (window.RSV_ASSETS || "") + url;
-}
+  // === Persistent bookings cache (past + future) ===
+  let bookingsByDate = Object.create(null);
+  const START_MIN = () => t2m(RSV_START_TIME);
+  const slotIndexFromTime = (timeStr) => Math.floor((t2m(timeStr) - START_MIN()) / RSV_STEP_MIN);
 
+  function normalizeImage(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith("/")) return (window.RSV_BASEURL || "") + url;
+    return (window.RSV_ASSETS || "") + url;
+  }
 
   function getEquipment() {
     const arr = (window.RSV_EQUIPMENT || []);
     return Array.isArray(arr) ? arr : [];
   }
 
+  // Convert server list into our cache map
+  function indexBookingsIntoMap(list) {
+    console.log('Indexing bookings into map:', list);
+    
+    // Clear existing cache for the dates we're updating
+    const dateKeys = new Set(list.map(b => b.date));
+    dateKeys.forEach(dateKey => {
+      console.log('Clearing cache for date:', dateKey);
+      if (bookingsByDate[dateKey]) {
+        delete bookingsByDate[dateKey];
+      }
+    });
+    
+    list.forEach(b => {
+      const dateKey = b.date;
+      const dev = b.device || '';
+      const startSlot = slotIndexFromTime(b.start);
+      const endSlot   = slotIndexFromTime(b.end);
+      
+      console.log(`Processing booking: ${dev} on ${dateKey} from ${b.start} to ${b.end} (slots ${startSlot}-${endSlot})`);
+      
+      if (!bookingsByDate[dateKey]) bookingsByDate[dateKey] = Object.create(null);
+      if (!bookingsByDate[dateKey][dev]) bookingsByDate[dateKey][dev] = [];
+      
+      // Always add booking (we cleared duplicates above)
+      bookingsByDate[dateKey][dev].push({
+        startSlot, endSlot, name: b.name || '', purpose: b.purpose || ''
+      });
+    });
+    console.log('Final bookings cache:', bookingsByDate);
+  }
+
+  // Load a date range from Apps Script and index it
+  async function loadBookingsBetween(fromDate, toDate) {
+    const fromISO = fmtISO(fromDate);
+    const toISO   = fmtISO(toDate);
+    const url = `${SCRIPT_URL}?action=list_bookings&from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
+    
+    try {
+      console.log('Loading bookings from:', url);
+      showLoadingState();
+      
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      hideLoadingState();
+      
+      if (!data.ok) {
+        console.error('Failed to load bookings:', data.error);
+        showError('Failed to load existing bookings: ' + data.error);
+        return;
+      }
+      
+      console.log('Loaded bookings response:', data);
+      indexBookingsIntoMap(data.bookings || []);
+      renderRows(); // re-render now that server data exists
+    } catch (error) {
+      hideLoadingState();
+      console.error('Error loading bookings:', error);
+      showError('Failed to load bookings. Please refresh the page.');
+    }
+  }
+
+  // Ensure a single date is covered in the cache (lazy load a window around it)
+  async function ensureDateLoaded(dateObj) {
+    const key = fmtISO(dateObj);
+    console.log('Ensuring date loaded:', key);
+    
+    // Load a wider range to catch nearby bookings
+    const from = new Date(dateObj); from.setDate(from.getDate() - 3);
+    const to   = new Date(dateObj); to.setDate(to.getDate() + 3);
+    await loadBookingsBetween(from, to);
+  }
+
   /* DOM refs */
   let headerViewport, timebar, nowLineGlobal, rowsRoot, timeline;
   
-     /* Multi-slot selection */
-   let selectedSlots = new Set();
-   let isSelecting = false;
-   let currentEquipment = null;
+  /* Multi-slot selection */
+  let selectedSlots = new Set();
+  let isSelecting = false;
+  let isDragging = false;
+  let currentEquipment = null;
+  let isInitialLoad = true; // Track if this is the initial page load
 
   function init() {
     headerViewport = el('rsv-header-viewport');
     timebar        = el('rsv-timebar');
-    nowLineGlobal  = el('rsv-now-line-global'); // from the include
+    nowLineGlobal  = el('rsv-now-line-global');
     rowsRoot       = el('rsv-rows');
 
     timeline = buildTimeline(RSV_START_TIME, RSV_END_TIME, RSV_STEP_MIN);
+    console.log('Timeline created:', timeline);
 
     renderHeader();
-    renderRows();
+    
+    // Initialize date selector with proper validation FIRST
+    initializeDateSelector();
+    
+    // Then setup the rest
     setupSync();
     positionNowLine();
-    
-    // Scroll to current time slot on page load
+    setupEmailValidation();
+
+    // Load initial booking data for current date and nearby dates
+    console.log('Loading initial bookings for date:', fmtISO(selectedDate));
+    ensureDateLoaded(selectedDate).then(() => {
+      console.log('Initial bookings loaded successfully');
+      // Only render rows after data is loaded to avoid showing warnings prematurely
+      renderRows();
+      // Mark initial load as complete
+      isInitialLoad = false;
+    }).catch(console.error);
+
     setTimeout(() => {
       scrollToCurrentTime();
-    }, 100); // Small delay to ensure DOM is fully rendered
+    }, 1000); // Increased delay to ensure data is loaded
     
     setInterval(positionNowLine, 60 * 1000);
     
-                 // Add keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          clearSelection();
-        }
-        if (e.key === 'Enter' && selectedSlots.size > 0 && currentEquipment) {
-          openModalWithSelectedSlots(currentEquipment);
-        }
-      });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        clearSelection();
+      }
+      if (e.key === 'Enter' && selectedSlots.size > 0 && currentEquipment) {
+        openModalWithSelectedSlots(currentEquipment);
+      }
+    });
      
-           // Handle window resize for responsive scroll step
-      window.addEventListener('resize', () => {
-        // Debounce resize events to avoid excessive recalculations
-        clearTimeout(window.resizeTimeout);
-        window.resizeTimeout = setTimeout(() => {
-          // Force reflow to ensure accurate measurements
-          headerViewport.offsetHeight;
-        }, 100);
-      });
+    window.addEventListener('resize', () => {
+      clearTimeout(window.resizeTimeout);
+      window.resizeTimeout = setTimeout(() => {
+        headerViewport.offsetHeight;
+      }, 100);
+    });
       
-      // Initialize selection counter
-      updateSelectionCounter();
-
-      window.addEventListener('mouseup', cancelDrag, true);
-      window.addEventListener('blur', cancelDrag, true);
+    updateSelectionCounter();
+    window.addEventListener('mouseup', endSelectionGlobally, true);
+    window.addEventListener('blur', endSelectionGlobally, true);
   }
 
-  function renderHeader() {
-  timebar.innerHTML = '';
-  // Loop through the timeline to create a label for each slot
-  for (let i = 0; i < timeline.length - 1; i++) {
-    const startTime = timeline[i];
-
-    const d = document.createElement('div');
-    d.className = 'time-label';
-    // Create the label text with just the start time like "09:00"
-    d.textContent = startTime;
-    timebar.appendChild(d);
-  }
-}
-
-  function renderRows() {
-  rowsRoot.innerHTML = '';
-  const eqs = getEquipment();
-
-  eqs.forEach(eq => {
-    const row = document.createElement('div');
-    row.className = 'equip-row';
-
-    const left = document.createElement('div');
-    left.className = 'equip-left';
-
-const imgSrc = normalizeImage(eq.image);
-
-left.innerHTML = `
-  <div class="equip-card">
-    <div class="equip-thumb">
-      ${imgSrc ? `<img src="${imgSrc}" alt="${eq.name}">` : ''}
-    </div>
-  </div>
-
-  <div class="equip-meta-below">
-    <div class="equip-name">${eq.name || ''}</div>
-    <div class="equip-model">${eq.model || ''}</div>
-  </div>
-`;
-
-if (imgSrc) {
-  const imgEl = left.querySelector('img');
-  imgEl.addEventListener('error', () => imgEl.remove());
-}
-
-row.appendChild(left);
-
-    const viewport = document.createElement('div');
-    viewport.className = 'row-viewport';
-
-    const strip = document.createElement('div');
-    strip.className = 'row-slots';
-
-    // Check for existing bookings and render them first
-    const existingBookings = getExistingBookings(eq);
+  function setupEmailValidation() {
+    const usernameInput = document.getElementById('email-username');
+    const domainSelect = document.getElementById('email-domain');
+    const combinedInput = document.getElementById('email-combined');
     
-    // render slots with existing bookings
-    for (let i = 0; i < timeline.length - 1; i++) {
-      const cell = document.createElement('div');
-      const isBooked = existingBookings.some(booking => 
-        i >= booking.startSlot && i < booking.endSlot
-      );
+    if (!usernameInput || !domainSelect || !combinedInput) {
+      console.warn('Split email inputs not found');
+      return;
+    }
+    
+    function updateCombinedEmail() {
+      const username = usernameInput.value.trim();
+      const domain = domainSelect.value;
       
-      if (isBooked) {
-        // Find the booking for this slot
-        const booking = existingBookings.find(b => 
-          i >= b.startSlot && i < b.endSlot
-        );
+      if (username && domain) {
+        combinedInput.value = username + domain;
         
-        cell.className = 'slot booked';
-        cell.dataset.slotIndex = i;
-        cell.dataset.equipmentId = eq.name;
-        
-        // Only show booking info on the first slot of each booking
-        if (i === booking.startSlot) {
-          cell.innerHTML = `
-            <div class="booking-info">
-              <div class="booking-time">${timeline[booking.startSlot]}-${timeline[booking.endSlot]}</div>
-              <div class="booking-user">
-                <div class="user-initial">${getInitial(booking.name)}</div>
-                <span>${booking.name}</span>
-              </div>
-              <div class="booking-purpose">${booking.purpose}</div>
-            </div>
-          `;
+        // Show preview of full email
+        const previewText = document.querySelector('.email-preview-text');
+        if (previewText) {
+          previewText.textContent = combinedInput.value;
+          document.querySelector('.email-preview').style.display = 'block';
         }
       } else {
-        cell.className = 'slot available';
+        combinedInput.value = '';
+        const preview = document.querySelector('.email-preview');
+        if (preview) {
+          preview.style.display = 'none';
+        }
+      }
+      
+      // Validate the combined email
+      validateEmail();
+    }
+    
+    function validateEmail() {
+      const email = combinedInput.value;
+      const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
+      const isValid = allowedDomains.some(domain => email.endsWith(domain)) && email.includes('@');
+      
+      if (email && !isValid) {
+        usernameInput.setCustomValidity('Please enter a valid university email');
+        domainSelect.setCustomValidity('Please select a valid domain');
+      } else {
+        usernameInput.setCustomValidity('');
+        domainSelect.setCustomValidity('');
+      }
+    }
+    
+    // Update combined email when either input changes
+    usernameInput.addEventListener('input', function(e) {
+      // Only allow valid username characters
+      const validValue = e.target.value.replace(/[^a-zA-Z0-9._-]/g, '');
+      if (e.target.value !== validValue) {
+        e.target.value = validValue;
+      }
+      updateCombinedEmail();
+    });
+    
+    domainSelect.addEventListener('change', updateCombinedEmail);
+    
+    // Auto-focus domain dropdown when username looks complete
+    usernameInput.addEventListener('blur', function() {
+      if (this.value.trim().length >= 3 && !domainSelect.value) {
+        setTimeout(() => domainSelect.focus(), 100);
+      }
+    });
+    
+    // Initialize
+    updateCombinedEmail();
+  }
+
+  function showLoadingState() {
+    // Remove existing loading state
+    hideLoadingState();
+    
+    const loadingEl = document.createElement('div');
+    loadingEl.id = 'booking-loading';
+    loadingEl.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f3f4f6;
+        border: 2px solid #d1d5db;
+        color: #374151;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      ">
+        <div style="width: 16px; height: 16px; border: 2px solid #9ca3af; border-top: 2px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        Loading bookings...
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    document.body.appendChild(loadingEl);
+  }
+
+  function hideLoadingState() {
+    const loadingEl = document.getElementById('booking-loading');
+    if (loadingEl) {
+      loadingEl.remove();
+    }
+  }
+
+  function showError(message) {
+    // Remove existing error messages
+    document.querySelectorAll('.booking-error').forEach(el => el.remove());
+    
+    const errorEl = document.createElement('div');
+    errorEl.className = 'booking-error';
+    errorEl.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">⚠️</span>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" style="
+          background: none; border: none; color: inherit; 
+          font-size: 18px; cursor: pointer; margin-left: auto;
+        ">×</button>
+      </div>
+    `;
+    document.body.appendChild(errorEl);
+    
+    setTimeout(() => {
+      if (errorEl.parentNode) {
+        errorEl.remove();
+      }
+    }, 5000);
+  }
+
+  function showPersistentWarning(message) {
+    // Don't show warnings during initial page load
+    if (isInitialLoad) {
+      console.log('Skipping warning during initial load:', message);
+      return;
+    }
+    
+    // Remove existing warnings
+    document.querySelectorAll('.weekend-warning').forEach(el => el.remove());
+    
+    // Find next available date for the button
+    let nextAvailable = new Date(selectedDate);
+    let attempts = 0;
+    while (isWeekendOrHoliday(nextAvailable) && attempts < 14) {
+      nextAvailable.setDate(nextAvailable.getDate() + 1);
+      attempts++;
+    }
+    
+    const hasNextAvailable = attempts < 14;
+    const nextDateText = hasNextAvailable ? fmtCN(nextAvailable) : 'a weekday';
+    
+    // Pre-load the next available date data to make switching faster
+    if (hasNextAvailable) {
+      ensureDateLoaded(nextAvailable).catch(console.error);
+    }
+    
+    const warningEl = document.createElement('div');
+    warningEl.className = 'weekend-warning';
+    warningEl.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fef2f2;
+        border: 3px solid #fecaca;
+        color: #dc2626;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        z-index: 20000;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+      ">
+        <div style="font-size: 64px; margin-bottom: 16px;">🚫</div>
+        <h3 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 800;">Booking Not Available</h3>
+        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.5;">
+          ${message}
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          ${hasNextAvailable ? `
+            <button onclick="selectNextAvailableDate()" style="
+              background: #059669; color: white; border: none; 
+              padding: 12px 24px; border-radius: 8px; font-size: 16px; 
+              font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            ">
+              📅 Book for ${nextDateText}
+            </button>
+          ` : ''}
+          <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+            background: #dc2626; color: white; border: none; 
+            padding: 12px 24px; border-radius: 8px; font-size: 16px; 
+            font-weight: 600; cursor: pointer;
+          ">I Understand</button>
+        </div>
+      </div>
+      <div style="
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.5); z-index: 19999;
+      " onclick="this.parentElement.remove()"></div>
+    `;
+    document.body.appendChild(warningEl);
+    
+    // Store next available date for the button handler
+    if (hasNextAvailable) {
+      window.nextAvailableDate = nextAvailable;
+    }
+  }
+  
+  // Add global function for the "Book for next date" button
+  window.selectNextAvailableDate = function() {
+    if (window.nextAvailableDate) {
+      // Show loading state immediately
+      labelEl.textContent = 'Loading...';
+      labelEl.style.opacity = '0.7';
+      
+      selectedDate = new Date(window.nextAvailableDate);
+      
+      // Update dropdown selection
+      menu.querySelectorAll('.date-item.is-selected').forEach(x => x.classList.remove('is-selected'));
+      const targetItem = menu.querySelector(`[data-date="${fmtISO(selectedDate)}"]`);
+      if (targetItem) {
+        targetItem.classList.add('is-selected');
+      }
+      
+      // Remove warning and load new date immediately
+      document.querySelectorAll('.weekend-warning').forEach(el => el.remove());
+      clearSelection();
+      
+      // Load data immediately without delay
+      ensureDateLoaded(selectedDate).then(() => {
+        console.log('Switched to next available date:', fmtISO(selectedDate));
+        // Update label with new date
+        labelEl.textContent = fmtCN(selectedDate);
+        labelEl.style.opacity = '1';
+        // Render rows immediately after data is loaded
+        renderRows();
+      }).catch(console.error);
+    }
+  };
+
+  function renderHeader() {
+    timebar.innerHTML = '';
+    for (let i = 0; i < timeline.length - 1; i++) {
+      const startTime = timeline[i];
+      const d = document.createElement('div');
+      d.className = 'time-label';
+      d.textContent = startTime;
+      timebar.appendChild(d);
+    }
+  }
+
+  // Check if a date is weekend or Chinese holiday
+  function isWeekendOrHoliday(date) {
+    const dayOfWeek = date.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isChineseHoliday = isChineseHolidayDate(date);
+    return isWeekend || isChineseHoliday;
+  }
+
+  // Check if a slot is in the past
+  function isSlotInPast(slotIndex, date) {
+    const now = new Date();
+    let slotDate;
+    
+    // Handle both Date objects and date strings
+    if (date instanceof Date) {
+      slotDate = new Date(date);
+    } else {
+      slotDate = new Date(date);
+    }
+    
+    // Normalize dates to remove time component for accurate comparison
+    const todayNormalized = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const slotDateNormalized = new Date(slotDate.getFullYear(), slotDate.getMonth(), slotDate.getDate());
+    
+    console.log(`Checking if slot is past: slotDate=${slotDateNormalized.toDateString()}, today=${todayNormalized.toDateString()}`);
+    
+    // If the slot date is before today, all slots are in the past
+    if (slotDateNormalized < todayNormalized) {
+      console.log('Slot date is in the past');
+      return true;
+    }
+    
+    // If it's today, check if the slot time has passed
+    if (slotDateNormalized.getTime() === todayNormalized.getTime()) {
+      const slotStartTime = timeline[slotIndex];
+      const slotMinutes = t2m(slotStartTime);
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const isPast = slotMinutes <= nowMinutes;
+      console.log(`Today slot check: ${slotStartTime} (${slotMinutes}min) vs now (${nowMinutes}min) = ${isPast ? 'past' : 'future'}`);
+      return isPast;
+    }
+    
+    // Future dates are not in the past
+    console.log('Slot date is in the future');
+    return false;
+  }
+
+  function renderRows() {
+    console.log('Rendering rows for date:', fmtISO(selectedDate), 'selectedDate object:', selectedDate);
+    rowsRoot.innerHTML = '';
+    const eqs = getEquipment();
+
+    // Check if current selected date is weekend/holiday
+    const isDateRestricted = isWeekendOrHoliday(selectedDate);
+    
+    console.log(`Date ${fmtISO(selectedDate)} is restricted: ${isDateRestricted}`);
+    
+    if (isDateRestricted) {
+      // Don't show warning automatically - only show when user actually tries to interact
+      // The warning will be shown in other functions when needed
+      
+      // Still render equipment but all slots disabled
+      eqs.forEach(eq => {
+        const row = document.createElement('div');
+        row.className = 'equip-row';
+
+        const left = document.createElement('div');
+        left.className = 'equip-left';
+
+        const imgSrc = normalizeImage(eq.image);
+
+        left.innerHTML = `
+          <div class="equip-card">
+            <div class="equip-thumb">
+              ${imgSrc ? `<img src="${imgSrc}" alt="${eq.name}">` : ''}
+            </div>
+          </div>
+          <div class="equip-meta-below">
+            <div class="equip-name">${eq.name || ''}</div>
+            <div class="equip-model">${eq.model || ''}</div>
+          </div>
+        `;
+
+        if (imgSrc) {
+          const imgEl = left.querySelector('img');
+          imgEl.addEventListener('error', () => imgEl.remove());
+        }
+
+        row.appendChild(left);
+
+        const viewport = document.createElement('div');
+        viewport.className = 'row-viewport';
+
+        const strip = document.createElement('div');
+        strip.className = 'row-slots';
+
+        // Render all slots as disabled for weekends/holidays
+        for (let i = 0; i < timeline.length - 1; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'slot disabled weekend-holiday';
+          cell.dataset.slotIndex = i;
+          cell.dataset.equipmentId = eq.name;
+          
+          cell.innerHTML = `
+            <div style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100%;
+              color: #9ca3af;
+              font-size: 11px;
+              text-align: center;
+              line-height: 1.2;
+            ">
+              Not Available
+            </div>
+          `;
+          
+          strip.appendChild(cell);
+        }
+
+        viewport.appendChild(strip);
+        row.appendChild(viewport);
+        rowsRoot.appendChild(row);
+      });
+      return;
+    }
+
+    // Normal rendering for available dates
+    console.log('Rendering normal available date slots...');
+    
+    eqs.forEach(eq => {
+      const row = document.createElement('div');
+      row.className = 'equip-row';
+
+      const left = document.createElement('div');
+      left.className = 'equip-left';
+
+      const imgSrc = normalizeImage(eq.image);
+
+      left.innerHTML = `
+        <div class="equip-card">
+          <div class="equip-thumb">
+            ${imgSrc ? `<img src="${imgSrc}" alt="${eq.name}">` : ''}
+          </div>
+        </div>
+        <div class="equip-meta-below">
+          <div class="equip-name">${eq.name || ''}</div>
+          <div class="equip-model">${eq.model || ''}</div>
+        </div>
+      `;
+
+      if (imgSrc) {
+        const imgEl = left.querySelector('img');
+        imgEl.addEventListener('error', () => imgEl.remove());
+      }
+
+      row.appendChild(left);
+
+      const viewport = document.createElement('div');
+      viewport.className = 'row-viewport';
+
+      const strip = document.createElement('div');
+      strip.className = 'row-slots';
+
+      // Get existing bookings for this equipment and date
+      const existingBookings = getExistingBookings(eq);
+      console.log(`Rendering bookings for ${eq.name} on ${fmtISO(selectedDate)}:`, existingBookings);
+      
+      // Create a map to track which slots are booked
+      const bookedSlots = new Set();
+      const bookingDetails = new Map();
+      
+      existingBookings.forEach(booking => {
+        console.log(`Processing booking for display: slots ${booking.startSlot} to ${booking.endSlot}`);
+        for (let i = booking.startSlot; i < booking.endSlot; i++) {
+          bookedSlots.add(i);
+          if (i === booking.startSlot) {
+            // Store booking details for the first slot
+            bookingDetails.set(i, booking);
+          }
+        }
+      });
+
+      console.log(`Booked slots for ${eq.name}:`, Array.from(bookedSlots));
+
+      // Render slots - each slot represents a 30-minute time period
+      for (let i = 0; i < timeline.length - 1; i++) {
+        const cell = document.createElement('div');
         cell.dataset.slotIndex = i;
         cell.dataset.equipmentId = eq.name;
         
-                                 // Multi-slot selection events
+        const slotStartTime = timeline[i];
+        const slotEndTime = timeline[i + 1];
+        const isPastSlot = isSlotInPast(i, selectedDate);
+        
+        console.log(`Slot ${i} (${slotStartTime}-${slotEndTime}): isPast=${isPastSlot}, isBooked=${bookedSlots.has(i)}`);
+        
+        if (bookedSlots.has(i)) {
+          const booking = bookingDetails.get(i);
+          cell.className = 'slot booked';
+          
+          // Only show booking info on the first slot of each booking
+          if (booking) {
+            const startTime = timeline[booking.startSlot];
+            const endTime = timeline[booking.endSlot];
+            cell.innerHTML = `
+              <div class="booking-info">
+                <div class="booking-time">${startTime}-${endTime}</div>
+                <div class="booking-user">
+                  <div class="user-initial">${getInitial(booking.name)}</div>
+                  <span>${booking.name}</span>
+                </div>
+                <div class="booking-purpose">${booking.purpose}</div>
+              </div>
+            `;
+          }
+        } else if (isPastSlot) {
+          // Past slots - not selectable
+          cell.className = 'slot past';
+          cell.innerHTML = `
+            <div style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100%;
+              color: #9ca3af;
+              font-size: 12px;
+              text-align: center;
+            ">
+              Past
+            </div>
+          `;
+        } else {
+          // Available future slots
+          cell.className = 'slot available';
+          
+          // Add tooltip showing the exact time slot
+          cell.title = `${slotStartTime} - ${slotEndTime}`;
+          
+          // Add event listeners for available slots
           cell.addEventListener('mousedown', (e) => {
+            e.preventDefault();
             startSelection(e, eq, i);
           });
           
           cell.addEventListener('mouseenter', (e) => {
-            if (isSelecting) {
+            if (isSelecting && isDragging) {
               updateSelection(e, eq, i);
             }
           });
           
-          cell.addEventListener('mouseup', (e) => {
-            endSelection(e, eq, i);
-          });
-
-          
-          
-          // Single click handler for selecting slots only
           cell.addEventListener('click', (e) => {
-            // Single click only selects (doesn't toggle)
-            if (!selectedSlots.has(i)) {
+            e.preventDefault();
+            if (!isDragging && !selectedSlots.has(i)) {
               addSlotToSelection(eq, i);
             }
           });
           
-                     // Double-click handler for unselecting slots
-           cell.addEventListener('dblclick', (e) => {
-             e.preventDefault();
-             // Double-click unselects the slot
-             if (selectedSlots.has(i)) {
-               selectedSlots.delete(i);
-               const slotElement = document.querySelector(`[data-slot-index="${i}"][data-equipment-id="${eq.name}"]`);
-               if (slotElement) {
-                 slotElement.classList.remove('selected');
-                 slotElement.classList.add('available');
-               }
-               
-               // Update selection counter display
-               updateSelectionCounter();
-             }
-           });
+          cell.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            if (selectedSlots.has(i)) {
+              removeSlotFromSelection(eq, i);
+            }
+          });
+        }
+        
+        strip.appendChild(cell);
       }
-      
-      strip.appendChild(cell);
-    }
 
       viewport.appendChild(strip);
       row.appendChild(viewport);
@@ -236,422 +719,431 @@ row.appendChild(left);
   function setupSync() {
     const vpRows = () => Array.from(document.querySelectorAll('#rsv-rows .row-viewport'));
 
-    // keep row viewports in lockstep with header
     headerViewport.addEventListener('scroll', () => {
       const x = headerViewport.scrollLeft;
       vpRows().forEach(v => v.scrollLeft = x);
       positionNowLine();
     });
 
-    // block wheel/touch scrolling – arrows only
     ['wheel','touchmove'].forEach(evt => {
       headerViewport.addEventListener(evt, e => e.preventDefault(), { passive:false });
     });
 
-    // arrows
-    // Responsive scroll step: fewer slots on smaller devices
     const getScrollStep = () => {
       const viewportWidth = window.innerWidth;
-      if (viewportWidth <= 480) return slotW() * 1;      // 1 slot on mobile
-      if (viewportWidth <= 768) return slotW() * 2;      // 2 slots on tablet
-      if (viewportWidth <= 1024) return slotW() * 3;     // 3 slots on small desktop
-      return slotW() * 6;                                 // 6 slots on large desktop
+      if (viewportWidth <= 480) return slotW() * 1;
+      if (viewportWidth <= 768) return slotW() * 2;
+      if (viewportWidth <= 1024) return slotW() * 3;
+      return slotW() * 6;
     };
     
-    el('rsv-arrow-left') .addEventListener('click', () => {
+    el('rsv-arrow-left').addEventListener('click', () => {
       const step = getScrollStep();
       headerViewport.scrollBy({ left: -step, behavior: 'smooth' });
     });
+    
     el('rsv-arrow-right').addEventListener('click', () => {
       const step = getScrollStep();
       headerViewport.scrollBy({ left: step, behavior: 'smooth' });
     });
   }
 
-    /* ===== Multi-Slot Selection Functions ===== */
-   
-       function startSelection(e, eq, slotIndex) {
-      e.preventDefault();
-      // Set selection mode immediately for drag operations
-      isSelecting = true;
+  /* ===== Multi-Slot Selection Functions ===== */
+  
+  function startSelection(e, eq, slotIndex) {
+    // Don't allow selection on restricted dates
+    if (isWeekendOrHoliday(selectedDate)) {
+      showPersistentWarning('Booking is not available on weekends and Public holidays.');
+      return;
+    }
+    
+    isSelecting = true;
+    isDragging = true;
+    currentEquipment = eq;
+    
+    // Clear previous selection if switching equipment
+    if (currentEquipment?.name !== eq.name) {
+      clearSelection();
       currentEquipment = eq;
-      
-      // Start with the initial slot - this fixes the "first slot not selectable" issue
-      addSlotToSelection(eq, slotIndex);
-      
-      // Add visual feedback
-      document.body.style.userSelect = 'none';
     }
-   
-                function updateSelection(e, eq, slotIndex) {
-        if (!isSelecting || e.buttons !== 1 || currentEquipment?.name !== eq.name) return;
-        if (selectedSlots.size >= 10) return;
-        addSlotToSelection(eq, slotIndex);
-}
-
-                  function cancelDrag(){
-              if (isSelecting) {
-                isSelecting = false;
-                document.body.style.userSelect = '';
-              }
-            }
-
-
-               function endSelection(e, eq, slotIndex) {
-       if (!isSelecting) return;
-       
-       isSelecting = false;
-       document.body.style.userSelect = '';
-       
-       // Add final slot if not already selected
-       if (!selectedSlots.has(slotIndex)) {
-         addSlotToSelection(eq, slotIndex);
-       }
-       
-       // Reset dragging state after a short delay to allow click events to process
-       setTimeout(() => {
-         isDragging = false;
-       }, 100);
-     }
-   
-               function addSlotToSelection(eq, slotIndex) {
-  if (selectedSlots.size >= 10) {
-    if (!document.querySelector('.limit-message')) showLimitMessage();
-    return;
+    
+    addSlotToSelection(eq, slotIndex);
+    document.body.style.userSelect = 'none';
   }
-  if (!selectedSlots.has(slotIndex)) {
-    const wasEmpty = selectedSlots.size === 0;
-    selectedSlots.add(slotIndex);
 
-    const slotEl = document.querySelector(
-      `[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`
-    );
-    if (slotEl && slotEl.classList.contains('available')) {
-      slotEl.classList.add('selected');
-      slotEl.classList.remove('available');
-    }
-
-    if (wasEmpty) {
-      openModalWithSelectedSlots(eq);  // open once
-    } else {
-      updateModalFromSelection(eq);    // then just refresh the pills
-    }
-    updateSelectionCounter();
+  function updateSelection(e, eq, slotIndex) {
+    if (!isSelecting || !isDragging || currentEquipment?.name !== eq.name) return;
+    if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) return;
+    
+    // Don't select past slots
+    if (isSlotInPast(slotIndex, selectedDate)) return;
+    
+    addSlotToSelection(eq, slotIndex);
   }
-}
 
-   
-       function toggleSlotSelection(eq, slotIndex) {
-      const slotElement = document.querySelector(`[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`);
+  function endSelectionGlobally() {
+    if (isSelecting) {
+      isSelecting = false;
+      document.body.style.userSelect = '';
       
-      if (!slotElement || slotElement.classList.contains('booked')) {
-        return; // Cannot select booked slots
+      // Small delay to distinguish between click and drag
+      setTimeout(() => {
+        isDragging = false;
+      }, 100);
+    }
+  }
+
+  function addSlotToSelection(eq, slotIndex) {
+    // Don't allow selection on restricted dates
+    if (isWeekendOrHoliday(selectedDate)) {
+      showPersistentWarning('Booking is not available on weekends and Public holidays.');
+      return;
+    }
+    
+    // Don't allow selection of past slots
+    if (isSlotInPast(slotIndex, selectedDate)) {
+      showError('Cannot book past time slots.');
+      return;
+    }
+    
+    if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) {
+      if (!document.querySelector('.limit-message')) showLimitMessage();
+      return;
+    }
+    
+    if (!selectedSlots.has(slotIndex)) {
+      const wasEmpty = selectedSlots.size === 0;
+      selectedSlots.add(slotIndex);
+
+      const slotEl = document.querySelector(
+        `[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`
+      );
+      if (slotEl && slotEl.classList.contains('available')) {
+        slotEl.classList.add('selected');
+        slotEl.classList.remove('available');
+        
+        // Add selection order number
+        slotEl.dataset.selectionOrder = selectedSlots.size;
       }
+
+      updateSelectionCounter();
       
-      if (selectedSlots.has(slotIndex)) {
-        // Remove from selection (always allowed, even at limit)
-        selectedSlots.delete(slotIndex);
+      // Handle modal opening/updating
+      if (wasEmpty) {
+        // Small delay to ensure DOM is updated
+        setTimeout(() => {
+          openModalWithSelectedSlots(eq);
+        }, 50);
+      } else {
+        updateModalFromSelection(eq);
+      }
+    }
+  }
+
+  function removeSlotFromSelection(eq, slotIndex) {
+    if (selectedSlots.has(slotIndex)) {
+      selectedSlots.delete(slotIndex);
+      
+      const slotElement = document.querySelector(
+        `[data-slot-index="${slotIndex}"][data-equipment-id="${eq.name}"]`
+      );
+      if (slotElement) {
         slotElement.classList.remove('selected');
         slotElement.classList.add('available');
-      } else {
-        // Add to selection (check 5-hour limit)
-        if (selectedSlots.size < 10) {
-          selectedSlots.add(slotIndex);
-          slotElement.classList.add('selected');
-          slotElement.classList.remove('available');
-        } else {
-          // At limit - show helpful message only once
-          if (!document.querySelector('.limit-message')) {
-            showLimitMessage();
-          }
-          return;
-        }
-      }
-    }
-  
-                                               function clearSelection() {
-        selectedSlots.clear();
-        
-        // Remove visual selection from all slots
-        document.querySelectorAll('.slot.selected').forEach(slot => {
-          slot.classList.remove('selected');
-          slot.classList.add('available');
-        });
-        
-        // Update selection counter display
-        updateSelectionCounter();
+        delete slotElement.dataset.selectionOrder;
       }
       
-      // Function to update the selection counter display
-      function updateSelectionCounter() {
-        const counter = document.querySelector('.selection-counter');
-        if (counter) {
-          if (selectedSlots.size === 0) {
-            counter.style.display = 'none';
-          } else {
-            counter.style.display = 'block';
-            counter.textContent = `${selectedSlots.size} slot${selectedSlots.size === 1 ? '' : 's'} selected (${(selectedSlots.size * 0.5).toFixed(1)}h)`;
-            
-            // Change color based on limit
-            if (selectedSlots.size >= 10) {
-              counter.style.color = '#ef4444'; // Red when at limit
-            } else if (selectedSlots.size >= 8) {
-              counter.style.color = '#f59e0b'; // Orange when approaching limit
-            } else {
-              counter.style.color = '#10b981'; // Green when under limit
-            }
-          }
-        }
-      }
-   
-   
-   
-                   // Show helpful message when trying to select at limit
-    function showLimitMessage() {
-      // Check if message already exists
-      if (document.querySelector('.limit-message')) {
-        return; // Don't create multiple messages
-      }
-      
-      // Create a temporary message element
-      const message = document.createElement('div');
-      message.className = 'limit-message';
-      message.innerHTML = `
-        <div class="limit-message-content">
-          <button class="limit-close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
-          <span>⚠️ 5-hour limit reached</span>
-          <p>You've selected the maximum 5 hours (10 slots)</p>
-          <p><strong>To select different slots:</strong></p>
-          <p>1. Double-click on any selected slot to remove it</p>
-          <p>2. Then click on the new slot you want</p>
-        </div>
-      `;
-      
-      // Add to page
-      document.body.appendChild(message);
-      
-      // Click outside to close
-      message.addEventListener('click', (e) => {
-        if (e.target === message) {
-          message.remove();
+      // Renumber remaining selected slots
+      const remainingSlots = Array.from(selectedSlots).sort((a, b) => a - b);
+      remainingSlots.forEach((slot, index) => {
+        const slotEl = document.querySelector(
+          `[data-slot-index="${slot}"][data-equipment-id="${eq.name}"]`
+        );
+        if (slotEl) {
+          slotEl.dataset.selectionOrder = index + 1;
         }
       });
       
-      // Auto-dismiss after 3 seconds
-      setTimeout(() => {
-        if (message.parentNode) {
-          message.parentNode.removeChild(message);
+      updateSelectionCounter();
+      
+      // Update modal or close if no slots selected
+      if (selectedSlots.size === 0) {
+        closeModal();
+      } else {
+        updateModalFromSelection(eq);
+      }
+    }
+  }
+  
+  function clearSelection() {
+    selectedSlots.clear();
+    
+    document.querySelectorAll('.slot.selected').forEach(slot => {
+      slot.classList.remove('selected');
+      slot.classList.add('available');
+      delete slot.dataset.selectionOrder;
+    });
+    
+    updateSelectionCounter();
+  }
+      
+  function updateSelectionCounter() {
+    const counter = document.querySelector('.selection-counter');
+    if (counter) {
+      if (selectedSlots.size === 0) {
+        counter.style.display = 'none';
+      } else {
+        counter.style.display = 'block';
+        counter.textContent = `${selectedSlots.size} slot${selectedSlots.size === 1 ? '' : 's'} selected (${(selectedSlots.size * 0.5).toFixed(1)}h)`;
+        
+        if (selectedSlots.size >= 10) {
+          counter.style.color = '#ef4444';
+        } else if (selectedSlots.size >= 8) {
+          counter.style.color = '#f59e0b';
+        } else {
+          counter.style.color = '#10b981';
         }
-      }, 3000);
-    }
-  
-  function openModalWithSelectedSlots(eq){
-  if (selectedSlots.size === 0) return;
-
-  const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
-  const start  = timeline[sorted[0]];
-  const end    = timeline[sorted[sorted.length-1] + 1];
-  const hours  = sorted.length * 0.5;
-
-  const isOpen = el('rsv-modal').getAttribute('aria-hidden') === 'false';
-  if (!isOpen) openModal(eq, start, end, hours, sorted);
-  else updateModalFromSelection(eq);
-}
-
-
-// Helper functions
-function getInitial(name) {
-  return name ? name.charAt(0).toUpperCase() : '?';
-}
-
-// Get existing bookings for an equipment
-function getExistingBookings(eq) {
-  // Demo data - in real implementation, fetch from database
-  const staticBookings = {
-    '3D Printer 1': [
-      {
-        startSlot: 0,
-        endSlot: 4, // 2 hours (4 slots)
-        name: 'Liu Ming',
-        purpose: '课题组 Candy project'
       }
-    ],
-    'Laser Cutter': [
-      {
-        startSlot: 3,
-        endSlot: 7, // 2 hours (4 slots)
-        name: 'Zhang Wei',
-        purpose: 'Prototype cutting'
-      }
-    ]
-  };
-  
-  // Combine static demo data with dynamic user bookings
-  const staticData = staticBookings[eq.name] || [];
-  const dynamicData = window.demoBookings?.[eq.name] || [];
-  
-  return [...staticData, ...dynamicData];
-}
-
-// Admin helper functions
-function checkIfSlotsBooked(eq, slotIndices) {
-  const existingBookings = getExistingBookings(eq);
-  return existingBookings.some(booking => 
-    slotIndices.some(slotIndex => 
-      slotIndex >= booking.startSlot && slotIndex < booking.endSlot
-    )
-  );
-}
-
-function showAdminInfo(eq, slotIndices) {
-  // Demo data - in real implementation, fetch from database
-  const demoBookingData = {
-    '3D Printer 1': {
-      name: 'Liu Ming',
-      phone: '138-0013-8000',
-      email: 'liuming@example.com',
-      purpose: '课题组 Candy project'
-    },
-    'Laser Cutter': {
-      name: 'Zhang Wei',
-      phone: '139-0013-9000',
-      email: 'zhangwei@example.com',
-      purpose: 'Prototype cutting'
     }
-  };
+  }
+   
+  function showLimitMessage() {
+    if (document.querySelector('.limit-message')) {
+      return;
+    }
+    
+    const message = document.createElement('div');
+    message.className = 'limit-message';
+    message.innerHTML = `
+      <div class="limit-message-content">
+        <button class="limit-close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
+        <span>⚠️ 5-hour limit reached</span>
+        <p>You've selected the maximum 5 hours (10 slots)</p>
+        <p><strong>To select different slots:</strong></p>
+        <p>1. Double-click on any selected slot to remove it</p>
+        <p>2. Then click on the new slot you want</p>
+      </div>
+    `;
+    
+    document.body.appendChild(message);
+    
+    message.addEventListener('click', (e) => {
+      if (e.target === message) {
+        message.remove();
+      }
+    });
+    
+    setTimeout(() => {
+      if (message.parentNode) {
+        message.parentNode.removeChild(message);
+      }
+    }, 3000);
+  }
   
-  const bookingData = demoBookingData[eq.name] || {};
-  
-  el('booked-by-name').textContent = bookingData.name || '--';
-  el('booked-by-phone').textContent = bookingData.phone || '--';
-  el('booked-by-email').textContent = bookingData.email || '--';
-}
+  function openModalWithSelectedSlots(eq) {
+    if (selectedSlots.size === 0) return;
 
-  // Helper: read a numeric CSS variable (falls back if missing)
-  function cssNumber(varName, fallback){
+    const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
+    const start  = timeline[sorted[0]];
+    const end    = timeline[sorted[sorted.length-1] + 1];
+    const hours  = sorted.length * 0.5;
+
+    openModal(eq, start, end, hours, sorted);
+  }
+
+  // Helper functions
+  function getInitial(name) {
+    return name ? name.charAt(0).toUpperCase() : '?';
+  }
+
+  // Get existing bookings for an equipment on the selected date
+  function getExistingBookings(eq) {
+    const dateKey = fmtISO(selectedDate);
+    const serverData = bookingsByDate[dateKey]?.[eq.name] || [];
+    console.log(`Getting bookings for ${eq.name} on ${dateKey}:`, serverData);
+    return serverData;
+  }
+
+  function cssNumber(varName, fallback) {
     const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
     const n = parseFloat(v);
     return Number.isFinite(n) ? n : fallback;
-}
-
-// ===== Date dropdown (LEFT side): today by default =====
-/* ===== Scrollable Date Dropdown (LEFT) ===== */
-const dd      = el('rsv-date');        // wrapper
-const btn     = el('rsv-date-btn');    // button that opens menu
-const labelEl = el('rsv-date-label');  // visible label text
-const menu    = el('rsv-date-menu');   // scrollable list container
-
-function fmtCN(d){ return `${d.getMonth()+1}月${d.getDate()}日`; }
-function fmtISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-
-let selectedDate = new Date();
-let menuStart    = new Date(selectedDate); menuStart.setDate(menuStart.getDate() - 7);  // initial window: -7 …
-let menuEnd      = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 7);      // … to +7 days
-labelEl.textContent = fmtCN(selectedDate);
-
-function makeItem(d){
-  // Check if it's a weekend (Saturday = 6, Sunday = 0)
-  const dayOfWeek = d.getDay();
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-  
-  // Check if it's a Chinese holiday
-  const isChineseHoliday = isChineseHolidayDate(d);
-  
-  // If it's a weekend or Chinese holiday, return null to skip it
-  if (isWeekend || isChineseHoliday) {
-    return null;
   }
-  
-  const b = document.createElement('button');
-  b.className = 'date-item';
-  if (sameDay(d, selectedDate)) b.classList.add('is-selected');
-  if (sameDay(d, new Date()))  b.classList.add('is-today');
-  b.dataset.date = fmtISO(d);
-  b.textContent  = fmtCN(d);
-  return b;
-}
 
-// Function to check if a date is a Chinese holiday
-function isChineseHolidayDate(date) {
-  const month = date.getMonth() + 1; // getMonth() returns 0-11
-  const day = date.getDate();
-  const year = date.getFullYear();
-  
-  // Chinese New Year (Lunar calendar - approximate dates for 2024-2025)
-  // 2024: Feb 10-17, 2025: Jan 29-Feb 4
-  if (year === 2024 && month === 2 && day >= 10 && day <= 17) return true;
-  if (year === 2025 && month === 1 && day >= 29) return true;
-  if (year === 2025 && month === 2 && day <= 4) return true;
-  
-  // Qingming Festival (Tomb Sweeping Day) - April 5
-  if (month === 4 && day === 5) return true;
-  
-  // Labor Day - May 1
-  if (month === 5 && day === 1) return true;
-  
-  // Dragon Boat Festival (Lunar calendar - approximate dates)
-  // 2024: June 10, 2025: May 31
-  if (year === 2024 && month === 6 && day === 10) return true;
-  if (year === 2025 && month === 5 && day === 31) return true;
-  
-  // National Day - October 1-7
-  if (month === 10 && day >= 1 && day <= 7) return true;
-  
-  // Mid-Autumn Festival (Lunar calendar - approximate dates)
-  // 2024: Sep 17, 2025: Oct 6
-  if (year === 2024 && month === 9 && day === 17) return true;
-  if (year === 2025 && month === 10 && day === 6) return true;
-  
-  // New Year's Day - January 1
-  if (month === 1 && day === 1) return true;
-  
-  return false;
-}
+  // ===== Date dropdown functionality =====
+  const dd      = el('rsv-date');
+  const btn     = el('rsv-date-btn');
+  const labelEl = el('rsv-date-label');
+  const menu    = el('rsv-date-menu');
 
-function renderRange(start, end, {prepend=false}={}){
-  const frag = document.createDocumentFragment();
-  const cur = new Date(start);
-  while(cur <= end){
-    const item = makeItem(new Date(cur));
-    if (item) { // Only add non-weekend dates
-      frag.appendChild(item);
+  function fmtCN(d) { return `${d.getMonth()+1}月${d.getDate()}日`; }
+  function fmtISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function sameDay(a,b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+  let selectedDate = new Date();
+  let menuStart    = new Date(selectedDate); menuStart.setDate(menuStart.getDate() - 7);
+  let menuEnd      = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 7);
+
+  function initializeDateSelector() {
+    // Always start with today's date, even if it's weekend/holiday
+    // This way users see the restriction message
+    selectedDate = new Date();
+    labelEl.textContent = fmtCN(selectedDate);
+    
+    console.log('Initialized with today:', selectedDate.toDateString(), 'isWeekend/Holiday:', isWeekendOrHoliday(selectedDate));
+    
+    // Update menu range around today - start from today, not past dates
+    menuStart = new Date(selectedDate); // Start from today
+    menuEnd = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 28); // Show 4 weeks ahead
+    
+    initialMenu();
+    // Don't call renderRows here to avoid showing the warning immediately
+    // Only render when user actually interacts or when data is loaded
+  }
+
+  function makeItem(d) {
+    const dayOfWeek = d.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isChineseHoliday = isChineseHolidayDate(d);
+    const isRestricted = isWeekend || isChineseHoliday;
+    
+    const b = document.createElement('button');
+    b.className = 'date-item';
+    
+    // Add special styling for restricted dates
+    if (isRestricted) {
+      b.classList.add('date-item-restricted');
     }
-    cur.setDate(cur.getDate()+1);
+    
+    if (sameDay(d, selectedDate)) b.classList.add('is-selected');
+    if (sameDay(d, new Date()))  b.classList.add('is-today');
+    
+    b.dataset.date = fmtISO(d);
+    
+    // Show different text for restricted dates
+    if (isRestricted) {
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayName = dayNames[dayOfWeek];
+      b.innerHTML = `
+        <span class="date-main">${fmtCN(d)}</span>
+        <span class="date-status">${isWeekend ? dayName : 'Holiday'}</span>
+      `;
+    } else {
+      // Show day name for all dates, not just restricted ones
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayName = dayNames[dayOfWeek];
+      b.innerHTML = `
+        <span class="date-main">${fmtCN(d)}</span>
+        <span class="date-status">${dayName}</span>
+      `;
+    }
+    
+    return b;
   }
-  if (prepend) menu.prepend(frag); else menu.appendChild(frag);
-}
 
-function initialMenu(){
-  menu.innerHTML = '';
-  renderRange(menuStart, menuEnd);
-  // center the selected/today in view
-  const sel = menu.querySelector('.is-selected') || menu.querySelector('.is-today');
-  if (sel) menu.scrollTop = sel.offsetTop - (menu.clientHeight/2 - sel.offsetHeight/2);
-}
-initialMenu();
+  function isChineseHolidayDate(date) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    // Chinese New Year (Lunar calendar - approximate dates for 2024-2025)
+    if (year === 2024 && month === 2 && day >= 10 && day <= 17) return true;
+    if (year === 2025 && month === 1 && day >= 29) return true;
+    if (year === 2025 && month === 2 && day <= 4) return true;
+    
+    // Qingming Festival (Tomb Sweeping Day) - April 5
+    if (month === 4 && day === 5) return true;
+    
+    // Labor Day - May 1
+    if (month === 5 && day === 1) return true;
+    
+    // Dragon Boat Festival (Lunar calendar - approximate dates)
+    if (year === 2024 && month === 6 && day === 10) return true;
+    if (year === 2025 && month === 5 && day === 31) return true;
+    
+    // National Day - October 1-7
+    if (month === 10 && day >= 1 && day <= 7) return true;
+    
+    // Mid-Autumn Festival (Lunar calendar - approximate dates)
+    if (year === 2024 && month === 9 && day === 17) return true;
+    if (year === 2025 && month === 10 && day === 6) return true;
+    
+    // New Year's Day - January 1
+    if (month === 1 && day === 1) return true;
+    
+    return false;
+  }
 
-// Open/close
-btn.addEventListener('click', (e)=>{ e.stopPropagation(); dd.classList.toggle('open'); });
-document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classList.remove('open'); });
+  function renderRange(start, end, {prepend=false}={}) {
+    const frag = document.createDocumentFragment();
+    const cur = new Date(start);
+    while(cur <= end) {
+      const item = makeItem(new Date(cur));
+      if (item) {
+        frag.appendChild(item);
+      }
+      cur.setDate(cur.getDate()+1);
+    }
+    if (prepend) menu.prepend(frag); else menu.appendChild(frag);
+  }
 
-  // Choose a date
-  menu.addEventListener('click', (e)=>{
-    const t = e.target.closest('.date-item'); if(!t) return;
-    const d = new Date(t.dataset.date); if (isNaN(d)) return;
+  function initialMenu() {
+    menu.innerHTML = '';
+    renderRange(menuStart, menuEnd);
+    // Center on today's date instead of selected date
+    const todayItem = menu.querySelector('.is-today');
+    if (todayItem) {
+      menu.scrollTop = todayItem.offsetTop - (menu.clientHeight/2 - todayItem.offsetHeight/2);
+    }
+  }
+
+  btn.addEventListener('click', (e) => { e.stopPropagation(); dd.classList.toggle('open'); });
+  document.addEventListener('click', (e) => { if(!dd.contains(e.target)) dd.classList.remove('open'); });
+
+  menu.addEventListener('click', (e) => {
+    const t = e.target.closest('.date-item'); 
+    if(!t) return;
+    const d = new Date(t.dataset.date); 
+    if (isNaN(d)) return;
 
     selectedDate = d;
     labelEl.textContent = fmtCN(selectedDate);
 
-    // Update selection styles
+    // Clear current selection when changing dates
+    clearSelection();
+
+    // Check if selected date is restricted
+    if (isWeekendOrHoliday(selectedDate)) {
+      console.log('Selected restricted date:', fmtISO(selectedDate));
+      
+      // Find next available date to suggest
+      let nextAvailable = new Date(selectedDate);
+      let attempts = 0;
+      while (isWeekendOrHoliday(nextAvailable) && attempts < 14) {
+        nextAvailable.setDate(nextAvailable.getDate() + 1);
+        attempts++;
+      }
+      
+      const nextDateText = attempts < 14 ? fmtCN(nextAvailable) : 'a weekday';
+      
+      // Show warning with suggestion
+      showPersistentWarning(
+        `Equipment booking is not available on weekends and Public holidays.<br><br>` +
+        `<strong>Suggestion:</strong> Try booking for ${nextDateText} instead.<br><br>` +
+        `You can scroll through the date dropdown to see available dates.`
+      );
+    }
+
+    // Load bookings for the selected date (even if restricted, to show proper UI)
+    console.log('Date changed to:', fmtISO(selectedDate));
+    ensureDateLoaded(selectedDate).then(() => {
+      console.log('Bookings loaded for selected date');
+    }).catch(console.error);
+
     menu.querySelectorAll('.date-item.is-selected').forEach(x => x.classList.remove('is-selected'));
     t.classList.add('is-selected');
-
     dd.classList.remove('open');
-
-    // TODO: re-fetch your bookings for 'selectedDate' + re-render rows
     
-    // If it's today's date, scroll to current time
     const today = new Date();
     if (sameDay(d, today)) {
       setTimeout(() => {
@@ -660,228 +1152,240 @@ document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classLis
     }
   });
 
-// Infinite scroll (prepend older / append newer)
-menu.addEventListener('scroll', ()=>{
-  const TH = 60; // px threshold
-  // When user nears the TOP -> load OLDER dates
-  if (menu.scrollTop < TH){
-    const beforeStart = new Date(menuStart); beforeStart.setDate(menuStart.getDate() - 14);
-    const oldFirst = menu.firstElementChild ? menu.firstElementChild.offsetTop : 0;
+  menu.addEventListener('scroll', () => {
+    const TH = 60;
+    if (menu.scrollTop < TH) {
+      // Don't load past dates - only allow scrolling to future dates
+      return;
+    }
 
-    renderRange(beforeStart, new Date(menuStart.getTime() - 86400000), {prepend:true});
-    menuStart = beforeStart;
-
-    // keep visual position stable after prepending
-    const newFirst = menu.firstElementChild ? menu.firstElementChild.offsetTop : 0;
-    menu.scrollTop += (newFirst - oldFirst);
-  }
-
-  // When user nears the BOTTOM -> load NEWER dates
-  if (menu.scrollHeight - menu.scrollTop - menu.clientHeight < TH){
-    const afterEnd = new Date(menuEnd); afterEnd.setDate(menuEnd.getDate() + 14);
-    const start = new Date(menuEnd.getTime() + 86400000);
-    renderRange(start, afterEnd, {prepend:false});
-    menuEnd = afterEnd;
-  }
-});
-
-document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) dd.classList.remove('open'); });
-
-/* ====== Apps Script endpoint ====== */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvQ1grlJ2vGt6SQEkI7KYUcCBHaeGJhTFHW6KkHfM6vBgoV9qOqeIx7MczQPMQ7bFryQ/exec';  // from your Apps Script deployment
-
-/* ====== Modal helpers & state ====== */
-let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
-
-function mmddLabel(d) {
-  return `${String(d.getMonth()+1).padStart(2, '0')}${String(d.getDate()).padStart(2,'0')}`;
-}
-function openModal(eq, start, end, hours, sorted) {
-  lastModal.eq = eq;
-  lastModal.sorted = sorted.slice();
-  lastModal.start = start;
-  lastModal.end = end;
-  lastModal.hours = hours;
-  lastModal.slots = sorted.map(i => ({
-    device: eq.name,
-    date: fmtISO(selectedDate), // from your date dropdown section
-    start: timeline[i],
-    end: timeline[i+1]
-  }));
-
-  // Fill title + pills
-  el('rsv-modal-equip').textContent = eq.name || '';
-  el('rsv-modal-model').textContent = eq.model || '';
-  el('rsv-pill-date').textContent  = mmddLabel(selectedDate);
-  el('rsv-pill-start').textContent = start;
-  el('rsv-pill-end').textContent   = end;
-
-  el('total-slots').textContent = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
-  el('total-hours').textContent = `${hours.toFixed(1)} hours`;
-  el('duration-info').style.display = 'block';
-
-  // Show modal
-  el('rsv-success').hidden = true;
-  el('rsv-form').style.display = '';
-  el('rsv-modal').setAttribute('aria-hidden', 'false');
-}
-function closeModal() {
-  el('rsv-modal').setAttribute('aria-hidden', 'true');
-  el('rsv-form').reset();
-}
-el('rsv-modal-close').addEventListener('click', closeModal);
-el('rsv-modal-backdrop').addEventListener('click', closeModal);
-
-/* Keep the time pills in sync while the user is dragging across slots */
-function updateModalFromSelection(eq) {
-  if (el('rsv-modal').getAttribute('aria-hidden') === 'true') return;
-  if (selectedSlots.size === 0) return;
-  const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
-  const start = timeline[sorted[0]];
-  const end   = timeline[sorted[sorted.length-1] + 1];
-  const hours = sorted.length * 0.5;
-
-  lastModal.sorted = sorted;
-  lastModal.start  = start;
-  lastModal.end    = end;
-  lastModal.hours  = hours;
-  lastModal.slots  = sorted.map(i => ({
-    device: eq.name,
-    date: fmtISO(selectedDate),
-    start: timeline[i],
-    end: timeline[i+1]
-  }));
-
-  el('rsv-pill-start').textContent = start;
-  el('rsv-pill-end').textContent   = end;
-  el('total-slots').textContent    = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
-  el('total-hours').textContent    = `${hours.toFixed(1)} hours`;
-}
-
-/* Hook your existing selection flow to update the open modal */
-const _origUpdateSelection = updateSelection;
-updateSelection = function(e, eq, i) {
-  _origUpdateSelection.call(this, e, eq, i);
-  updateModalFromSelection(eq);
-};
-
-/* Submit to Apps Script, send email, update UI */
-el('rsv-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const name    = e.target.name.value.trim();
-  const email   = e.target.email.value.trim();
-  const purpose = e.target.purpose.value.trim();
-  const training = el('rsv-agree').checked;
-
-  if (!name || !email || !purpose || !training) {
-    alert('Please complete all fields and accept training.');
-    return;
-  }
-  if (!lastModal.slots.length) {
-    alert('No slots selected.');
-    return;
-  }
-
-  const body = new URLSearchParams({
-    action: 'create_booking',
-    name, email, purpose,
-    training: training ? 'true' : 'false',
-    slots: JSON.stringify(lastModal.slots)
+    if (menu.scrollHeight - menu.scrollTop - menu.clientHeight < TH) {
+      const afterEnd = new Date(menuEnd); afterEnd.setDate(menuEnd.getDate() + 14);
+      const start = new Date(menuEnd.getTime() + 86400000);
+      renderRange(start, afterEnd, {prepend:false});
+      menuEnd = afterEnd;
+    }
   });
 
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/x-www-form-urlencoded' },
-      body
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Unknown error');
+  /* ====== Apps Script endpoint ====== */
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycGI9SZgrvx5sZqR9v7XlHt51cAje5gQfdCoA0IS2-ivD-954LKLGui7OIp-yNmQpRQA/exec';
 
-    // Visually block the selected slots (your grid renderer supports dynamic data)
-    window.demoBookings = window.demoBookings || {};
-    const dev = lastModal.eq.name;
-    window.demoBookings[dev] = window.demoBookings[dev] || [];
-    window.demoBookings[dev].push({
-      startSlot: lastModal.sorted[0],
-      endSlot:   lastModal.sorted[lastModal.sorted.length-1] + 1,
-      name, purpose
-    });
-    renderRows(); // re-render with the new booking block
+  /* ====== Modal helpers & state ====== */
+  let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
 
-    // Success screen (matches your design)
-    el('rsv-success-start').textContent =
-      `${mmddLabel(selectedDate)} ${lastModal.start}`;
-    el('rsv-success-email').textContent = email;
-    el('rsv-form').style.display = 'none';
-    el('rsv-success').hidden = false;
-
-    // Clear selection so user can’t submit again accidentally
-    clearSelection();
-  } catch (err) {
-    alert('Booking failed: ' + err.message);
+  function mmddLabel(d) {
+    return `${String(d.getMonth()+1).padStart(2, '0')}${String(d.getDate()).padStart(2,'0')}`;
   }
-});
-el('rsv-success-back').addEventListener('click', () => {
-  el('rsv-success').hidden = true;
-  el('rsv-form').style.display = '';
-  closeModal();
-});
 
-  function positionNowLine(){
-  // Bail out quietly if key DOM nodes aren't there yet
-  const schedule = document.querySelector('.reservation-schedule');
-  if (!schedule || !headerViewport) return;
-  // timeline must exist and have at least 2 items
-  if (!Array.isArray(timeline) || timeline.length < 2) return;
+  function openModal(eq, start, end, hours, sorted) {
+    // Double-check that we're not trying to book on restricted dates
+    if (isWeekendOrHoliday(selectedDate)) {
+      showPersistentWarning('Booking is not available on weekends and Public holidays.');
+      return;
+    }
 
-  // Time math
-  const startMin = t2m(RSV_START_TIME);
-  const endMin   = t2m(RSV_END_TIME);
-  const now      = new Date();
-  const nowMin   = now.getHours()*60 + now.getMinutes();
-  const m        = Math.min(Math.max(nowMin, startMin), endMin); // clamp for math
+    lastModal.eq = eq;
+    lastModal.sorted = sorted.slice();
+    lastModal.start = start;
+    lastModal.end = end;
+    lastModal.hours = hours;
+    lastModal.slots = sorted.map(i => ({
+      device: eq.name,
+      date: fmtISO(selectedDate),
+      start: timeline[i],
+      end: timeline[i+1]
+    }));
 
-  // Layout numbers from CSS so we don't depend on other JS globals
-  const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
-  const GAP      = cssNumber('--rsv-gap', 10);
-  const SLOT_W   = cssNumber('--rsv-slot-w', 80); // Use the correct slot width from CSS
-  const SEG_W    = SLOT_W + GAP;
+    el('rsv-modal-equip').textContent = eq.name || '';
+    el('rsv-modal-model').textContent = eq.model || '';
+    el('rsv-pill-date').textContent  = mmddLabel(selectedDate);
+    el('rsv-pill-start').textContent = start;
+    el('rsv-pill-end').textContent   = end;
 
-  const totalSeg = (timeline.length - 1);
-  const frac     = (m - startMin) / (endMin - startMin);         // 0..1 across full range
-  const xInside  = LEFT_PAD + frac * (SEG_W * totalSeg);         // inside header content
+    el('total-slots').textContent = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
+    el('total-hours').textContent = `${hours.toFixed(1)} hours`;
+    el('duration-info').style.display = 'block';
 
-  // Position relative to the current header viewport
-  const xInView  = xInside - headerViewport.scrollLeft;
-  const inView   = xInView >= 0 && xInView <= headerViewport.clientWidth;
+    el('rsv-success').hidden = true;
+    el('rsv-form').style.display = '';
+    el('rsv-modal').setAttribute('aria-hidden', 'false');
+  }
 
-  // Tall global line (spans all rows), only when visible
-  if (typeof nowLineGlobal !== 'undefined' && nowLineGlobal) {
-    if (inView) {
-      // Convert header-relative X to schedule-container coords using DOM rects
-      const schedLeft  = schedule.getBoundingClientRect().left + window.scrollX;
-      const headerLeft = headerViewport.getBoundingClientRect().left + window.scrollX;
-      const xPage      = headerLeft + xInView;          // absolute page X of the header line
-      const xSched     = xPage - schedLeft;             // schedule container coords
+  function closeModal() {
+    el('rsv-modal').setAttribute('aria-hidden', 'true');
+    el('rsv-form').reset();
+  }
+
+  function updateModalFromSelection(eq) {
+    if (el('rsv-modal').getAttribute('aria-hidden') === 'true') return;
+    if (selectedSlots.size === 0) return;
+    
+    const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
+    const start = timeline[sorted[0]];
+    const end   = timeline[sorted[sorted.length-1] + 1];
+    const hours = sorted.length * 0.5;
+
+    lastModal.sorted = sorted;
+    lastModal.start  = start;
+    lastModal.end    = end;
+    lastModal.hours  = hours;
+    lastModal.slots  = sorted.map(i => ({
+      device: eq.name,
+      date: fmtISO(selectedDate),
+      start: timeline[i],
+      end: timeline[i+1]
+    }));
+
+    el('rsv-pill-start').textContent = start;
+    el('rsv-pill-end').textContent   = end;
+    el('total-slots').textContent    = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
+    el('total-hours').textContent    = `${hours.toFixed(1)} hours`;
+  }
+
+  el('rsv-modal-close').addEventListener('click', closeModal);
+  el('rsv-modal-backdrop').addEventListener('click', closeModal);
+
+  /* Submit form */
+  el('rsv-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Final validation before submission
+    if (isWeekendOrHoliday(selectedDate)) {
+      showPersistentWarning('Cannot create booking on weekends and Chinese holidays.');
+      return;
+    }
+
+    const name    = e.target.name.value.trim();
+    const emailInput = document.getElementById('email-combined') || e.target.email;
+    const email   = emailInput.value.trim();
+    const purpose = e.target.purpose.value.trim();
+    const training = el('rsv-agree').checked;
+
+    if (!name || !email || !purpose || !training) {
+      alert('Please complete all fields and accept training.');
+      return;
+    }
+
+    // Validate email domain for split input
+    const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
+    const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
+    if (!isValidEmail) {
+      alert('Email must end with @mail.sustech.edu.cn or @sustech.edu.cn');
+      return;
+    }
+
+    if (!lastModal.slots.length) {
+      alert('No slots selected.');
+      return;
+    }
+
+    // Validate that no selected slots are in the past
+    const hasPastSlots = lastModal.sorted.some(slotIndex => 
+      isSlotInPast(slotIndex, selectedDate)
+    );
+    if (hasPastSlots) {
+      showError('Cannot book past time slots. Please refresh and select future slots.');
+      return;
+    }
+
+    const body = new URLSearchParams({
+      action: 'create_booking',
+      name, email, purpose,
+      training: training ? 'true' : 'false',
+      slots: JSON.stringify(lastModal.slots)
+    });
+
+    try {
+      showLoadingState();
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+        body
+      });
+      hideLoadingState();
       
-      // Calculate the correct starting position for the indicator line
-      // Position it to start from the time header level, not from the very top
-      const scheduleTop = schedule.getBoundingClientRect().top + window.scrollY;
-      const headerTop = headerViewport.getBoundingClientRect().top + window.scrollY;
-      const indicatorStartTop = headerTop - scheduleTop;
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+      el('rsv-success-start').textContent = `${mmddLabel(selectedDate)} ${lastModal.start}`;
+      el('rsv-success-email').textContent = email;
+      el('rsv-form').style.display = 'none';
+      el('rsv-success').hidden = false;
+
+      // Add booking to cache immediately for instant UI update
+      const dateKey = fmtISO(selectedDate);
+      bookingsByDate[dateKey] = bookingsByDate[dateKey] || Object.create(null);
+      const dev = lastModal.eq.name;
+      bookingsByDate[dateKey][dev] = bookingsByDate[dateKey][dev] || [];
+      bookingsByDate[dateKey][dev].push({
+        startSlot: lastModal.sorted[0],
+        endSlot:   lastModal.sorted[lastModal.sorted.length - 1] + 1,
+        name,
+        purpose
+      });
       
-      nowLineGlobal.style.display = 'block';
-      nowLineGlobal.style.left = `${xSched}px`;
-      nowLineGlobal.style.top = `${indicatorStartTop}px`;
-    } else {
-      nowLineGlobal.style.display = 'none';
+      renderRows();
+      clearSelection();
+      
+      // Refresh from server to stay in sync
+      setTimeout(() => {
+        ensureDateLoaded(selectedDate).catch(console.error);
+      }, 1000);
+
+    } catch (err) {
+      hideLoadingState();
+      showError('Booking failed: ' + err.message);
+    }
+  });
+  
+  el('rsv-success-back').addEventListener('click', () => {
+    el('rsv-success').hidden = true;
+    el('rsv-form').style.display = '';
+    closeModal();
+  });
+
+  function positionNowLine() {
+    const schedule = document.querySelector('.reservation-schedule');
+    if (!schedule || !headerViewport) return;
+    if (!Array.isArray(timeline) || timeline.length < 2) return;
+
+    const startMin = t2m(RSV_START_TIME);
+    const endMin   = t2m(RSV_END_TIME);
+    const now      = new Date();
+    const nowMin   = now.getHours()*60 + now.getMinutes();
+    const m        = Math.min(Math.max(nowMin, startMin), endMin);
+
+    const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
+    const GAP      = cssNumber('--rsv-gap', 10);
+    const SLOT_W   = cssNumber('--rsv-slot-w', 80);
+    const SEG_W    = SLOT_W + GAP;
+
+    const totalSeg = (timeline.length - 1);
+    const frac     = (m - startMin) / (endMin - startMin);
+    const xInside  = LEFT_PAD + frac * (SEG_W * totalSeg);
+    const xInView  = xInside - headerViewport.scrollLeft;
+    const inView   = xInView >= 0 && xInView <= headerViewport.clientWidth;
+
+    if (typeof nowLineGlobal !== 'undefined' && nowLineGlobal) {
+      if (inView) {
+        const schedLeft  = schedule.getBoundingClientRect().left + window.scrollX;
+        const headerLeft = headerViewport.getBoundingClientRect().left + window.scrollX;
+        const xPage      = headerLeft + xInView;
+        const xSched     = xPage - schedLeft;
+        
+        const scheduleTop = schedule.getBoundingClientRect().top + window.scrollY;
+        const headerTop = headerViewport.getBoundingClientRect().top + window.scrollY;
+        const indicatorStartTop = headerTop - scheduleTop;
+        
+        nowLineGlobal.style.display = 'block';
+        nowLineGlobal.style.left = `${xSched}px`;
+        nowLineGlobal.style.top = `${indicatorStartTop}px`;
+      } else {
+        nowLineGlobal.style.display = 'none';
+      }
     }
   }
-}
 
-  // Function to scroll to current time slot
   function scrollToCurrentTime() {
     if (!headerViewport || !Array.isArray(timeline) || timeline.length < 2) return;
     
@@ -890,29 +1394,19 @@ el('rsv-success-back').addEventListener('click', () => {
     const startMin = t2m(RSV_START_TIME);
     const endMin = t2m(RSV_END_TIME);
     
-    // Clamp current time to valid range
     const m = Math.min(Math.max(nowMin, startMin), endMin);
-    
-    // Calculate which slot we should scroll to
     const slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
     
-    // Calculate the scroll position to center the current time slot
     const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
     const GAP = cssNumber('--rsv-gap', 10);
     const SLOT_W = cssNumber('--rsv-slot-w', 80);
     const SEG_W = SLOT_W + GAP;
     
-    // Calculate the position of the current time slot
     const slotPosition = LEFT_PAD + (slotIndex * SEG_W);
-    
-    // Calculate viewport width and center the slot
     const viewportWidth = headerViewport.clientWidth;
     const targetScrollLeft = slotPosition - (viewportWidth / 2) + (SLOT_W / 2);
-    
-    // Ensure we don't scroll past the beginning
     const finalScrollLeft = Math.max(0, targetScrollLeft);
     
-    // Smooth scroll to the current time slot
     headerViewport.scrollTo({
       left: finalScrollLeft,
       behavior: 'smooth'
@@ -920,5 +1414,3 @@ el('rsv-success-back').addEventListener('click', () => {
   }
 
 })();
-
-

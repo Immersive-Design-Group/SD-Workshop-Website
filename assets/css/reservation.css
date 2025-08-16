@@ -402,6 +402,7 @@ body .reservation-container .slots-viewport .timebar .time-label {
   padding: 8px 28px;
   cursor: pointer;
   text-align: center; 
+  transition: opacity 0.2s ease;
 }
 /* Scrollable date menu */
 .date-menu{
@@ -419,17 +420,52 @@ body .reservation-container .slots-viewport .timebar .time-label {
   display:block; width:100%; text-align:left; background:transparent; border:0;
   padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600;
 }
+
+/* Date item with day name layout */
+.date-item .date-main {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.date-item .date-status {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .date-item:hover{ 
   background:#0b0b0b; 
   color:#fff; 
   transition: all 0.2s ease;
 }
+
 .date-item.is-selected{ background:#0b0b0b; color:#fff; }  /* selected date */
 .date-item.is-today{ outline:1px dashed #111; }            /* today hint (optional) */
 
-/* Hide weekend dates (Saturday = 6, Sunday = 0) */
-.date-item[data-weekend="true"] {
-  display: none !important;
+/* Restricted dates (weekends and holidays) */
+.date-item.date-item-restricted {
+  opacity: 0.6;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.date-item.date-item-restricted .date-status {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.date-item.date-item-restricted:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+.date-item.date-item-restricted:hover .date-status {
+  color: #fff;
 }
 
 /* Optional: nicer scrollbar */
@@ -578,93 +614,653 @@ body .reservation-container #rsv-rows .equip-row {
   background: rgba(255, 255, 255, 1);
 }
 
-/* Continuous booking blocks - spans multiple slots */
-#rsv-rows .slot.booked{
-  background: var(--rsv-booked);
-  border-color: var(--rsv-booked-bd);
+/* Additional improvements for booking display */
+
+/* Enhanced booking slot appearance */
+/* Additional improvements for booking display */
+
+/* Enhanced booking slot appearance */
+#rsv-rows .slot.booked {
+  background: linear-gradient(135deg, #e8f1ff 0%, #dbeafe 100%);
+  border: 2px solid #3b82f6;
   color: #1d4ed8;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 8px;
-  font-size: 12px;
-  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add a subtle pattern to booked slots */
+#rsv-rows .slot.booked::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(59, 130, 246, 0.1) 2px,
+    rgba(59, 130, 246, 0.1) 4px
+  );
+  pointer-events: none;
+}
+
+/* Past slots styling */
+#rsv-rows .slot.past {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border: 1px solid #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
   position: relative;
 }
 
-/* Remove borders between consecutive booked slots for continuous appearance */
-#rsv-rows .slot.booked + .slot.booked {
-  border-left: none;
-  border-radius: 0 12px 12px 0;
+#rsv-rows .slot.past::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 3px,
+    rgba(156, 163, 175, 0.2) 3px,
+    rgba(156, 163, 175, 0.2) 6px
+  );
+  pointer-events: none;
 }
 
-#rsv-rows .slot.booked:has(+ .slot.booked) {
-  border-radius: 12px 0 0 12px;
+/* Weekend/Holiday disabled slots */
+#rsv-rows .slot.weekend-holiday {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  cursor: not-allowed;
+  opacity: 0.8;
+  position: relative;
 }
 
-/* First and last slots in a booking block */
-#rsv-rows .slot.booked:not(:has(+ .slot.booked)):not(.slot.booked + .slot.booked) {
-  border-radius: 12px;
+#rsv-rows .slot.weekend-holiday::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(239, 68, 68, 0.1) 3px,
+    rgba(239, 68, 68, 0.1) 6px
+  );
+  pointer-events: none;
 }
 
-/* Booking info display */
-.booking-info {
+/* Weekend warning modal */
+.weekend-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30000;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Date restricted message */
+.date-restricted-message {
+  grid-column: 1 / -1;
+  margin: 20px;
+}
+
+/* Email field with datalist styling */
+input[name="email"] {
+  position: relative;
+}
+
+input[name="email"]:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Style the datalist dropdown */
+datalist {
+  display: none;
+}
+
+/* Custom dropdown for email domains */
+.email-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.email-suggestion {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.email-suggestion:hover {
+  background: #f3f4f6;
+}
+
+.email-suggestion:last-child {
+  border-bottom: none;
+}
+
+/* Improve booking info layout */
+.booking-info {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  padding: 6px;
+  margin: 2px;
+}
+
+/* Better visual hierarchy for booking information */
 .booking-time {
-  font-size: 10px;
+  font-size: 11px;
   color: #1d4ed8;
-  font-weight: 700;
-  margin-bottom: 2px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  text-align: center;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
 }
 
 .booking-user {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 10px;
   color: #1d4ed8;
   font-weight: 600;
+  margin-bottom: 3px;
 }
 
 .user-initial {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   background: #1d4ed8;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
   flex-shrink: 0;
 }
 
 .booking-purpose {
-  font-size: 10px;
+  font-size: 9px;
   color: #1d4ed8;
   font-weight: 500;
   line-height: 1.2;
   word-break: break-word;
-}
-#rsv-rows .slot.available:hover{
-  background: #e8f1ff;
-  border-color: #3b82f6;
-  border-width: 2px;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transform: translateY(-1px);
-  transition: all 0.2s ease;
+  max-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
-#rsv-rows .slot.booked{
-  background:var(--rsv-booked); border-color:var(--rsv-booked-bd); color:#1d4ed8;
-  display:flex; align-items:flex-end; padding:10px; font-size:12px; font-weight:600;
+/* Loading state for slots */
+.slot.loading {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error state for failed booking loads */
+.slot.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.slot.error::after {
+  content: "⚠️ Error loading";
+  font-size: 10px;
+}
+
+/* Enhanced selected slot animation */
+#rsv-rows .slot.selected {
+  background: linear-gradient(135deg, #e8f1ff 0%, #dbeafe 100%);
+  border: 3px solid #3b82f6;
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.25),
+    0 0 0 4px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px) scale(1.02);
+  position: relative;
+  z-index: 2;
+}
+
+/* Add selection order numbers */
+#rsv-rows .slot.selected::before {
+  content: attr(data-selection-order);
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 3;
+}
+
+/* Hover effects for available slots */
+#rsv-rows .slot.available:hover {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+  cursor: pointer;
+}
+
+/* Disabled state for unavailable slots */
+#rsv-rows .slot.disabled {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Better responsiveness for booking information */
+@media (max-width: 768px) {
+  .booking-info {
+    padding: 4px;
+    margin: 1px;
+  }
+  
+  .booking-time {
+    font-size: 10px;
+    padding: 1px 3px;
+  }
+  
+  .booking-user {
+    font-size: 9px;
+    gap: 3px;
+  }
+  
+  .user-initial {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
+  }
+  
+  .booking-purpose {
+    font-size: 8px;
+    max-height: 20px;
+    -webkit-line-clamp: 1;
+  }
+
+  .weekend-warning > div {
+    width: 95% !important;
+    padding: 20px !important;
+  }
+}
+
+/* Enhanced error messaging */
+.booking-error {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  color: #dc2626;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+  max-width: 400px;
+}
+
+.booking-success {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  color: #166534;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+  max-width: 400px;
+}
+
+/* Tooltip for booked slots */
+#rsv-rows .slot.booked {
+  position: relative;
+}
+
+#rsv-rows .slot.booked:hover::after {
+  content: "Slot is already booked";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+/* Tooltip for past slots */
+#rsv-rows .slot.past:hover::after {
+  content: "Past time slot";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #6b7280;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+/* Tooltip for weekend/holiday slots */
+#rsv-rows .slot.weekend-holiday:hover::after {
+  content: "Booking not available";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #dc2626;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+/* Add arrow to tooltips */
+#rsv-rows .slot.booked:hover::before,
+#rsv-rows .slot.past:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+#rsv-rows .slot.past:hover::before {
+  border-top-color: #6b7280;
+}
+
+#rsv-rows .slot.weekend-holiday:hover::before {
+  border-top-color: #dc2626;
+}
+
+/* Slot time alignment improvements */
+#rsv-rows .row-slots {
+  padding-left: 0; /* Remove the offset that was causing misalignment */
+  gap: var(--rsv-gap);
+}
+
+/* Ensure time labels align perfectly with slots */
+.timebar {
+  padding-left: 0; /* Match the slots padding */
+}
+
+.timebar .time-label {
+  /* Ensure each time label covers exactly one slot width */
+  width: var(--rsv-slot-w);
+  min-width: var(--rsv-slot-w);
+  max-width: var(--rsv-slot-w);
+  flex-shrink: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading overlay for entire system */
+.system-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+  backdrop-filter: blur(2px);
+}
+
+.system-loading-content {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.system-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Enhanced selected slot animation */
+#rsv-rows .slot.selected {
+  background: linear-gradient(135deg, #e8f1ff 0%, #dbeafe 100%);
+  border: 3px solid #3b82f6;
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.25),
+    0 0 0 4px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px) scale(1.02);
+  position: relative;
+  z-index: 2;
+}
+
+/* Add selection order numbers */
+#rsv-rows .slot.selected::before {
+  content: attr(data-selection-order);
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 3;
+}
+
+/* Hover effects for available slots */
+#rsv-rows .slot.available:hover {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+  cursor: pointer;
+}
+
+/* Disabled state for unavailable slots */
+#rsv-rows .slot.disabled {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Better responsiveness for booking information */
+@media (max-width: 768px) {
+  .booking-info {
+    padding: 4px;
+    margin: 1px;
+  }
+  
+  .booking-time {
+    font-size: 10px;
+    padding: 1px 3px;
+  }
+  
+  .booking-user {
+    font-size: 9px;
+    gap: 3px;
+  }
+  
+  .user-initial {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
+  }
+  
+  .booking-purpose {
+    font-size: 8px;
+    max-height: 20px;
+    -webkit-line-clamp: 1;
+  }
+}
+
+/* Enhanced error messaging */
+.booking-error {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  color: #dc2626;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+  max-width: 400px;
+}
+
+.booking-success {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  color: #166534;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+  max-width: 400px;
+}
+
+/* Tooltip for booked slots */
+#rsv-rows .slot.booked {
+  position: relative;
+}
+
+#rsv-rows .slot.booked:hover::after {
+  content: "Slot is already booked";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+/* Add arrow to tooltip */
+#rsv-rows .slot.booked:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 /* Selected slots styling - light blue like booked slots */
