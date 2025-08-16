@@ -1134,22 +1134,29 @@
       );
     }
 
-    // Load bookings for the selected date (even if restricted, to show proper UI)
-    console.log('Date changed to:', fmtISO(selectedDate));
-    ensureDateLoaded(selectedDate).then(() => {
-      console.log('Bookings loaded for selected date');
-    }).catch(console.error);
+         // Load bookings for the selected date (even if restricted, to show proper UI)
+     console.log('Date changed to:', fmtISO(selectedDate));
+     ensureDateLoaded(selectedDate).then(() => {
+       console.log('Bookings loaded for selected date');
+     }).catch(console.error);
 
-    menu.querySelectorAll('.date-item.is-selected').forEach(x => x.classList.remove('is-selected'));
-    t.classList.add('is-selected');
-    dd.classList.remove('open');
-    
-    const today = new Date();
-    if (sameDay(d, today)) {
-      setTimeout(() => {
-        scrollToCurrentTime();
-      }, 100);
-    }
+     menu.querySelectorAll('.date-item.is-selected').forEach(x => x.classList.remove('is-selected'));
+     t.classList.add('is-selected');
+     dd.classList.remove('open');
+     
+     // Always scroll header back to beginning (09:00) when changing dates
+     // This ensures users start viewing from the beginning of the timeline
+     headerViewport.scrollTo({
+       left: 0,
+       behavior: 'smooth'
+     });
+     
+     const today = new Date();
+     if (sameDay(d, today)) {
+       setTimeout(() => {
+         scrollToCurrentTime();
+       }, 100);
+     }
   });
 
   menu.addEventListener('scroll', () => {
@@ -1349,24 +1356,35 @@
     if (!schedule || !headerViewport) return;
     if (!Array.isArray(timeline) || timeline.length < 2) return;
 
-    const startMin = t2m(RSV_START_TIME);
-    const endMin   = t2m(RSV_END_TIME);
-    const now      = new Date();
-    const nowMin   = now.getHours()*60 + now.getMinutes();
-    const m        = Math.min(Math.max(nowMin, startMin), endMin);
-
-    const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
-    const GAP      = cssNumber('--rsv-gap', 10);
-    const SLOT_W   = cssNumber('--rsv-slot-w', 80);
-    const SEG_W    = SLOT_W + GAP;
-
-    const totalSeg = (timeline.length - 1);
-    const frac     = (m - startMin) / (endMin - startMin);
-    const xInside  = LEFT_PAD + frac * (SEG_W * totalSeg);
-    const xInView  = xInside - headerViewport.scrollLeft;
-    const inView   = xInView >= 0 && xInView <= headerViewport.clientWidth;
+    // Check if selected date is today
+    const today = new Date();
+    const isToday = sameDay(selectedDate, today);
 
     if (typeof nowLineGlobal !== 'undefined' && nowLineGlobal) {
+      if (!isToday) {
+        // If not today, hide the time indicator
+        nowLineGlobal.style.display = 'none';
+        return;
+      }
+
+      // Only show time indicator for today
+      const startMin = t2m(RSV_START_TIME);
+      const endMin   = t2m(RSV_END_TIME);
+      const now      = new Date();
+      const nowMin   = now.getHours()*60 + now.getMinutes();
+      const m        = Math.min(Math.max(nowMin, startMin), endMin);
+
+      const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
+      const GAP      = cssNumber('--rsv-gap', 10);
+      const SLOT_W   = cssNumber('--rsv-slot-w', 80);
+      const SEG_W    = SLOT_W + GAP;
+
+      const totalSeg = (timeline.length - 1);
+      const frac     = (m - startMin) / (endMin - startMin);
+      const xInside  = LEFT_PAD + frac * (SEG_W * totalSeg);
+      const xInView  = xInside - headerViewport.scrollLeft;
+      const inView   = xInView >= 0 && xInView <= headerViewport.clientWidth;
+
       if (inView) {
         const schedLeft  = schedule.getBoundingClientRect().left + window.scrollX;
         const headerLeft = headerViewport.getBoundingClientRect().left + window.scrollX;
