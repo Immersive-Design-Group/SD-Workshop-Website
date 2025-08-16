@@ -145,6 +145,7 @@
     console.log('Loading initial bookings for date:', fmtISO(selectedDate));
     ensureDateLoaded(selectedDate).then(() => {
       console.log('Initial bookings loaded successfully');
+      
       // Only render rows after data is loaded to avoid showing warnings prematurely
       renderRows();
       // Mark initial load as complete
@@ -417,20 +418,23 @@
       document.querySelectorAll('.weekend-warning').forEach(el => el.remove());
       clearSelection();
       
-      // Load data immediately without delay
-      ensureDateLoaded(selectedDate).then(() => {
-        console.log('Switched to next available date:', fmtISO(selectedDate));
-        // Update label with new date
-        labelEl.textContent = fmtCN(selectedDate);
-        labelEl.style.opacity = '1';
-        // Render rows immediately after data is loaded
-        renderRows();
-      }).catch(console.error);
+             // Load data immediately without delay
+       ensureDateLoaded(selectedDate).then(() => {
+         console.log('Switched to next available date:', fmtISO(selectedDate));
+         // Update label with new date
+         labelEl.textContent = fmtCN(selectedDate);
+         labelEl.style.opacity = '1';
+         
+         // Render rows immediately after data is loaded
+         renderRows();
+       }).catch(console.error);
     }
   };
 
   function renderHeader() {
     timebar.innerHTML = '';
+    
+    // Always show all time labels regardless of date type
     for (let i = 0; i < timeline.length - 1; i++) {
       const startTime = timeline[i];
       const d = document.createElement('div');
@@ -498,73 +502,35 @@
     console.log(`Date ${fmtISO(selectedDate)} is restricted: ${isDateRestricted}`);
     
     if (isDateRestricted) {
-      // Don't show warning automatically - only show when user actually tries to interact
-      // The warning will be shown in other functions when needed
+      // Show warning message for weekends and holidays instead of rendering slots
+      const warningRow = document.createElement('div');
+      warningRow.className = 'equip-row';
+      warningRow.style.gridColumn = '1 / -1';
+      warningRow.style.textAlign = 'center';
+      warningRow.style.padding = '40px 20px';
       
-      // Still render equipment but all slots disabled
-      eqs.forEach(eq => {
-        const row = document.createElement('div');
-        row.className = 'equip-row';
-
-        const left = document.createElement('div');
-        left.className = 'equip-left';
-
-        const imgSrc = normalizeImage(eq.image);
-
-        left.innerHTML = `
-          <div class="equip-card">
-            <div class="equip-thumb">
-              ${imgSrc ? `<img src="${imgSrc}" alt="${eq.name}">` : ''}
-            </div>
-          </div>
-          <div class="equip-meta-below">
-            <div class="equip-name">${eq.name || ''}</div>
-            <div class="equip-model">${eq.model || ''}</div>
-          </div>
-        `;
-
-        if (imgSrc) {
-          const imgEl = left.querySelector('img');
-          imgEl.addEventListener('error', () => imgEl.remove());
-        }
-
-        row.appendChild(left);
-
-        const viewport = document.createElement('div');
-        viewport.className = 'row-viewport';
-
-        const strip = document.createElement('div');
-        strip.className = 'row-slots';
-
-        // Render all slots as disabled for weekends/holidays
-        for (let i = 0; i < timeline.length - 1; i++) {
-          const cell = document.createElement('div');
-          cell.className = 'slot disabled weekend-holiday';
-          cell.dataset.slotIndex = i;
-          cell.dataset.equipmentId = eq.name;
-          
-          cell.innerHTML = `
-            <div style="
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 100%;
-              color: #9ca3af;
-              font-size: 11px;
-              text-align: center;
-              line-height: 1.2;
-            ">
-              Not Available
-            </div>
-          `;
-          
-          strip.appendChild(cell);
-        }
-
-        viewport.appendChild(strip);
-        row.appendChild(viewport);
-        rowsRoot.appendChild(row);
-      });
+      warningRow.innerHTML = `
+        <div style="
+          background: #fef2f2;
+          border: 2px solid #fecaca;
+          border-radius: 12px;
+          padding: 30px;
+          color: #dc2626;
+          max-width: 600px;
+          margin: 0 auto;
+        ">
+          <div style="font-size: 48px; margin-bottom: 16px;">🚫</div>
+          <h3 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 800;">Booking Not Available</h3>
+          <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.5;">
+            Equipment booking is not available on weekends and Chinese holidays.
+          </p>
+          <p style="margin: 0; font-size: 14px; color: #9ca3af;">
+            Please select a weekday to make your reservation.
+          </p>
+        </div>
+      `;
+      
+      rowsRoot.appendChild(warningRow);
       return;
     }
 
@@ -997,6 +963,7 @@
     menuEnd = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 28); // Show 4 weeks ahead
     
     initialMenu();
+    
     // Don't call renderRows here to avoid showing the warning immediately
     // Only render when user actually interacts or when data is loaded
   }
@@ -1136,6 +1103,7 @@
 
          // Load bookings for the selected date (even if restricted, to show proper UI)
      console.log('Date changed to:', fmtISO(selectedDate));
+     
      ensureDateLoaded(selectedDate).then(() => {
        console.log('Bookings loaded for selected date');
      }).catch(console.error);
@@ -1374,16 +1342,23 @@
       const nowMin   = now.getHours()*60 + now.getMinutes();
       const m        = Math.min(Math.max(nowMin, startMin), endMin);
 
-      const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
+      const LEFT_PAD = cssNumber('--rsv-leftpad', 30);
       const GAP      = cssNumber('--rsv-gap', 10);
       const SLOT_W   = cssNumber('--rsv-slot-w', 80);
       const SEG_W    = SLOT_W + GAP;
 
-      const totalSeg = (timeline.length - 1);
-      const frac     = (m - startMin) / (endMin - startMin);
-      const xInside  = LEFT_PAD + frac * (SEG_W * totalSeg);
-      const xInView  = xInside - headerViewport.scrollLeft;
-      const inView   = xInView >= 0 && xInView <= headerViewport.clientWidth;
+      // Calculate which slot the current time falls into
+      const slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+      const slotStartMin = startMin + (slotIndex * RSV_STEP_MIN);
+      const slotEndMin = slotStartMin + RSV_STEP_MIN;
+      
+      // Calculate position within the slot (0 = start, 1 = end)
+      const positionInSlot = (m - slotStartMin) / RSV_STEP_MIN;
+      
+      // Position the line at the precise real-time position within the slot
+      const xInside = LEFT_PAD + (slotIndex * SEG_W) + (positionInSlot * SLOT_W);
+      const xInView = xInside - headerViewport.scrollLeft;
+      const inView = xInView >= 0 && xInView <= headerViewport.clientWidth;
 
       if (inView) {
         const schedLeft  = schedule.getBoundingClientRect().left + window.scrollX;
@@ -1415,14 +1390,15 @@
     const m = Math.min(Math.max(nowMin, startMin), endMin);
     const slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
     
-    const LEFT_PAD = cssNumber('--rsv-leftpad', 10);
+    const LEFT_PAD = cssNumber('--rsv-leftpad', 30);
     const GAP = cssNumber('--rsv-gap', 10);
     const SLOT_W = cssNumber('--rsv-slot-w', 80);
     const SEG_W = SLOT_W + GAP;
     
+    // Position the scroll to show the start of the current slot
     const slotPosition = LEFT_PAD + (slotIndex * SEG_W);
     const viewportWidth = headerViewport.clientWidth;
-    const targetScrollLeft = slotPosition - (viewportWidth / 2) + (SLOT_W / 2);
+    const targetScrollLeft = slotPosition - (viewportWidth / 4);
     const finalScrollLeft = Math.max(0, targetScrollLeft);
     
     headerViewport.scrollTo({

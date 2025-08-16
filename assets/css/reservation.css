@@ -240,7 +240,7 @@
   --rsv-slot-bd: #e6ebf1;
   --rsv-booked: #e8f1ff;
   --rsv-booked-bd: #cfe0ff;
-  --rsv-leftpad: 0px;  
+  --rsv-leftpad: 30px;  /* Match the slot padding-left for perfect alignment */
   --rsv-gap: 10px;  
 }
 
@@ -262,6 +262,7 @@
 /* Adjust left arrow positioning to align better with time header */
 .schedule-header .nav-arrow:first-of-type {
   margin-top: 2px; /* Fine-tune vertical alignment with time header */
+  margin-left: 0px; /* Align left arrow with the start of time labels */
 }
 
 
@@ -307,17 +308,23 @@
   pointer-events: none;
 }
 
-.timebar{ position:absolute; inset:0; display:flex; align-items:center; padding-left: 0; gap: var(--rsv-gap); }
+.timebar{
+	position:absolute;
+	inset:0;
+	display:flex; 
+	align-items:center; 
+	padding-left: 10px; /* Move time header text further left */
+	gap: var(--rsv-gap); 
+}
 .timebar .time-label {
   min-width: var(--rsv-slot-w);
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
   font-weight: 700;
   white-space: nowrap;
   /* Center the time label over its corresponding slot */
   position: relative;
-  left: 30px; /* Match the slot padding-left */
   transform: none;
   /* Force remove all borders and styling */
   background: transparent !important;
@@ -325,6 +332,7 @@
   border-radius: 0 !important;
   padding: 0 !important;
   box-shadow: none !important;
+  line-height: 1.2; /* Better vertical centering */
 }
 
 /* Maximum specificity override for time labels */
@@ -386,7 +394,6 @@ body .reservation-container .slots-viewport .timebar .time-label {
   font-weight: 700 !important;
   white-space: nowrap !important;
   position: relative !important;
-  left: 0 !important;
   transform: none !important;
   line-height: 1.2 !important; /* Better vertical centering */
 }
@@ -1048,13 +1055,12 @@ datalist {
 
 /* Slot time alignment improvements */
 #rsv-rows .row-slots {
-  padding-left: 0; /* Remove the offset that was causing misalignment */
   gap: var(--rsv-gap);
 }
 
 /* Ensure time labels align perfectly with slots */
 .timebar {
-  padding-left: 0; /* Match the slots padding */
+  /* padding-left is set in the main .timebar rule above */
 }
 
 .timebar .time-label {
