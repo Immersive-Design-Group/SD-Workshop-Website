@@ -2120,6 +2120,106 @@ datalist {
   background: #4b5563;
 }
 
+/* Loading state for secondary buttons */
+.btn-secondary.loading {
+  background: #9ca3af;
+  cursor: wait;
+  position: relative;
+  opacity: 0.7;
+}
+
+.btn-secondary.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Processing state - lighter color to show request is being processed */
+.btn-primary.processing,
+.btn-secondary.processing {
+  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+  color: #6b7280;
+  cursor: wait;
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+.btn-primary.processing:hover,
+.btn-secondary.processing:hover {
+  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+}
+
+/* Disabled state for secondary buttons */
+.btn-secondary:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Button state transitions */
+.btn-primary,
+.btn-secondary {
+  transition: all 0.3s ease;
+}
+
+/* Success state for secondary buttons */
+.btn-secondary.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary.success:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Error state for buttons */
+.btn-primary.error,
+.btn-secondary.error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.btn-primary.error:hover,
+.btn-secondary.error:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* Button text transitions */
+.btn-primary .btn-text,
+.btn-primary .btn-loading,
+.btn-secondary .btn-text,
+.btn-secondary .btn-loading {
+  display: inline-block;
+  transition: opacity 0.2s ease;
+}
+
+/* Hide button text when loading */
+.btn-primary.loading .btn-text,
+.btn-secondary.loading .btn-text {
+  opacity: 0;
+}
+
+/* Show loading text when loading */
+.btn-primary.loading .btn-loading,
+.btn-secondary.loading .btn-loading {
+  opacity: 1;
+}
+
 .otp-section {
   text-align: center;
   margin-bottom: 24px;
@@ -2159,24 +2259,114 @@ datalist {
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 14px 28px;
+  border-radius: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: inherit;
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
+  filter: brightness(1.1);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:disabled {
-  background: #9ca3af;
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
   cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+}
+
+/* Loading state for OTP button */
+.btn-primary.loading {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  cursor: wait;
+  position: relative;
+}
+
+.btn-primary.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Success state for OTP button */
+.btn-primary.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary.success:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Ripple effect for OTP button */
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Focus state for accessibility */
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5), 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+
+/* Pulse animation for attention */
+.btn-primary.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.6), 0 0 0 20px rgba(59, 130, 246, 0.1);
+  }
+  100% {
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+  }
 }
 
 /* Success and error message styles */
