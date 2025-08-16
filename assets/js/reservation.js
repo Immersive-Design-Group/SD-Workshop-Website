@@ -1303,7 +1303,7 @@
   });
 
     /* ====== Apps Script endpoint ====== */
-   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvWgXK-I4-DsGaG7fW3Cd-bjCQJfszQ1bbMxTD406sCvrW5KZRUpHjFwp6v73XWMT3/exec';
+   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_Qaun32dCk4a75S_Xtp_rZnGiHSmL8gUJP6vW3GDNKjbTj9GtWaUjqlrGpxf_mRQzZg/exec';
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
