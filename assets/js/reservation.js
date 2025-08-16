@@ -64,7 +64,7 @@
       
       // Always add booking (we cleared duplicates above)
       bookingsByDate[dateKey][dev].push({
-        startSlot, endSlot, name: b.name || '', purpose: b.purpose || ''
+        startSlot, endSlot, name: b.name || '', purpose: b.purpose || '', email: b.email || '', id: b.id || ''
       });
     });
     console.log('Final bookings cache:', bookingsByDate);
@@ -622,6 +622,16 @@
                 <div class="booking-purpose">${booking.purpose}</div>
               </div>
             `;
+            
+            // Add click handler to open booking management modal
+            cell.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openBookingManagementModal(booking);
+            });
+            
+            // Add cursor pointer to indicate it's clickable
+            cell.style.cursor = 'pointer';
           }
         } else if (isPastSlot) {
           // Past slots - not selectable
@@ -930,6 +940,146 @@
     return serverData;
   }
 
+  // Booking management functions
+  function openBookingManagementModal(booking) {
+    currentBooking = booking;
+    
+    // Populate modal with booking details
+    el('booking-name').textContent = booking.name;
+    el('booking-email').textContent = booking.email;
+    el('booking-purpose').textContent = booking.purpose;
+    el('booking-equipment').textContent = booking.device;
+    el('booking-date').textContent = booking.date;
+    el('booking-time').textContent = `${booking.start} - ${booking.end}`;
+    
+    // Show details view, hide OTP view
+    el('booking-details-view').style.display = 'block';
+    el('otp-verification-view').style.display = 'none';
+    
+    // Show modal
+    el('booking-management-modal').setAttribute('aria-hidden', 'false');
+  }
+
+  function closeBookingManagementModal() {
+    el('booking-management-modal').setAttribute('aria-hidden', 'true');
+    currentBooking = null;
+    
+    // Reset form fields
+    el('otp-email').value = '';
+    el('otp-input').value = '';
+  }
+
+  function showOTPVerification() {
+    el('booking-details-view').style.display = 'none';
+    el('otp-verification-view').style.display = 'block';
+    el('otp-input-section').style.display = 'none';
+  }
+
+  async function sendOTP() {
+    const email = el('otp-email').value.trim();
+    
+    if (!email) {
+      showError('Please enter your email address.');
+      return;
+    }
+
+    if (!currentBooking) {
+      showError('No booking selected.');
+      return;
+    }
+
+    try {
+      const url = `${SCRIPT_URL}?action=send_otp&email=${encodeURIComponent(email)}&id=${encodeURIComponent(currentBooking.id)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (data.ok) {
+        // Show OTP input section
+        el('otp-input-section').style.display = 'block';
+        el('otp-email').disabled = true;
+        el('send-otp-btn').disabled = true;
+        showSuccess('OTP sent successfully! Check your email.');
+      } else {
+        showError(data.error || 'Failed to send OTP.');
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      showError('Failed to send OTP. Please try again.');
+    }
+  }
+
+  async function verifyOTPAndDelete() {
+    const otp = el('otp-input').value.trim();
+    
+    if (!otp) {
+      showError('Please enter the OTP.');
+      return;
+    }
+
+    if (!currentBooking) {
+      showError('No booking selected.');
+      return;
+    }
+
+    const email = el('otp-email').value.trim();
+
+    try {
+      const body = new URLSearchParams({
+        action: 'delete_booking',
+        email: email,
+        id: currentBooking.id,
+        otp: otp
+      });
+
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+      
+      const data = await res.json();
+      
+      if (data.ok) {
+        showSuccess('Booking deleted successfully!');
+        closeBookingManagementModal();
+        
+        // Refresh the current view to show updated bookings
+        await ensureDateLoaded(selectedDate);
+        renderRows();
+      } else {
+        showError(data.error || 'Failed to delete booking.');
+      }
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      showError('Failed to delete booking. Please try again.');
+    }
+  }
+
+  function showSuccess(message) {
+    // Remove existing success messages
+    document.querySelectorAll('.booking-success').forEach(el => el.remove());
+    
+    const successEl = document.createElement('div');
+    successEl.className = 'booking-success';
+    successEl.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">✅</span>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" style="
+          background: none; border: none; color: inherit; 
+          font-size: 18px; cursor: pointer; margin-left: auto;
+        ">×</button>
+      </div>
+    `;
+    document.body.appendChild(successEl);
+    
+    setTimeout(() => {
+      if (successEl.parentNode) {
+        successEl.remove();
+      }
+    }, 5000);
+  }
+
   function cssNumber(varName, fallback) {
     const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
     const n = parseFloat(v);
@@ -1143,7 +1293,7 @@
   });
 
   /* ====== Apps Script endpoint ====== */
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycGI9SZgrvx5sZqR9v7XlHt51cAje5gQfdCoA0IS2-ivD-954LKLGui7OIp-yNmQpRQA/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXqtgUVnHLYaIV_ZtF9m8d2j8r0ENieceHVKUhNzc3HVwCqju8Q2Wr0EzgsaAG_9nUzQ/exec';
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
@@ -1296,7 +1446,9 @@
         startSlot: lastModal.sorted[0],
         endSlot:   lastModal.sorted[lastModal.sorted.length - 1] + 1,
         name,
-        purpose
+        purpose,
+        email,
+        id: data.booking_id // Use the booking ID from server response
       });
       
       renderRows();
@@ -1318,6 +1470,84 @@
     el('rsv-form').style.display = '';
     closeModal();
   });
+
+  // Add booking management modal HTML
+  const bookingManagementModal = document.createElement('div');
+  bookingManagementModal.id = 'booking-management-modal';
+  bookingManagementModal.setAttribute('aria-hidden', 'true');
+  bookingManagementModal.innerHTML = `
+    <div class="modal-backdrop" id="booking-management-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="booking-management-title">Booking Details</h2>
+        <button class="modal-close" id="booking-management-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="booking-details-view">
+          <div class="booking-info-grid">
+            <div class="info-row">
+              <label>Name:</label>
+              <span id="booking-name"></span>
+            </div>
+            <div class="info-row">
+              <label>Email:</label>
+              <span id="booking-email"></span>
+            </div>
+            <div class="info-row">
+              <label>Purpose:</label>
+              <span id="booking-purpose"></span>
+            </div>
+            <div class="info-row">
+              <label>Equipment:</label>
+              <span id="booking-equipment"></span>
+            </div>
+            <div class="info-row">
+              <label>Date:</label>
+              <span id="booking-date"></span>
+            </div>
+            <div class="info-row">
+              <label>Time:</label>
+              <span id="booking-time"></span>
+            </div>
+          </div>
+          <div class="booking-actions">
+            <button id="change-appointment-btn" class="btn-secondary">CHANGE APPOINTMENT</button>
+          </div>
+        </div>
+        
+        <div id="otp-verification-view" style="display: none;">
+          <div class="otp-section">
+            <h3>Enter your email to receive OTP</h3>
+            <div class="form-group">
+              <label for="otp-email">Email:</label>
+              <input type="email" id="otp-email" placeholder="Enter your email" required>
+            </div>
+            <button id="send-otp-btn" class="btn-primary">Send OTP</button>
+          </div>
+          
+          <div id="otp-input-section" style="display: none;">
+            <h3>Enter OTP from your email</h3>
+            <div class="form-group">
+              <label for="otp-input">OTP:</label>
+              <input type="text" id="otp-input" placeholder="Enter 6-digit OTP" maxlength="6" required>
+            </div>
+            <button id="verify-otp-btn" class="btn-primary">Verify & Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(bookingManagementModal);
+
+  // Add event listeners for booking management modal
+  el('booking-management-close').addEventListener('click', closeBookingManagementModal);
+  el('booking-management-backdrop').addEventListener('click', closeBookingManagementModal);
+  el('change-appointment-btn').addEventListener('click', showOTPVerification);
+  el('send-otp-btn').addEventListener('click', sendOTP);
+  el('verify-otp-btn').addEventListener('click', verifyOTPAndDelete);
+
+  // Store current booking being managed
+  let currentBooking = null;
 
   function positionNowLine() {
     const schedule = document.querySelector('.reservation-schedule');
