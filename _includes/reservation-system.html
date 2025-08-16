@@ -44,170 +44,104 @@
   <div class="modal__backdrop" id="rsv-modal-backdrop"></div>
   <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rsv-modal-title">
     <button class="modal__close" id="rsv-modal-close" aria-label="Close">×</button>
-    <h2 id="rsv-modal-title" class="modal__title">
-      <span id="rsv-modal-equip">3D Printer 1</span><br />
-      <span class="modal__subtitle" id="rsv-modal-model">X1E</span>
-    </h2>
+    
+    <!-- Beautiful header with equipment info -->
+    <div class="modal-header">
+      <h2 id="rsv-modal-title" class="modal__title">
+        <span id="rsv-modal-equip">3D PRINTER 1</span>
+        <span class="modal__subtitle" id="rsv-modal-model">X1E</span>
+      </h2>
+    </div>
 
+    <!-- Beautiful form with modern design -->
     <form id="rsv-form" class="form">
-  <label class="form__row">
-    <span class="form__label">Name <em>*</em></span>
-    <input class="form__input" name="name" required>
-  </label>
+      <!-- Name field -->
+      <div class="form__row">
+        <label class="form__label" for="name">Name <span class="required">*</span></label>
+        <input class="form__input" id="name" name="name" type="text" required>
+      </div>
 
-  <label class="form__row">
-    <span class="form__label">Email <em>*</em></span>
-    <div class="email-split-container">
-      <input 
-        type="text" 
-        class="form__input email-username" 
-        id="email-username"
-        placeholder="12431493" 
-        required
-        pattern="[a-zA-Z0-9._-]+"
-        title="Username part of email (letters, numbers, dots, underscores, hyphens only)"
-      >
-      <select class="form__input email-domain" id="email-domain" required>
-        <option value="">Select domain</option>
-        <option value="@mail.sustech.edu.cn">@mail.sustech.edu.cn</option>
-        <option value="@sustech.edu.cn">@sustech.edu.cn</option>
-      </select>
-      <!-- Hidden field that combines both parts for form submission -->
-      <input type="hidden" name="email" id="email-combined">
-    </div>
-    <div class="email-preview" style="display: none;">Full email: <span class="email-preview-text"></span></div>
-  </label>
+      <!-- Email field with split inputs -->
+      <div class="form__row">
+        <label class="form__label" for="email-username">Email <span class="required">*</span></label>
+        <div class="email-split-container">
+          <input 
+            type="text" 
+            class="form__input email-username" 
+            id="email-username"
+            placeholder="Student ID" 
+            required
+            pattern="[a-zA-Z0-9._-]+"
+            title="Username part of email (letters, numbers, dots, underscores, hyphens only)"
+          >
+          <select class="form__input email-domain" id="email-domain" required>
+            <option value="">Select domain</option>
+            <option value="@mail.sustech.edu.cn">@mail.sustech.edu.cn</option>
+            <option value="@sustech.edu.cn">@sustech.edu.cn</option>
+          </select>
+          <!-- Hidden field that combines both parts for form submission -->
+          <input type="hidden" name="email" id="email-combined">
+        </div>
+      </div>
+      
+      <!-- Email preview on separate line -->
+      <div class="email-preview" style="display: none;">
+        <span class="email-preview-text"></span>
+      </div>
 
-  <label class="form__row">
-    <span class="form__label">Purpose <em>*</em></span>
-    <textarea class="form__input form__textarea" name="purpose" required></textarea>
-  </label>
+      <!-- Purpose field -->
+      <div class="form__row">
+        <label class="form__label" for="purpose">Purpose <span class="required">*</span></label>
+        <textarea class="form__input form__textarea" id="purpose" name="purpose" required></textarea>
+      </div>
 
-  <div class="form__row">
-    <span class="form__label">Time <em>*</em></span>
-    <div class="time-pills">
-      <div class="time-pill" id="rsv-pill-date">--</div>
-      <div class="time-pill" id="rsv-pill-start">--:--</div>
-      <div class="time-arrow">→</div>
-      <div class="time-pill" id="rsv-pill-end">--:--</div>
+      <!-- Time selection -->
+      <div class="form__row">
+        <label class="form__label">Time <span class="required">*</span></label>
+        <div class="time-pills">
+          <div class="time-pill" id="rsv-pill-date">--</div>
+          <div class="time-pill" id="rsv-pill-start">--:--</div>
+          <div class="time-arrow">→</div>
+          <div class="time-pill" id="rsv-pill-end">--:--</div>
+        </div>
+      </div>
+
+      <!-- Duration info -->
+      <div class="form__row" id="duration-info" style="display: none;">
+        <label class="form__label">Duration</label>
+        <div class="duration-display">
+          <span id="total-slots">1 slot</span> • <span id="total-hours">0.5 hours</span>
+        </div>
+      </div>
+
+      <!-- Training agreement -->
+      <div class="form__row form__check">
+        <label class="checkbox-container">
+          <input type="checkbox" id="rsv-agree" name="training" required>
+          <span class="checkmark"></span>
+          <span class="checkbox-text">I have accepted the training instructions.</span>
+        </label>
+      </div>
+
+      <!-- Submit button -->
+      <button type="submit" class="btn-submit" id="submit-btn">
+        <span class="btn-text">SUBMIT</span>
+        <span class="btn-loading" style="display: none;">Processing...</span>
+      </button>
+    </form>
+
+    <!-- Success screen (hidden initially) -->
+    <div id="rsv-success" class="success-view" hidden>
+      <div class="success-icon">✓</div>
+      <h2 class="modal__title">Awesome!</h2>
+      <p>Your reservation will start from <b id="rsv-success-start"></b>.</p>
+      <p>We've emailed a confirmation to <b id="rsv-success-email"></b>.</p>
+      <button id="rsv-success-back" class="btn-submit">BACK</button>
     </div>
   </div>
-
-  <div class="form__row" id="duration-info" style="display: none;">
-    <span class="form__label">Duration</span>
-    <div class="duration-display">
-      <span id="total-slots">1 slot</span> • <span id="total-hours">0.5 hours</span>
-    </div>
-  </div>
-
-  <label class="form__check">
-    <input type="checkbox" id="rsv-agree" name="training" required>
-    <span>I have accepted the training instructions.</span>
-  </label>
-
-  <button type="submit" class="btn-submit">SUBMIT</button>
-</form>
-
-<!-- Success screen (hidden initially) -->
-<div id="rsv-success" class="success-view" hidden>
-  <div class="success-icon">✓</div>
-  <h2 class="modal__title">Awesome!</h2>
-  <p>Your reservation will start from <b id="rsv-success-start"></b>.</p>
-  <p>We've emailed a confirmation to <b id="rsv-success-email"></b>.</p>
-  <button id="rsv-success-back" class="btn-submit">BACK</button>
 </div>
 
-  </div>
-</div>
 
-<style>
-.email-split-container {
-  display: flex;
-  gap: 0;
-  width: 100%;
-  position: relative;
-}
-
-.email-username {
-  flex: 1;
-  border-radius: 6px 0 0 6px;
-  border-right: none;
-}
-
-.email-domain {
-  flex: 0 0 220px;
-  border-radius: 0 6px 6px 0;
-}
-
-/* Make sure both inputs have the same height and styling */
-.email-username,
-.email-domain {
-  height: 54px;
-  padding: 18px 16px;
-  font-size: 16px;
-  border: 2px solid #e5e7eb;
-  background: #f2f2f2;
-  transition: all 0.2s ease;
-}
-
-.email-username:focus,
-.email-domain:focus {
-  border-color: #3b82f6;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  z-index: 1;
-  position: relative;
-}
-
-.email-username:focus {
-  border-right: 2px solid #3b82f6;
-}
-
-/* Error styling */
-.email-username:invalid,
-.email-domain:invalid {
-  border-color: #dc3545;
-  background: #fff5f5;
-}
-
-.email-preview {
-  font-size: 12px;
-  color: #059669;
-  margin-top: 6px;
-  font-weight: 500;
-  padding: 4px 8px;
-  background: #ecfdf5;
-  border-radius: 4px;
-  border: 1px solid #d1fae5;
-}
-
-.email-preview-text {
-  font-family: monospace;
-  font-weight: 600;
-}
-
-/* Mobile responsive */
-@media (max-width: 640px) {
-  .email-split-container {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .email-username,
-  .email-domain {
-    border-radius: 6px;
-    border: 2px solid #e5e7eb;
-  }
-  
-  .email-domain {
-    flex: 1;
-  }
-  
-  .email-username:focus {
-    border-right: 2px solid #3b82f6;
-  }
-}
-</style>
 
 <script>
   window.RSV_EQUIPMENT = {{ site.data.reservation.equipment | jsonify }};

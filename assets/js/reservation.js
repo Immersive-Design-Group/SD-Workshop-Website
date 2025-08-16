@@ -1357,6 +1357,8 @@
   function closeModal() {
     el('rsv-modal').setAttribute('aria-hidden', 'true');
     el('rsv-form').reset();
+    el('rsv-form').style.display = '';
+    el('rsv-success').hidden = true;
   }
 
   function updateModalFromSelection(eq) {
@@ -1389,99 +1391,115 @@
   el('rsv-modal-backdrop').addEventListener('click', closeModal);
 
   /* Submit form */
-  el('rsv-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+     el('rsv-form').addEventListener('submit', async (e) => {
+     e.preventDefault();
 
-    // Final validation before submission
-    if (isWeekendOrHoliday(selectedDate)) {
-      showPersistentWarning('Cannot create booking on weekends and Chinese holidays.');
-      return;
-    }
+     // Final validation before submission
+     if (isWeekendOrHoliday(selectedDate)) {
+       showPersistentWarning('Cannot create booking on weekends and Chinese holidays.');
+       return;
+     }
 
-    const name    = e.target.name.value.trim();
-    const emailInput = document.getElementById('email-combined') || e.target.email;
-    const email   = emailInput.value.trim();
-    const purpose = e.target.purpose.value.trim();
-    const training = el('rsv-agree').checked;
+     const name    = e.target.name.value.trim();
+     const emailInput = document.getElementById('email-combined') || e.target.email;
+     const email   = emailInput.value.trim();
+     const purpose = e.target.purpose.value.trim();
+     const training = el('rsv-agree').checked;
 
-    if (!name || !email || !purpose || !training) {
-      alert('Please complete all fields and accept training.');
-      return;
-    }
+     if (!name || !email || !purpose || !training) {
+       alert('Please complete all fields and accept training.');
+       return;
+     }
 
-    // Validate email domain for split input
-    const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
-    const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
-    if (!isValidEmail) {
-      alert('Email must end with @mail.sustech.edu.cn or @sustech.edu.cn');
-      return;
-    }
+     // Validate email domain for split input
+     const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
+     const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
+     if (!isValidEmail) {
+       alert('Email must end with @mail.sustech.edu.cn or @sustech.edu.cn');
+       return;
+     }
 
-    if (!lastModal.slots.length) {
-      alert('No slots selected.');
-      return;
-    }
+     if (!lastModal.slots.length) {
+       alert('No slots selected.');
+       return;
+     }
 
-    // Validate that no selected slots are in the past
-    const hasPastSlots = lastModal.sorted.some(slotIndex => 
-      isSlotInPast(slotIndex, selectedDate)
-    );
-    if (hasPastSlots) {
-      showError('Cannot book past time slots. Please refresh and select future slots.');
-      return;
-    }
+     // Validate that no selected slots are in the past
+     const hasPastSlots = lastModal.sorted.some(slotIndex => 
+       isSlotInPast(slotIndex, selectedDate)
+     );
+     if (hasPastSlots) {
+       showError('Cannot book past time slots. Please refresh and select future slots.');
+       return;
+     }
 
-    const body = new URLSearchParams({
-      action: 'create_booking',
-      name, email, purpose,
-      training: training ? 'true' : 'false',
-      slots: JSON.stringify(lastModal.slots)
-    });
+     // Disable submit button and show loading state
+     const submitBtn = document.getElementById('submit-btn');
+     const btnText = submitBtn.querySelector('.btn-text');
+     const btnLoading = submitBtn.querySelector('.btn-loading');
+     
+     submitBtn.disabled = true;
+     btnText.style.opacity = '0';
+     btnLoading.style.display = 'inline-block';
+     submitBtn.style.opacity = '0.7';
 
-    try {
-      showLoadingState();
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type':'application/x-www-form-urlencoded' },
-        body
-      });
-      hideLoadingState();
-      
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Unknown error');
+     const body = new URLSearchParams({
+       action: 'create_booking',
+       name, email, purpose,
+       training: training ? 'true' : 'false',
+       slots: JSON.stringify(lastModal.slots)
+     });
 
-      el('rsv-success-start').textContent = `${mmddLabel(selectedDate)} ${lastModal.start}`;
-      el('rsv-success-email').textContent = email;
-      el('rsv-form').style.display = 'none';
-      el('rsv-success').hidden = false;
+     try {
+       showLoadingState();
+       const res = await fetch(SCRIPT_URL, {
+         method: 'POST',
+         headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+         body
+       });
+       hideLoadingState();
+       
+       const data = await res.json();
+       if (!data.ok) throw new Error(data.error || 'Unknown error');
 
-      // Add booking to cache immediately for instant UI update
-      const dateKey = fmtISO(selectedDate);
-      bookingsByDate[dateKey] = bookingsByDate[dateKey] || Object.create(null);
-      const dev = lastModal.eq.name;
-      bookingsByDate[dateKey][dev] = bookingsByDate[dateKey][dev] || [];
-      bookingsByDate[dateKey][dev].push({
-        startSlot: lastModal.sorted[0],
-        endSlot:   lastModal.sorted[lastModal.sorted.length - 1] + 1,
-        name,
-        purpose,
-        email,
-        id: data.booking_id // Use the booking ID from server response
-      });
-      
-      renderRows();
-      clearSelection();
-      
-      // Refresh from server to stay in sync
-      setTimeout(() => {
-        ensureDateLoaded(selectedDate).catch(console.error);
-      }, 1000);
+       el('rsv-success-start').textContent = `${mmddLabel(selectedDate)} ${lastModal.start}`;
+       el('rsv-success-email').textContent = email;
+       el('rsv-form').style.display = 'none';
+       el('rsv-success').hidden = false;
 
-    } catch (err) {
-      hideLoadingState();
-      showError('Booking failed: ' + err.message);
-    }
-  });
+       // Add booking to cache immediately for instant UI update
+       const dateKey = fmtISO(selectedDate);
+       bookingsByDate[dateKey] = bookingsByDate[dateKey] || Object.create(null);
+       const dev = lastModal.eq.name;
+       bookingsByDate[dateKey][dev] = bookingsByDate[dateKey][dev] || [];
+       bookingsByDate[dateKey][dev].push({
+         startSlot: lastModal.sorted[0],
+         endSlot:   lastModal.sorted[lastModal.sorted.length - 1] + 1,
+         name,
+         purpose,
+         email,
+         id: data.booking_id // Use the booking ID from server response
+       });
+       
+       renderRows();
+       clearSelection();
+       
+       // Refresh from server to stay in sync
+       setTimeout(() => {
+         ensureDateLoaded(selectedDate).catch(console.error);
+       }, 1000);
+
+     } catch (err) {
+       hideLoadingState();
+       showError('Booking failed: ' + err.message);
+       
+       // Re-enable submit button on error
+       submitBtn.disabled = false;
+       btnText.style.opacity = '1';
+       btnLoading.style.display = 'none';
+       submitBtn.style.opacity = '1';
+     }
+   });
   
   el('rsv-success-back').addEventListener('click', () => {
     el('rsv-success').hidden = true;
@@ -1598,15 +1616,22 @@
       const SEG_W    = SLOT_W + GAP;
 
       // Calculate which slot the current time falls into
-      const slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
-      const slotStartMin = startMin + (slotIndex * RSV_STEP_MIN);
-      const slotEndMin = slotStartMin + RSV_STEP_MIN;
+      let slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+      let positionInSlot = 0;
       
-      // Calculate position within the slot (0 = start, 1 = end)
-      const positionInSlot = (m - slotStartMin) / RSV_STEP_MIN;
-      
-      // Position the line at the precise real-time position within the slot
-      const xInside = LEFT_PAD + (slotIndex * SEG_W) + (positionInSlot * SLOT_W);
+                     // If current time is before the first slot, start from the very left edge of the first time header box
+        let xInside;
+        if (m < startMin) {
+          slotIndex = 0;
+          // Position at the very left edge of the first time header box (not the center where "09:00" is written)
+          xInside = LEFT_PAD; // Start exactly at the left edge of the first time header
+        } else {
+          const slotStartMin = startMin + (slotIndex * RSV_STEP_MIN);
+          // Calculate position within the slot (0 = start, 1 = end)
+          positionInSlot = (m - slotStartMin) / RSV_STEP_MIN;
+          // Position the line at the precise real-time position within the slot
+          xInside = LEFT_PAD + (slotIndex * SEG_W) + (positionInSlot * SLOT_W);
+        }
       const xInView = xInside - headerViewport.scrollLeft;
       const inView = xInView >= 0 && xInView <= headerViewport.clientWidth;
 
@@ -1638,7 +1663,12 @@
     const endMin = t2m(RSV_END_TIME);
     
     const m = Math.min(Math.max(nowMin, startMin), endMin);
-    const slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+    let slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+    
+    // If current time is before the first slot, scroll to the beginning of the first slot
+    if (m < startMin) {
+      slotIndex = 0;
+    }
     
     const LEFT_PAD = cssNumber('--rsv-leftpad', 30);
     const GAP = cssNumber('--rsv-gap', 10);
