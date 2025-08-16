@@ -656,12 +656,20 @@
             const endTime = timeline[booking.endSlot];
             cell.innerHTML = `
               <div class="booking-info">
-                <div class="booking-time">${startTime}-${endTime}</div>
-                <div class="booking-user">
-                  <div class="user-initial">${getInitial(booking.name)}</div>
-                  <span>${booking.name}</span>
+                <div class="booking-header">
+                  <div class="user-avatar">
+                    <div class="user-avatar-initial">${getInitial(booking.name)}</div>
+                  </div>
+                  <div class="time-name">
+                    <div class="booking-time">${startTime}-${endTime}</div>
+                    <div class="user-name-container">
+                      <div class="user-name">${booking.name}</div>
+                    </div>
+                  </div>
                 </div>
-                <div class="booking-purpose">${booking.purpose}</div>
+                <div class="project-info">
+                  <div class="project-name">${booking.purpose}</div>
+                </div>
               </div>
             `;
             
