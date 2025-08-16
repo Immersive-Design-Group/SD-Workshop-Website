@@ -20,6 +20,45 @@
   const t2m = t => { const [h,m]=t.split(':').map(Number); return h*60+m; };
   const m2t = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
   const buildTimeline = (s,e,step) => { const out=[]; for(let m=t2m(s); m<=t2m(e); m+=step) out.push(m2t(m)); return out; };
+  
+  // Date formatting functions
+  function fmtCN(d) { return `${d.getMonth()+1}月${d.getDate()}日`; }
+  function fmtISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function sameDay(a,b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+  
+  // Check if a date is Chinese holiday
+  function isChineseHolidayDate(date) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    // Chinese New Year (Lunar calendar - approximate dates for 2024-2025)
+    if (year === 2024 && month === 2 && day >= 10 && day <= 17) return true;
+    if (year === 2025 && month === 1 && day >= 29) return true;
+    if (year === 2025 && month === 2 && day <= 4) return true;
+    
+    // Qingming Festival (Tomb Sweeping Day) - April 5
+    if (month === 4 && day === 5) return true;
+    
+    // Labor Day - May 1
+    if (month === 5 && day === 1) return true;
+    
+    // Dragon Boat Festival (Lunar calendar - approximate dates)
+    if (year === 2024 && month === 6 && day === 10) return true;
+    if (year === 2025 && month === 5 && day === 31) return true;
+    
+    // National Day - October 1-7
+    if (month === 10 && day >= 1 && day <= 7) return true;
+    
+    // Mid-Autumn Festival (Lunar calendar - approximate dates)
+    if (year === 2024 && month === 9 && day === 17) return true;
+    if (year === 2025 && month === 10 && day === 6) return true;
+    
+    // New Year's Day - January 1
+    if (month === 1 && day === 1) return true;
+    
+    return false;
+  }
 
   // === Persistent bookings cache (past + future) ===
   let bookingsByDate = Object.create(null);
@@ -52,6 +91,7 @@
     });
     
     list.forEach(b => {
+      console.log('Processing booking object:', b);
       const dateKey = b.date;
       const dev = b.device || '';
       const startSlot = slotIndexFromTime(b.start);
@@ -63,9 +103,11 @@
       if (!bookingsByDate[dateKey][dev]) bookingsByDate[dateKey][dev] = [];
       
       // Always add booking (we cleared duplicates above)
-      bookingsByDate[dateKey][dev].push({
-        startSlot, endSlot, name: b.name || '', purpose: b.purpose || '', email: b.email || '', id: b.id || ''
-      });
+      const bookingData = {
+        startSlot, endSlot, name: b.name || '', purpose: b.purpose || '', email: b.email || '', id: b.id || '', device: b.device || ''
+      };
+      console.log('Adding booking data:', bookingData);
+      bookingsByDate[dateKey][dev].push(bookingData);
     });
     console.log('Final bookings cache:', bookingsByDate);
   }
@@ -937,6 +979,7 @@
     const dateKey = fmtISO(selectedDate);
     const serverData = bookingsByDate[dateKey]?.[eq.name] || [];
     console.log(`Getting bookings for ${eq.name} on ${dateKey}:`, serverData);
+    console.log(`Full bookingsByDate for ${dateKey}:`, bookingsByDate[dateKey]);
     return serverData;
   }
 
@@ -949,8 +992,12 @@
     el('booking-email').textContent = booking.email;
     el('booking-purpose').textContent = booking.purpose;
     el('booking-equipment').textContent = booking.device;
-    el('booking-date').textContent = booking.date;
-    el('booking-time').textContent = `${booking.start} - ${booking.end}`;
+    el('booking-date').textContent = fmtISO(selectedDate);
+    
+    // Calculate time from slot indices
+    const startTime = timeline[booking.startSlot];
+    const endTime = timeline[booking.endSlot];
+    el('booking-time').textContent = `${startTime} - ${endTime}`;
     
     // Show details view, hide OTP view
     el('booking-details-view').style.display = 'block';
@@ -1092,10 +1139,6 @@
   const labelEl = el('rsv-date-label');
   const menu    = el('rsv-date-menu');
 
-  function fmtCN(d) { return `${d.getMonth()+1}月${d.getDate()}日`; }
-  function fmtISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-  function sameDay(a,b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-
   let selectedDate = new Date();
   let menuStart    = new Date(selectedDate); menuStart.setDate(menuStart.getDate() - 7);
   let menuEnd      = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 7);
@@ -1156,39 +1199,6 @@
     }
     
     return b;
-  }
-
-  function isChineseHolidayDate(date) {
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const year = date.getFullYear();
-    
-    // Chinese New Year (Lunar calendar - approximate dates for 2024-2025)
-    if (year === 2024 && month === 2 && day >= 10 && day <= 17) return true;
-    if (year === 2025 && month === 1 && day >= 29) return true;
-    if (year === 2025 && month === 2 && day <= 4) return true;
-    
-    // Qingming Festival (Tomb Sweeping Day) - April 5
-    if (month === 4 && day === 5) return true;
-    
-    // Labor Day - May 1
-    if (month === 5 && day === 1) return true;
-    
-    // Dragon Boat Festival (Lunar calendar - approximate dates)
-    if (year === 2024 && month === 6 && day === 10) return true;
-    if (year === 2025 && month === 5 && day === 31) return true;
-    
-    // National Day - October 1-7
-    if (month === 10 && day >= 1 && day <= 7) return true;
-    
-    // Mid-Autumn Festival (Lunar calendar - approximate dates)
-    if (year === 2024 && month === 9 && day === 17) return true;
-    if (year === 2025 && month === 10 && day === 6) return true;
-    
-    // New Year's Day - January 1
-    if (month === 1 && day === 1) return true;
-    
-    return false;
   }
 
   function renderRange(start, end, {prepend=false}={}) {
@@ -1292,8 +1302,8 @@
     }
   });
 
-  /* ====== Apps Script endpoint ====== */
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXqtgUVnHLYaIV_ZtF9m8d2j8r0ENieceHVKUhNzc3HVwCqju8Q2Wr0EzgsaAG_9nUzQ/exec';
+    /* ====== Apps Script endpoint ====== */
+   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvWgXK-I4-DsGaG7fW3Cd-bjCQJfszQ1bbMxTD406sCvrW5KZRUpHjFwp6v73XWMT3/exec';
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
@@ -1545,6 +1555,8 @@
   el('change-appointment-btn').addEventListener('click', showOTPVerification);
   el('send-otp-btn').addEventListener('click', sendOTP);
   el('verify-otp-btn').addEventListener('click', verifyOTPAndDelete);
+  
+  
 
   // Store current booking being managed
   let currentBooking = null;

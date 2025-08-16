@@ -29,7 +29,6 @@ equipment:
     name: "3D PRINTER 4"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
-    equipment:
   - id: "eq5"
     name: "3D PRINTER 5"
     model: "X1E"
