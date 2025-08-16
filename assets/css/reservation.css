@@ -454,25 +454,58 @@ body .reservation-container .slots-viewport .timebar .time-label {
 .date-item.is-selected{ background:#0b0b0b; color:#fff; }  /* selected date */
 .date-item.is-today{ outline:1px dashed #111; }            /* today hint (optional) */
 
-/* Restricted dates (weekends and holidays) */
+/* =========================
+   Weekend and Holiday Dates - Unified Styling
+   ========================= */
+
+/* All weekend and holiday dates - consistent base styling */
 .date-item.date-item-restricted {
-  opacity: 0.6;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  color: #111827 !important; /* Black text */
+  background: #fef2f2 !important; /* Light pink background */
+  border: 1px solid #fecaca !important; /* Light red border */
+  opacity: 1 !important; /* Full opacity */
 }
 
 .date-item.date-item-restricted .date-status {
-  color: #dc2626;
-  font-weight: 600;
+  color: #dc2626 !important; /* Red day label (SAT, SUN) */
+  font-weight: 600 !important;
 }
 
+/* All weekend and holiday dates - hover state */
 .date-item.date-item-restricted:hover {
-  background: #dc2626;
-  color: #fff;
+  background: #dc2626 !important; /* Red background on hover */
+  color: #fff !important; /* White text on hover */
+  border-color: #dc2626 !important; /* Red border on hover */
 }
 
 .date-item.date-item-restricted:hover .date-status {
-  color: #fff;
+  color: #fff !important; /* White day label on hover */
+}
+
+/* Override any other states to maintain consistency */
+.date-item.is-today.date-item-restricted,
+.date-item.is-selected.date-item-restricted {
+  color: #111827 !important; /* Always black text in normal state */
+  background: #fef2f2 !important; /* Always light pink background */
+  border: 1px solid #fecaca !important; /* Always light red border */
+}
+
+.date-item.is-today.date-item-restricted .date-status,
+.date-item.is-selected.date-item-restricted .date-status {
+  color: #dc2626 !important; /* Always red day label */
+}
+
+/* Hover state for all weekend dates (including today and selected) */
+.date-item.is-today.date-item-restricted:hover,
+.date-item.is-selected.date-item-restricted:hover {
+  background: #dc2626 !important; /* Red background on hover */
+  color: #fff !important; /* White text on hover */
+  border-color: #dc2626 !important; /* Red border on hover */
+}
+
+.date-item.is-today.date-item-restricted:hover .date-status,
+.date-item.is-selected.date-item-restricted:hover .date-status {
+  color: #fff !important; /* White day label on hover */
 }
 
 /* Optional: nicer scrollbar */
