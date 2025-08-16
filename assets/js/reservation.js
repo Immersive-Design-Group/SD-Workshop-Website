@@ -1463,7 +1463,7 @@
        if (!data.ok) throw new Error(data.error || 'Unknown error');
 
        el('rsv-success-start').textContent = `${mmddLabel(selectedDate)} ${lastModal.start}`;
-       el('rsv-success-email').textContent = email;
+       el('rsv-success-equip').textContent = `${lastModal.eq.name} ${lastModal.eq.model}`;
        el('rsv-form').style.display = 'none';
        el('rsv-success').hidden = false;
 

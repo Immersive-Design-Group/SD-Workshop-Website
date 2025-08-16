@@ -1389,11 +1389,6 @@ datalist {
 }
 
 .success-view { text-align:center; padding:18px 8px 8px; }
-.success-icon {
-  width: 120px; height: 120px; margin: 8px auto 12px;
-  display:grid; place-items:center; font-size:56px;
-  color:#6d28d9; border:6px solid #e5e7eb; border-radius:50%;
-}
 
 
 /* Equipment images */
@@ -1725,6 +1720,11 @@ datalist {
   box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* Success View Button */
+.success-view .btn-submit {
+  margin-top: 32px;
+}
+
 .btn-submit:hover{ 
   transform: translateY(-2px);
   box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.15);
@@ -1755,10 +1755,16 @@ datalist {
 }
 
 .success-icon {
-  font-size: 64px;
-  color: #10b981;
-  margin-bottom: 24px;
-  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 8px auto 24px;
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+  color: #ffffff;
+  background: #8b5cf6;
+  border: 6px solid #e5e7eb;
+  border-radius: 50%;
 }
 
 /* Responsive Design */
