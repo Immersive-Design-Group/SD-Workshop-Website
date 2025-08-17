@@ -217,6 +217,12 @@
         clearSelection();
       }
       if (e.key === 'Enter' && selectedSlots.size > 0 && currentEquipment) {
+        // Enforce selection limit before opening modal
+        if (selectedSlots.size > 10) {
+          enforceSelectionLimit();
+          showError('Selection limit exceeded. Please review your selection.');
+          return;
+        }
         openModalWithSelectedSlots(currentEquipment);
       }
     });
@@ -809,6 +815,18 @@
       return;
     }
     
+    // Check if we're already at the limit and trying to select a new slot
+    if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) {
+      showLimitMessage();
+      return;
+    }
+    
+    // Prevent starting selection if already at limit (unless clicking on an already selected slot)
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
     isSelecting = true;
     isDragging = true;
     currentEquipment = eq;
@@ -819,16 +837,63 @@
       currentEquipment = eq;
     }
     
+    // Final check before adding slot
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // One more safety check before calling addSlotToSelection
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // Final safety check before calling addSlotToSelection
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
     addSlotToSelection(eq, slotIndex);
     document.body.style.userSelect = 'none';
   }
 
   function updateSelection(e, eq, slotIndex) {
     if (!isSelecting || !isDragging || currentEquipment?.name !== eq.name) return;
-    if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) return;
+    
+    // Strict limit enforcement: don't allow any new selections if already at 10 slots
+    if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) {
+      showLimitMessage();
+      return;
+    }
+    
+    // Prevent dragging to select more slots if already at limit
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
     
     // Don't select past slots
     if (isSlotInPast(slotIndex, selectedDate)) return;
+    
+    // Final check before adding slot
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // One more safety check before calling addSlotToSelection
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // Final safety check before calling addSlotToSelection
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
     
     addSlotToSelection(eq, slotIndex);
   }
@@ -837,6 +902,11 @@
     if (isSelecting) {
       isSelecting = false;
       document.body.style.userSelect = '';
+      
+      // Enforce selection limit when selection ends
+      if (selectedSlots.size > 10) {
+        enforceSelectionLimit();
+      }
       
       // Small delay to distinguish between click and drag
       setTimeout(() => {
@@ -858,8 +928,40 @@
       return;
     }
     
+    // Strict limit enforcement: don't allow any new selections if already at 10 slots
     if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) {
       if (!document.querySelector('.limit-message')) showLimitMessage();
+      return;
+    }
+    
+    // Additional safety check: if somehow we're already over the limit, don't add more
+    if (selectedSlots.size >= 10) {
+      console.warn('Selection limit exceeded, preventing further selections');
+      showLimitMessage();
+      return;
+    }
+    
+    // Final check: prevent any new selections if at limit
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // One more safety check before actually adding the slot
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // Last safety check before actually adding the slot
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
+      return;
+    }
+    
+    // Ultimate safety check before actually adding the slot
+    if (selectedSlots.size >= 10) {
+      showLimitMessage();
       return;
     }
     
@@ -942,23 +1044,78 @@
   function updateSelectionCounter() {
     const counter = document.querySelector('.selection-counter');
     if (counter) {
+      // Enforce the 10-slot limit by removing excess selections
+      if (selectedSlots.size > 10) {
+        console.warn(`Selection limit exceeded (${selectedSlots.size} slots), cleaning up excess selections`);
+        enforceSelectionLimit();
+      }
+      
       if (selectedSlots.size === 0) {
         counter.style.display = 'none';
       } else {
         counter.style.display = 'block';
         counter.textContent = `${selectedSlots.size} slot${selectedSlots.size === 1 ? '' : 's'} selected (${(selectedSlots.size * 0.5).toFixed(1)}h)`;
         
+
+        
         if (selectedSlots.size >= 10) {
           counter.style.color = '#ef4444';
+          counter.style.borderColor = '#ef4444';
+          counter.style.borderWidth = '2px';
+          counter.style.borderStyle = 'solid';
         } else if (selectedSlots.size >= 8) {
           counter.style.color = '#f59e0b';
+          counter.style.borderColor = '#f59e0b';
+          counter.style.borderWidth = '2px';
+          counter.style.borderStyle = 'solid';
         } else {
           counter.style.color = '#10b981';
+          counter.style.borderColor = 'transparent';
+          counter.style.borderWidth = '0px';
         }
       }
     }
   }
    
+  function enforceSelectionLimit() {
+    // If we have more than 10 slots selected, keep only the first 10
+    if (selectedSlots.size > 10) {
+      const sortedSlots = Array.from(selectedSlots).sort((a, b) => a - b);
+      const slotsToRemove = sortedSlots.slice(10); // Keep first 10, remove the rest
+      
+      // Remove excess slots from selection
+      slotsToRemove.forEach(slotIndex => {
+        selectedSlots.delete(slotIndex);
+        
+        // Update the DOM for removed slots
+        const slotElement = document.querySelector(
+          `[data-slot-index="${slotIndex}"][data-equipment-id="${currentEquipment?.name}"]`
+        );
+        if (slotElement) {
+          slotElement.classList.remove('selected');
+          slotElement.classList.add('available');
+          delete slotElement.dataset.selectionOrder;
+        }
+      });
+      
+      // Renumber remaining selected slots
+      const remainingSlots = Array.from(selectedSlots).sort((a, b) => a - b);
+      remainingSlots.forEach((slot, index) => {
+        const slotEl = document.querySelector(
+          `[data-slot-index="${slot}"][data-equipment-id="${currentEquipment?.name}"]`
+        );
+        if (slotEl) {
+          slotEl.dataset.selectionOrder = index + 1;
+        }
+      });
+      
+      console.log(`Enforced selection limit: removed ${slotsToRemove.length} excess slots, kept ${selectedSlots.size} slots`);
+      
+      // Show warning message
+      showError(`Selection limit enforced: removed ${slotsToRemove.length} excess slot(s). Maximum 10 slots (5 hours) allowed.`);
+    }
+  }
+
   function showLimitMessage() {
     if (document.querySelector('.limit-message')) {
       return;
@@ -974,6 +1131,7 @@
         <p><strong>To select different slots:</strong></p>
         <p>1. Double-click on any selected slot to remove it</p>
         <p>2. Then click on the new slot you want</p>
+        <p><strong>Current selection:</strong> ${selectedSlots.size} slots (${(selectedSlots.size * 0.5).toFixed(1)} hours)</p>
       </div>
     `;
     
@@ -989,11 +1147,16 @@
       if (message.parentNode) {
         message.parentNode.removeChild(message);
       }
-    }, 3000);
+    }, 5000); // Increased timeout for better readability
   }
   
   function openModalWithSelectedSlots(eq) {
     if (selectedSlots.size === 0) return;
+    
+    // Enforce selection limit before opening modal
+    if (selectedSlots.size > 10) {
+      enforceSelectionLimit();
+    }
 
     const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
     const start  = timeline[sorted[0]];
@@ -1394,6 +1557,11 @@
     if (el('rsv-modal').getAttribute('aria-hidden') === 'true') return;
     if (selectedSlots.size === 0) return;
     
+    // Enforce selection limit before updating modal
+    if (selectedSlots.size > 10) {
+      enforceSelectionLimit();
+    }
+    
     const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
     const start = timeline[sorted[0]];
     const end   = timeline[sorted[sorted.length-1] + 1];
@@ -1426,6 +1594,13 @@
      // Final validation before submission
      if (isWeekendOrHoliday(selectedDate)) {
        showPersistentWarning('Cannot create booking on weekends and Chinese holidays.');
+       return;
+     }
+     
+     // Enforce selection limit before submission
+     if (selectedSlots.size > 10) {
+       enforceSelectionLimit();
+       showError('Selection limit exceeded. Please review your selection before submitting.');
        return;
      }
 
