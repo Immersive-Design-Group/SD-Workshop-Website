@@ -1,41 +1,28 @@
 <section class="reservation-schedule" aria-label="Equipment reservation schedule">
-  <div class="now-line-global" id="rsv-now-line-global"></div>
-
-  <!-- User Instructions Banner -->
-  <div class="user-instructions">
-    <div class="instruction-content">
-      <span class="instruction-icon">💡</span>
-      <span class="instruction-text">
-        <strong>How to use:</strong> Click to select • Double-click to unselect • Drag across multiple slots for continuous selection • Maximum 5 hours (10 slots) per booking
-      </span>
-    </div>
-  </div>
-
-  <!-- Selection Counter -->
-  <div class="selection-counter" style="display: none;"></div>
-
   <!-- Header: date + arrows + timeline -->
   <div class="schedule-header">
     <div class="equip-col equip-col--header">
-    <div class="date-dropdown" id="rsv-date">
-      <button class="date-button" id="rsv-date-btn">
-        <span id="rsv-date-label">--</span>
-      </button>
-      <div class="date-menu" id="rsv-date-menu"></div>
+      <div class="date-dropdown" id="rsv-date">
+        <button class="date-button" id="rsv-date-btn">
+          <span id="rsv-date-label">--</span>
+        </button>
+        <div class="date-menu" id="rsv-date-menu"></div>
+      </div>
     </div>
+
+    <button class="nav-arrow" id="rsv-arrow-left" aria-label="Previous time">‹</button>
+
+    <div class="slots-viewport" id="rsv-header-viewport">
+      <div class="timebar" id="rsv-timebar"></div>
+    </div>
+
+    <button class="nav-arrow" id="rsv-arrow-right" aria-label="Next time">›</button>
   </div>
 
-  <button class="nav-arrow" id="rsv-arrow-left" aria-label="Previous time">‹</button>
+  <!-- Global now line -->
+  <div class="now-line-global" id="rsv-now-line-global"></div>
 
-  <div class="slots-viewport" id="rsv-header-viewport">
-    <div class="timebar" id="rsv-timebar"></div>
-  </div>
-
-  <button class="nav-arrow" id="rsv-arrow-right" aria-label="Next time">›</button>
-
-  </div>
-
-  <!-- Equipment rows are injected here -->
+  <!-- Equipment rows -->
   <div id="rsv-rows"></div>
 </section>
 

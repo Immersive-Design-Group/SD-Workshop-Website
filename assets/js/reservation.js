@@ -782,6 +782,16 @@
               } else {
                 // User clicked on unselected slot - select it
                 addSlotToSelection(eq, i);
+                
+                // For single slot selections, open modal immediately for better responsiveness
+                if (selectedSlots.size === 1) {
+                  console.log('Single slot selected, opening modal immediately');
+                  setTimeout(() => {
+                    if (selectedSlots.size === 1 && currentEquipment) {
+                      openModalWithSelectedSlots(currentEquipment);
+                    }
+                  }, 100); // Very short delay to allow for double-click
+                }
               }
             }
             
@@ -958,26 +968,34 @@
           clearTimeout(modalOpenTimeout);
         }
         
-        // Smart delay based on user behavior
+        // Much faster modal opening for better responsiveness
         let modalDelay;
-        const timeSinceInteraction = Date.now() - lastSlotInteractionTime;
-        
         if (selectedSlots.size === 1) {
-          // Single slot: longer delay to allow for double-click
-          modalDelay = Math.max(1000, 1000 - timeSinceInteraction);
+          // Single slot: quick delay to allow for double-click but not too slow
+          modalDelay = 200; // Reduced from 1000ms to 200ms
         } else {
-          // Multiple slots: shorter delay but still enough for user to finish
-          modalDelay = Math.max(800, 800 - timeSinceInteraction);
+          // Multiple slots: very quick delay for immediate feedback
+          modalDelay = 100; // Reduced from 800ms to 100ms
         }
         
         // Set the modal opening timeout
         modalOpenTimeout = setTimeout(() => {
-          // Only open modal if user hasn't started another action
-          if (!userActionInProgress && !isSelecting && selectedSlots.size > 0) {
+          // Simplified condition: just check if we still have slots selected
+          if (selectedSlots.size > 0 && currentEquipment) {
             openModalWithSelectedSlots(currentEquipment);
             modalOpenTimeout = null;
           }
         }, modalDelay);
+        
+        // Fallback: ensure modal opens even if timeout fails
+        setTimeout(() => {
+          if (selectedSlots.size > 0 && currentEquipment && 
+              el('rsv-modal').getAttribute('aria-hidden') === 'true' && 
+              !modalOpenTimeout) {
+            console.log('Fallback: forcing modal to open');
+            openModalWithSelectedSlots(currentEquipment);
+          }
+        }, modalDelay + 100); // Slightly longer than the main timeout
       }
       
       // Small delay to distinguish between click and drag
@@ -1030,8 +1048,16 @@
 
       updateSelectionCounter();
       
-      // Don't open modal immediately - let the selection process complete first
-      // Modal will be opened in endSelectionGlobally() after user finishes their action
+      // For single slot selections, open modal immediately for better responsiveness
+      if (selectedSlots.size === 1 && wasEmpty) {
+        // Small delay to allow for double-click, but much faster than before
+        setTimeout(() => {
+          if (selectedSlots.size === 1 && !modalOpenTimeout) {
+            openModalWithSelectedSlots(eq);
+          }
+        }, 150); // Reduced from previous delays
+      }
+      // For multiple slots, modal will be opened in endSelectionGlobally() after user finishes their action
     }
   }
 
@@ -1237,6 +1263,7 @@
     console.log('- Selected slots:', Array.from(selectedSlots));
     console.log('- Sorted slots:', sorted);
     console.log('- Total slots:', sorted.length);
+    console.log('- Current equipment:', eq);
     
     // Validation: ensure we're not exceeding 10 slots
     if (sorted.length > 10) {
@@ -1248,7 +1275,9 @@
     const end    = timeline[sorted[sorted.length-1] + 1];
     const hours  = sorted.length * 0.5;
 
+    console.log('Calling openModal with:', { eq, start, end, hours, sorted });
     openModal(eq, start, end, hours, sorted);
+    console.log('openModal called successfully');
   }
 
   // Helper functions
@@ -1598,9 +1627,22 @@
   }
 
   function openModal(eq, start, end, hours, sorted) {
+    console.log('openModal function called with:', { eq, start, end, hours, sorted });
+    
+    // Verify modal element exists and is accessible
+    const modalElement = el('rsv-modal');
+    if (!modalElement) {
+      console.error('Modal element not found!');
+      showError('Modal element not found. Please refresh the page.');
+      return;
+    }
+    
+    console.log('Modal element found:', modalElement);
+    console.log('Current modal state:', modalElement.getAttribute('aria-hidden'));
+    
     // Double-check that we're not trying to book on restricted dates
     if (isWeekendOrHoliday(selectedDate)) {
-      showPersistentWarning('Booking is not available on weekends and Public holidays.');
+      showPersistentWarning('Booking is not available on weekends and Chinese holidays.');
       return;
     }
 
@@ -1628,7 +1670,10 @@
 
     el('rsv-success').hidden = true;
     el('rsv-form').style.display = '';
+    
+    console.log('Setting modal aria-hidden to false');
     el('rsv-modal').setAttribute('aria-hidden', 'false');
+    console.log('Modal should now be visible');
   }
 
   function closeModal() {
