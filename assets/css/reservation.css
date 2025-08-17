@@ -360,7 +360,7 @@
   --rsv-slot-bd: #e6ebf1;
   --rsv-booked: #e8f1ff;
   --rsv-booked-bd: #cfe0ff;
-  --rsv-leftpad: 30px;  /* Match the slot padding-left for perfect alignment */
+  --rsv-leftpad: 10px;  /* Match the timebar padding-left for perfect alignment */
   --rsv-gap: 10px;  
 }
 
@@ -1622,21 +1622,23 @@ datalist {
   position:absolute; 
   top: 0; /* Will be positioned dynamically by JavaScript */
   bottom:0; 
-  width:2px; 
+  width:3px; /* Slightly thicker for better visibility */
   background:var(--rsv-now); 
-  z-index:4; 
+  z-index:10; /* Higher z-index to ensure visibility */
   pointer-events:none; 
   border-radius: 0;
+  box-shadow: 0 0 4px rgba(230, 0, 114, 0.3); /* Add subtle glow effect */
 }
 .now-line-global::before { 
   content:""; 
   position:absolute; 
   top:0; 
-  left:-2px; 
-  width:6px; 
-  height:6px; 
+  left:-1.5px; /* Adjust for the new line width */
+  width:8px; /* Slightly larger dot */
+  height:8px; /* Slightly larger dot */
   border-radius:50%; 
   background:var(--rsv-now); 
+  box-shadow: 0 0 6px rgba(230, 0, 114, 0.4); /* Add glow to dot */
 }
 
 /* ===== Beautiful Modal Design ===== */

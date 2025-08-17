@@ -1,5 +1,12 @@
 (() => {
   document.addEventListener('DOMContentLoaded', init);
+  
+  // Also ensure real-time indicator is positioned when window loads
+  window.addEventListener('load', () => {
+    if (typeof positionNowLine === 'function') {
+      positionNowLine();
+    }
+  });
 
   /* ===== Config ===== */
   const RSV_START_TIME = "09:00";
@@ -180,7 +187,8 @@
     
     // Then setup the rest
     setupSync();
-    positionNowLine();
+    // Position the real-time indicator with a small delay to ensure DOM is ready
+    setTimeout(() => positionNowLine(), 100);
     setupEmailValidation();
 
     // Load initial booking data for current date and nearby dates
@@ -192,13 +200,17 @@
       renderRows();
       // Mark initial load as complete
       isInitialLoad = false;
+      
+      // Reposition the real-time indicator after rows are rendered
+      positionNowLine();
     }).catch(console.error);
 
     setTimeout(() => {
       scrollToCurrentTime();
     }, 1000); // Increased delay to ensure data is loaded
     
-    setInterval(positionNowLine, 60 * 1000);
+    // Update real-time indicator every 30 seconds for smoother movement
+    setInterval(positionNowLine, 30 * 1000);
     
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -208,11 +220,25 @@
         openModalWithSelectedSlots(currentEquipment);
       }
     });
+    
+    // Reposition real-time indicator when page becomes visible
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        positionNowLine();
+      }
+    });
+    
+    // Reposition real-time indicator when window gains focus
+    window.addEventListener('focus', () => {
+      positionNowLine();
+    });
      
     window.addEventListener('resize', () => {
       clearTimeout(window.resizeTimeout);
       window.resizeTimeout = setTimeout(() => {
         headerViewport.offsetHeight;
+        // Reposition the real-time indicator after resize
+        positionNowLine();
       }, 100);
     });
       
@@ -1293,6 +1319,9 @@
          scrollToCurrentTime();
        }, 100);
      }
+     
+     // Reposition the real-time indicator for the new date
+     positionNowLine();
   });
 
   menu.addEventListener('scroll', () => {
@@ -1588,69 +1617,118 @@
   let currentBooking = null;
 
   function positionNowLine() {
-    const schedule = document.querySelector('.reservation-schedule');
-    if (!schedule || !headerViewport) return;
-    if (!Array.isArray(timeline) || timeline.length < 2) return;
-
-    // Check if selected date is today
-    const today = new Date();
-    const isToday = sameDay(selectedDate, today);
-
-    if (typeof nowLineGlobal !== 'undefined' && nowLineGlobal) {
-      if (!isToday) {
-        // If not today, hide the time indicator
-        nowLineGlobal.style.display = 'none';
+    try {
+      const schedule = document.querySelector('.reservation-schedule');
+      if (!schedule || !headerViewport) {
+        console.log('PositionNowLine: Missing required elements', { schedule: !!schedule, headerViewport: !!headerViewport });
+        return;
+      }
+      if (!Array.isArray(timeline) || timeline.length < 2) {
+        console.log('PositionNowLine: Invalid timeline', { timeline: timeline });
         return;
       }
 
-      // Only show time indicator for today
-      const startMin = t2m(RSV_START_TIME);
-      const endMin   = t2m(RSV_END_TIME);
-      const now      = new Date();
-      const nowMin   = now.getHours()*60 + now.getMinutes();
-      const m        = Math.min(Math.max(nowMin, startMin), endMin);
-
-      const LEFT_PAD = cssNumber('--rsv-leftpad', 30);
-      const GAP      = cssNumber('--rsv-gap', 10);
-      const SLOT_W   = cssNumber('--rsv-slot-w', 80);
-      const SEG_W    = SLOT_W + GAP;
-
-      // Calculate which slot the current time falls into
-      let slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
-      let positionInSlot = 0;
+      // Check if selected date is today
+      const today = new Date();
+      const isToday = sameDay(selectedDate, today);
       
-                     // If current time is before the first slot, start from the very left edge of the first time header box
+      // Debug logging
+      console.log('Positioning now line:', {
+        isToday,
+        selectedDate: fmtISO(selectedDate),
+        today: fmtISO(today),
+        currentTime: new Date().toLocaleTimeString()
+      });
+
+      if (typeof nowLineGlobal !== 'undefined' && nowLineGlobal) {
+        if (!isToday) {
+          // If not today, hide the time indicator
+          nowLineGlobal.style.display = 'none';
+          return;
+        }
+
+        // Only show time indicator for today
+        const startMin = t2m(RSV_START_TIME);
+        const endMin   = t2m(RSV_END_TIME);
+        const now      = new Date();
+        const nowMin   = now.getHours()*60 + now.getMinutes();
+        const m        = Math.min(Math.max(nowMin, startMin), endMin);
+        
+        // Debug logging for time calculation
+        console.log('Time calculation:', {
+          startMin,
+          endMin,
+          nowMin,
+          m,
+          RSV_START_TIME,
+          RSV_END_TIME,
+          currentTime: now.toLocaleTimeString()
+        });
+
+        // Use consistent values that match the CSS
+        const LEFT_PAD = 10; // Match the timebar padding-left: 10px
+        const GAP      = cssNumber('--rsv-gap', 10);
+        const SLOT_W   = cssNumber('--rsv-slot-w', 120);
+        const SEG_W    = SLOT_W + GAP;
+
+        // Calculate which slot the current time falls into
+        let slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+        let positionInSlot = 0;
+        
         let xInside;
         if (m < startMin) {
+          // If current time is before 09:00, position at the very left edge of the first time header
           slotIndex = 0;
-          // Position at the very left edge of the first time header box (not the center where "09:00" is written)
           xInside = LEFT_PAD; // Start exactly at the left edge of the first time header
         } else {
           const slotStartMin = startMin + (slotIndex * RSV_STEP_MIN);
           // Calculate position within the slot (0 = start, 1 = end)
           positionInSlot = (m - slotStartMin) / RSV_STEP_MIN;
+          
+          // Ensure positionInSlot doesn't exceed 1.0 (end of slot)
+          positionInSlot = Math.min(positionInSlot, 1.0);
+          
           // Position the line at the precise real-time position within the slot
-          xInside = LEFT_PAD + (slotIndex * SEG_W) + (positionInSlot * SLOT_W);
+          // Add a small offset to account for the visual appearance of the line
+          xInside = LEFT_PAD + (slotIndex * SEG_W) + (positionInSlot * SLOT_W) - 1;
         }
-      const xInView = xInside - headerViewport.scrollLeft;
-      const inView = xInView >= 0 && xInView <= headerViewport.clientWidth;
+        
+        const xInView = xInside - headerViewport.scrollLeft;
+        const inView = xInView >= 0 && xInView <= headerViewport.clientWidth;
 
-      if (inView) {
-        const schedLeft  = schedule.getBoundingClientRect().left + window.scrollX;
-        const headerLeft = headerViewport.getBoundingClientRect().left + window.scrollX;
-        const xPage      = headerLeft + xInView;
-        const xSched     = xPage - schedLeft;
-        
-        const scheduleTop = schedule.getBoundingClientRect().top + window.scrollY;
-        const headerTop = headerViewport.getBoundingClientRect().top + window.scrollY;
-        const indicatorStartTop = headerTop - scheduleTop;
-        
-        nowLineGlobal.style.display = 'block';
-        nowLineGlobal.style.left = `${xSched}px`;
-        nowLineGlobal.style.top = `${indicatorStartTop}px`;
-      } else {
-        nowLineGlobal.style.display = 'none';
+        if (inView) {
+          const schedLeft  = schedule.getBoundingClientRect().left + window.scrollX;
+          const headerLeft = headerViewport.getBoundingClientRect().left + window.scrollX;
+          const xPage      = headerLeft + xInView;
+          const xSched     = xPage - schedLeft;
+          
+          const scheduleTop = schedule.getBoundingClientRect().top + window.scrollY;
+          const headerTop = headerViewport.getBoundingClientRect().top + window.scrollY;
+          const indicatorStartTop = headerTop - scheduleTop;
+          
+          // Debug logging for positioning
+          console.log('Now line positioning:', {
+            xInside,
+            xInView,
+            xSched,
+            indicatorStartTop,
+            LEFT_PAD,
+            GAP,
+            SLOT_W,
+            SEG_W,
+            slotIndex,
+            positionInSlot
+          });
+          
+          nowLineGlobal.style.display = 'block';
+          nowLineGlobal.style.left = `${xSched}px`;
+          nowLineGlobal.style.top = `${indicatorStartTop}px`;
+        } else {
+          nowLineGlobal.style.display = 'none';
+        }
       }
+    } catch (error) {
+      console.error('Error in positionNowLine:', error);
     }
   }
 
@@ -1670,9 +1748,10 @@
       slotIndex = 0;
     }
     
-    const LEFT_PAD = cssNumber('--rsv-leftpad', 30);
+    // Use consistent values that match the CSS
+    const LEFT_PAD = 10; // Match the timebar padding-left: 10px
     const GAP = cssNumber('--rsv-gap', 10);
-    const SLOT_W = cssNumber('--rsv-slot-w', 80);
+    const SLOT_W = cssNumber('--rsv-slot-w', 120);
     const SEG_W = SLOT_W + GAP;
     
     // Position the scroll to show the start of the current slot
