@@ -14,6 +14,25 @@
 .reservation-container{ max-width:1400px; margin:0 auto; padding:24px 0 64px;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--ink-900); }
 
+/* Responsive container padding */
+@media (max-width: 768px) {
+  .reservation-container {
+    padding: 20px 0 48px;
+  }
+}
+
+@media (max-width: 576px) {
+  .reservation-container {
+    padding: 16px 0 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reservation-container {
+    padding: 12px 0 32px;
+  }
+}
+
 .reservation-hero{ padding:56px 0 18px; }
 .reservation-title{ margin:0 0 18px 0; line-height:0.7;letter-spacing:-.5px; display:block !important; }
 .title-our{ 
@@ -30,17 +49,118 @@
   font-weight:800; 
   color:#1a2238; /* Dark color for main title */
 }
+
+/* Responsive title sizing */
+@media (max-width: 1200px) {
+  .title-our,
+  .title-reservation {
+    font-size: 56px;
+  }
+}
+
+@media (max-width: 992px) {
+  .title-our,
+  .title-reservation {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .title-our,
+  .title-reservation {
+    font-size: 36px;
+  }
+  
+  .reservation-hero {
+    padding: 40px 0 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .title-our,
+  .title-reservation {
+    font-size: 28px;
+  }
+  
+  .reservation-hero {
+    padding: 32px 0 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-our,
+  .title-reservation {
+    font-size: 24px;
+  }
+  
+  .reservation-hero {
+    padding: 24px 0 12px;
+  }
+}
 .reservation-rule{ border:0; border-top:1px solid var(--line); }
 
 /* Rules card + CN/ENG groups with gap */
 .rules-card{ margin-top:18px; background:var(--panel); border:1px solid var(--line);
   border-radius:12px; padding:22px 24px; }
+
+/* Responsive rules card padding */
+@media (max-width: 768px) {
+  .rules-card {
+    padding: 18px 20px;
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .rules-card {
+    padding: 16px 18px;
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rules-card {
+    padding: 14px 16px;
+    margin-top: 12px;
+  }
+}
 .rules-heading{ 
   font-family: 'Inter', 'Noto Sans SC', sans-serif;
   font-size:42px; 
   font-weight:600; 
   color:#9ca3af; /* Same as other ghost titles */
   margin:0 0 10px; 
+}
+
+/* Responsive rules heading sizing */
+@media (max-width: 1200px) {
+  .rules-heading {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 992px) {
+  .rules-heading {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rules-heading {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+  .rules-heading {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rules-heading {
+    font-size: 20px;
+  }
 }
 
 .rules-md{ display:flex; flex-direction:column; gap:16px; }
