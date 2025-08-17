@@ -623,7 +623,7 @@ a {
 .ta-grid{
   display: grid;
   grid-template-columns: 180px repeat(5, 1fr); /* time + 5 days */
-  border-left: 2px solid black; /* Thick dark left border */
+  border-left: none; /* No left border on grid container */
   border-right: none; /* No right border */
   border-bottom: 1px solid #e5e7eb; /* Thin light bottom border */
   border-top: none; /* No top border */
@@ -636,7 +636,7 @@ a {
 /* Cells */
 .ta-cell{
   padding: 1.5rem 1rem;
-  border-right: 2px solid #111827; /* Thick dark vertical separators */
+  border-right: 1px solid #111827; /* Thinner vertical separators for data rows */
   border-bottom: 1px solid #e5e7eb; /* Thin light horizontal separators */
   background: #fff;
   min-height: 80px;
@@ -659,6 +659,12 @@ a {
   border-right: none;
 }
 
+/* Make Time header cell have thick border like other header cells */
+.ta-head:first-child {
+  border-right: 4px solid black; /* Thick border for Time header only */
+  border-left: 4px solid black; /* Thick left border for Time header only */
+}
+
 /* Header cells */
 .ta-head{
   font-weight: 800; 
@@ -670,6 +676,7 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* Move text to bottom of cell */
+  border-right: 4px solid black; /* Thicker vertical separators for header only */
 }
 
 /* Time column */
@@ -678,7 +685,8 @@ a {
   font-size: 1.4rem;
   color: black;
   text-align: left;
-  border-right: 2px solid black; /* Same thick dark border as other columns */
+  border-right: 1px solid black; /* Thinner border for data rows */
+  border-left: 1px solid black; /* Thinner left border for data rows */
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* Move text to bottom */
