@@ -170,6 +170,9 @@
   let isDragging = false;
   let currentEquipment = null;
   let isInitialLoad = true; // Track if this is the initial page load
+  let modalOpenTimeout = null;
+  let userActionInProgress = false;
+  let lastSlotInteractionTime = 0;
 
   function init() {
     headerViewport = el('rsv-header-viewport');
@@ -746,22 +749,60 @@
           
           cell.addEventListener('mouseenter', (e) => {
             if (isSelecting && isDragging) {
+              // Clear any pending modal opening during drag
+              if (modalOpenTimeout) {
+                clearTimeout(modalOpenTimeout);
+                modalOpenTimeout = null;
+              }
+              
               updateSelection(e, eq, i);
+              
+              // Update interaction tracking
+              lastSlotInteractionTime = Date.now();
+              userActionInProgress = true;
             }
           });
           
           cell.addEventListener('click', (e) => {
             e.preventDefault();
-            if (!isDragging && !selectedSlots.has(i)) {
-              addSlotToSelection(eq, i);
+            
+            // Clear any pending modal opening for this click
+            if (modalOpenTimeout) {
+              clearTimeout(modalOpenTimeout);
+              modalOpenTimeout = null;
             }
+            
+            if (!isDragging) {
+              if (selectedSlots.has(i)) {
+                // User clicked on already selected slot - deselect it
+                removeSlotFromSelection(eq, i);
+              } else {
+                // User clicked on unselected slot - select it
+                addSlotToSelection(eq, i);
+              }
+            }
+            
+            // Update interaction tracking
+            lastSlotInteractionTime = Date.now();
           });
           
           cell.addEventListener('dblclick', (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            
+            // Clear any pending modal opening
+            if (modalOpenTimeout) {
+              clearTimeout(modalOpenTimeout);
+              modalOpenTimeout = null;
+            }
+            
             if (selectedSlots.has(i)) {
               removeSlotFromSelection(eq, i);
             }
+            
+            // Reset user action state
+            userActionInProgress = false;
+            lastSlotInteractionTime = Date.now();
           });
         }
         
@@ -827,9 +868,17 @@
       return;
     }
     
+    // Clear any pending modal opening
+    if (modalOpenTimeout) {
+      clearTimeout(modalOpenTimeout);
+      modalOpenTimeout = null;
+    }
+    
     isSelecting = true;
     isDragging = true;
     currentEquipment = eq;
+    userActionInProgress = true;
+    lastSlotInteractionTime = Date.now();
     
     // Clear previous selection if switching equipment
     if (currentEquipment?.name !== eq.name) {
@@ -857,6 +906,9 @@
     
     addSlotToSelection(eq, slotIndex);
     document.body.style.userSelect = 'none';
+    
+    // Don't open modal immediately - wait to see if user wants to drag or double-click
+    // Modal will open in endSelectionGlobally() after a delay
   }
 
   function updateSelection(e, eq, slotIndex) {
@@ -896,16 +948,51 @@
     }
     
     addSlotToSelection(eq, slotIndex);
+    
+    // Don't open modal during drag - let the user complete their drag operation
+    // Modal will open in endSelectionGlobally() after drag completes
   }
 
   function endSelectionGlobally() {
     if (isSelecting) {
       isSelecting = false;
       document.body.style.userSelect = '';
+      userActionInProgress = false;
       
       // Enforce selection limit when selection ends
       if (selectedSlots.size > 10) {
         enforceSelectionLimit();
+      }
+      
+      // Intelligent modal opening with proper delays for user experience
+      if (selectedSlots.size > 0 && currentEquipment && 
+          el('rsv-modal').getAttribute('aria-hidden') === 'true') {
+        
+        // Clear any existing timeout
+        if (modalOpenTimeout) {
+          clearTimeout(modalOpenTimeout);
+        }
+        
+        // Smart delay based on user behavior
+        let modalDelay;
+        const timeSinceInteraction = Date.now() - lastSlotInteractionTime;
+        
+        if (selectedSlots.size === 1) {
+          // Single slot: longer delay to allow for double-click
+          modalDelay = Math.max(1000, 1000 - timeSinceInteraction);
+        } else {
+          // Multiple slots: shorter delay but still enough for user to finish
+          modalDelay = Math.max(800, 800 - timeSinceInteraction);
+        }
+        
+        // Set the modal opening timeout
+        modalOpenTimeout = setTimeout(() => {
+          // Only open modal if user hasn't started another action
+          if (!userActionInProgress && !isSelecting && selectedSlots.size > 0) {
+            openModalWithSelectedSlots(currentEquipment);
+            modalOpenTimeout = null;
+          }
+        }, modalDelay);
       }
       
       // Small delay to distinguish between click and drag
@@ -982,15 +1069,8 @@
 
       updateSelectionCounter();
       
-      // Handle modal opening/updating
-      if (wasEmpty) {
-        // Small delay to ensure DOM is updated
-        setTimeout(() => {
-          openModalWithSelectedSlots(eq);
-        }, 50);
-      } else {
-        updateModalFromSelection(eq);
-      }
+      // Don't open modal immediately - let the selection process complete first
+      // Modal will be opened in endSelectionGlobally() after user finishes their action
     }
   }
 
@@ -1020,17 +1100,38 @@
       
       updateSelectionCounter();
       
+      // Clear any pending modal opening
+      if (modalOpenTimeout) {
+        clearTimeout(modalOpenTimeout);
+        modalOpenTimeout = null;
+      }
+      
       // Update modal or close if no slots selected
       if (selectedSlots.size === 0) {
         closeModal();
       } else {
-        updateModalFromSelection(eq);
+        // Schedule modal opening with delay to allow for more deselections
+        modalOpenTimeout = setTimeout(() => {
+          if (!userActionInProgress && selectedSlots.size > 0) {
+            updateModalFromSelection(eq);
+          }
+        }, 500);
       }
+      
+      // Update interaction tracking
+      lastSlotInteractionTime = Date.now();
+      userActionInProgress = false;
     }
   }
   
   function clearSelection() {
     selectedSlots.clear();
+    
+    // Clear any pending modal opening
+    if (modalOpenTimeout) {
+      clearTimeout(modalOpenTimeout);
+      modalOpenTimeout = null;
+    }
     
     document.querySelectorAll('.slot.selected').forEach(slot => {
       slot.classList.remove('selected');
@@ -1039,6 +1140,10 @@
     });
     
     updateSelectionCounter();
+    
+    // Reset interaction tracking
+    userActionInProgress = false;
+    lastSlotInteractionTime = Date.now();
   }
       
   function updateSelectionCounter() {
@@ -1156,6 +1261,12 @@
     // Enforce selection limit before opening modal
     if (selectedSlots.size > 10) {
       enforceSelectionLimit();
+    }
+    
+    // Clear any pending modal opening
+    if (modalOpenTimeout) {
+      clearTimeout(modalOpenTimeout);
+      modalOpenTimeout = null;
     }
 
     const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
@@ -1551,6 +1662,12 @@
     el('rsv-form').reset();
     el('rsv-form').style.display = '';
     el('rsv-success').hidden = true;
+    
+    // Clear any pending modal opening
+    if (modalOpenTimeout) {
+      clearTimeout(modalOpenTimeout);
+      modalOpenTimeout = null;
+    }
   }
 
   function updateModalFromSelection(eq) {
@@ -1582,6 +1699,12 @@
     el('rsv-pill-end').textContent   = end;
     el('total-slots').textContent    = `${sorted.length} slot${sorted.length > 1 ? 's' : ''}`;
     el('total-hours').textContent    = `${hours.toFixed(1)} hours`;
+    
+    // Clear any pending modal opening since we're updating an existing modal
+    if (modalOpenTimeout) {
+      clearTimeout(modalOpenTimeout);
+      modalOpenTimeout = null;
+    }
   }
 
   el('rsv-modal-close').addEventListener('click', closeModal);
