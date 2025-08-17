@@ -843,10 +843,10 @@
 
     const getScrollStep = () => {
       const viewportWidth = window.innerWidth;
-      if (viewportWidth <= 480) return slotW() * 1;
-      if (viewportWidth <= 768) return slotW() * 2;
-      if (viewportWidth <= 1024) return slotW() * 3;
-      return slotW() * 6;
+      if (viewportWidth <= 480) return slotW() * 1;    // Mobile: 1 slot
+      if (viewportWidth <= 768) return slotW() * 2;    // Tablet: 2 slots  
+      if (viewportWidth <= 1024) return slotW() * 2;   // Small desktop: 2 slots (reduced from 3)
+      return slotW() * 3;                              // Large desktop: 3 slots (reduced from 6)
     };
     
     el('rsv-arrow-left').addEventListener('click', () => {
