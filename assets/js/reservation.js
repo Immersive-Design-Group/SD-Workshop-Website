@@ -1482,6 +1482,12 @@
        renderRows();
        clearSelection();
        
+       // Reset submit button state after successful booking
+       submitBtn.disabled = false;
+       btnText.style.opacity = '1';
+       btnLoading.style.display = 'none';
+       submitBtn.style.opacity = '1';
+       
        // No need to refresh from server - booking already added to cache and UI updated
 
      } catch (err) {
