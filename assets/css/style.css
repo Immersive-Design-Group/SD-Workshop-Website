@@ -623,7 +623,7 @@ a {
 .ta-grid{
   display: grid;
   grid-template-columns: 180px repeat(5, 1fr); /* time + 5 days */
-  border-left: 2px solid #111827; /* Thick dark left border */
+  border-left: 2px solid black; /* Thick dark left border */
   border-right: none; /* No right border */
   border-bottom: 1px solid #e5e7eb; /* Thin light bottom border */
   border-top: none; /* No top border */
@@ -646,25 +646,39 @@ a {
   gap: 0.25rem;
   font-family: 'Inter', 'Noto Sans SC', sans-serif;
   font-size: 1rem;
-  color: #374151;
+  color: black;
+}
+
+/* Remove right border from last column */
+.ta-cell:nth-child(6n) {
+  border-right: none;
+}
+
+/* Remove right border from last header column (Fri) */
+.ta-head:last-child {
+  border-right: none;
 }
 
 /* Header cells */
 .ta-head{
-  font-weight: 1000; /* Increased from 900 to 1000 for even bolder weekdays (Mon, Tues, Wed) */
-  font-size: 1.1rem;
-  color: #111827;
+  font-weight: 800; 
+  font-size: 1.4rem;
+  color: black;
   background: #fff;
   text-align: left; /* Left align to border */
+  padding-bottom: 0.5rem; /* Reduce bottom padding to move text down */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Move text to bottom of cell */
 }
 
 /* Time column */
 .ta-time, .time{
-  font-weight: 700; /* Make Time title bold */
-  font-size: 1.1rem;
-  color: #111827;
+  font-weight: 800; /* Make Time title bold */
+  font-size: 1.4rem;
+  color: black;
   text-align: left;
-  border-right: 2px solid #111827; /* Same thick dark border as other columns */
+  border-right: 2px solid black; /* Same thick dark border as other columns */
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* Move text to bottom */
@@ -672,8 +686,8 @@ a {
 
 /* English name (lighter) */
 .ta-en{ 
-  color: #6b7280; 
-  font-size: 0.95rem;
+  color: black; 
+  font-size: 1.1rem;
 }
 
 /* Remove thick vertical separators for clean design */
@@ -1734,4 +1748,3 @@ a {
     margin-bottom: 1.5rem;
   }
 }
-
