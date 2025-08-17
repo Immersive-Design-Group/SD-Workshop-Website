@@ -1,5 +1,5 @@
 /* =========================
-   Header and Rules
+   Header and Rules
 ========================= */
 
 :root{
@@ -690,7 +690,7 @@ body .reservation-container #rsv-rows .equip-row {
 #rsv-rows .equip-card{
   width: 100%;
   padding: 0;                 /* ← was 16px */
-  background: transparent;    /* we’ll make the image box the visual card */
+  background: transparent;    /* we'll make the image box the visual card */
   border-radius: 0;
   box-shadow: none;
 }
@@ -788,6 +788,8 @@ body .reservation-container #rsv-rows .equip-row {
   overflow: hidden;
   border-radius: 12px;
 }
+
+
 
 /* Remove pattern overlay for clean look */
 

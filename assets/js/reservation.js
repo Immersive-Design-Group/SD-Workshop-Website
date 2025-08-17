@@ -652,18 +652,13 @@
       const existingBookings = getExistingBookings(eq);
       console.log(`Rendering bookings for ${eq.name} on ${fmtISO(selectedDate)}:`, existingBookings);
       
-      // Create a map to track which slots are booked
+      // Create a set to track which slots are booked
       const bookedSlots = new Set();
-      const bookingDetails = new Map();
       
       existingBookings.forEach(booking => {
         console.log(`Processing booking for display: slots ${booking.startSlot} to ${booking.endSlot}`);
         for (let i = booking.startSlot; i < booking.endSlot; i++) {
           bookedSlots.add(i);
-          if (i === booking.startSlot) {
-            // Store booking details for the first slot
-            bookingDetails.set(i, booking);
-          }
         }
       });
 
@@ -682,28 +677,36 @@
         console.log(`Slot ${i} (${slotStartTime}-${slotEndTime}): isPast=${isPastSlot}, isBooked=${bookedSlots.has(i)}`);
         
         if (bookedSlots.has(i)) {
-          const booking = bookingDetails.get(i);
+          // Find the original booking for this slot
+          let originalBooking = null;
+          for (const booking of existingBookings) {
+            if (i >= booking.startSlot && i < booking.endSlot) {
+              originalBooking = booking;
+              break;
+            }
+          }
+          
           cell.className = 'slot booked';
           
           // Only show booking info on the first slot of each booking
-          if (booking) {
-            const startTime = timeline[booking.startSlot];
-            const endTime = timeline[booking.endSlot];
+          if (originalBooking) {
+            const startTime = timeline[originalBooking.startSlot];
+            const endTime = timeline[originalBooking.endSlot];
             cell.innerHTML = `
               <div class="booking-info">
                 <div class="booking-header">
                   <div class="user-avatar">
-                    <div class="user-avatar-initial">${getInitial(booking.name)}</div>
+                    <div class="user-avatar-initial">${getInitial(originalBooking.name)}</div>
                   </div>
                   <div class="time-name">
                     <div class="booking-time">${startTime}-${endTime}</div>
                     <div class="user-name-container">
-                      <div class="user-name">${booking.name}</div>
+                      <div class="user-name">${originalBooking.name}</div>
                     </div>
                   </div>
                 </div>
                 <div class="project-info">
-                  <div class="project-name">${booking.purpose}</div>
+                  <div class="project-name">${originalBooking.purpose}</div>
                 </div>
               </div>
             `;
@@ -712,7 +715,7 @@
             cell.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
-              openBookingManagementModal(booking);
+              openBookingManagementModal(originalBooking);
             });
             
             // Add cursor pointer to indicate it's clickable
@@ -886,24 +889,6 @@
       currentEquipment = eq;
     }
     
-    // Final check before adding slot
-    if (selectedSlots.size >= 10) {
-      showLimitMessage();
-      return;
-    }
-    
-    // One more safety check before calling addSlotToSelection
-    if (selectedSlots.size >= 10) {
-      showLimitMessage();
-      return;
-    }
-    
-    // Final safety check before calling addSlotToSelection
-    if (selectedSlots.size >= 10) {
-      showLimitMessage();
-      return;
-    }
-    
     addSlotToSelection(eq, slotIndex);
     document.body.style.userSelect = 'none';
     
@@ -1024,30 +1009,6 @@
     // Additional safety check: if somehow we're already over the limit, don't add more
     if (selectedSlots.size >= 10) {
       console.warn('Selection limit exceeded, preventing further selections');
-      showLimitMessage();
-      return;
-    }
-    
-    // Final check: prevent any new selections if at limit
-    if (selectedSlots.size >= 10) {
-      showLimitMessage();
-      return;
-    }
-    
-    // One more safety check before actually adding the slot
-    if (selectedSlots.size >= 10) {
-      showLimitMessage();
-      return;
-    }
-    
-    // Last safety check before actually adding the slot
-    if (selectedSlots.size >= 10) {
-      showLimitMessage();
-      return;
-    }
-    
-    // Ultimate safety check before actually adding the slot
-    if (selectedSlots.size >= 10) {
       showLimitMessage();
       return;
     }
@@ -1270,6 +1231,19 @@
     }
 
     const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
+    
+    // Debug logging to help identify the issue
+    console.log('Opening modal with slots:');
+    console.log('- Selected slots:', Array.from(selectedSlots));
+    console.log('- Sorted slots:', sorted);
+    console.log('- Total slots:', sorted.length);
+    
+    // Validation: ensure we're not exceeding 10 slots
+    if (sorted.length > 10) {
+      showError(`Cannot process ${sorted.length} slots. Maximum 10 slots (5 hours) allowed.`);
+      return;
+    }
+    
     const start  = timeline[sorted[0]];
     const end    = timeline[sorted[sorted.length-1] + 1];
     const hours  = sorted.length * 0.5;
@@ -1680,6 +1654,13 @@
     }
     
     const sorted = Array.from(selectedSlots).sort((a,b)=>a-b);
+    
+    // Validation: ensure we're not exceeding 10 slots
+    if (sorted.length > 10) {
+      showError(`Cannot process ${sorted.length} slots. Maximum 10 slots (5 hours) allowed.`);
+      return;
+    }
+    
     const start = timeline[sorted[0]];
     const end   = timeline[sorted[sorted.length-1] + 1];
     const hours = sorted.length * 0.5;
@@ -1720,10 +1701,29 @@
        return;
      }
      
-     // Enforce selection limit before submission
+     // Strict validation: ensure exactly 10 slots or fewer
      if (selectedSlots.size > 10) {
        enforceSelectionLimit();
-       showError('Selection limit exceeded. Please review your selection before submitting.');
+       showError('Selection limit exceeded. Maximum 10 slots (5 hours) allowed. Please review your selection.');
+       return;
+     }
+     
+     // Additional validation: ensure no gaps are filled automatically
+     if (lastModal.sorted.length !== selectedSlots.size) {
+       showError('Selection mismatch detected. Please refresh and reselect your slots.');
+       return;
+     }
+     
+     // Debug logging to help identify the issue
+     console.log('Form submission validation:');
+     console.log('- Selected slots (selectedSlots):', Array.from(selectedSlots).sort((a, b) => a - b));
+     console.log('- Modal slots (lastModal.sorted):', lastModal.sorted);
+     console.log('- Total slots to book:', lastModal.sorted.length);
+     console.log('- Expected maximum:', 10);
+     
+     // Final validation: ensure we're not exceeding 10 slots
+     if (lastModal.sorted.length > 10) {
+       showError(`Cannot book ${lastModal.sorted.length} slots. Maximum 10 slots (5 hours) allowed.`);
        return;
      }
 
@@ -1797,14 +1797,25 @@
        bookingsByDate[dateKey] = bookingsByDate[dateKey] || Object.create(null);
        const dev = lastModal.eq.name;
        bookingsByDate[dateKey][dev] = bookingsByDate[dateKey][dev] || [];
-       bookingsByDate[dateKey][dev].push({
-         startSlot: lastModal.sorted[0],
-         endSlot:   lastModal.sorted[lastModal.sorted.length - 1] + 1,
-         name,
-         purpose,
-         email,
-         id: data.booking_id // Use the booking ID from server response
+       
+       // Create individual bookings for each selected slot to prevent filling gaps
+       lastModal.sorted.forEach(slotIndex => {
+         bookingsByDate[dateKey][dev].push({
+           startSlot: slotIndex,
+           endSlot: slotIndex + 1, // Each slot covers exactly one 30-minute period
+           name,
+           purpose,
+           email,
+           id: data.booking_id // Use the booking ID from server response
+         });
        });
+       
+       // Debug logging to show exactly what was booked
+       console.log('Booking created successfully:');
+       console.log('- Total slots booked:', lastModal.sorted.length);
+       console.log('- Slots booked:', lastModal.sorted);
+       console.log('- Individual bookings created:', lastModal.sorted.length);
+       console.log('- No automatic gap filling - only selected slots are booked');
        
        renderRows();
        clearSelection();
