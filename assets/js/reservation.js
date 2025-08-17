@@ -1451,13 +1451,11 @@
      });
 
      try {
-       showLoadingState();
        const res = await fetch(SCRIPT_URL, {
          method: 'POST',
          headers: { 'Content-Type':'application/x-www-form-urlencoded' },
          body
        });
-       hideLoadingState();
        
        const data = await res.json();
        if (!data.ok) throw new Error(data.error || 'Unknown error');
@@ -1484,13 +1482,9 @@
        renderRows();
        clearSelection();
        
-       // Refresh from server to stay in sync
-       setTimeout(() => {
-         ensureDateLoaded(selectedDate).catch(console.error);
-       }, 1000);
+       // No need to refresh from server - booking already added to cache and UI updated
 
      } catch (err) {
-       hideLoadingState();
        showError('Booking failed: ' + err.message);
        
        // Re-enable submit button on error
