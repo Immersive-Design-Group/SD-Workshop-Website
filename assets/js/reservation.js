@@ -734,7 +734,7 @@
               font-size: 12px;
               text-align: center;
             ">
-              Past
+              Not Available
             </div>
           `;
         } else {
