@@ -191,7 +191,11 @@
     // Then setup the rest
     setupSync();
     // Position the real-time indicator with a small delay to ensure DOM is ready
-    setTimeout(() => positionNowLine(), 100);
+    setTimeout(() => {
+      if (sameDay(selectedDate, new Date())) {
+        positionNowLine();
+      }
+    }, 100);
     setupEmailValidation();
 
     // Load initial booking data for current date and nearby dates
@@ -204,13 +208,11 @@
       // Mark initial load as complete
       isInitialLoad = false;
       
-      // Reposition the real-time indicator after rows are rendered
-      positionNowLine();
+      // Synchronize time indicator and viewport position after everything is rendered
+      setTimeout(() => {
+        synchronizeTimeIndicatorAndViewport();
+      }, 200); // Short delay to ensure DOM is fully updated
     }).catch(console.error);
-
-    setTimeout(() => {
-      scrollToCurrentTime();
-    }, 1000); // Increased delay to ensure data is loaded
     
     // Update real-time indicator every 30 seconds for smoother movement
     setInterval(positionNowLine, 30 * 1000);
@@ -230,24 +232,24 @@
       }
     });
     
-    // Reposition real-time indicator when page becomes visible
+    // Synchronize time indicator and viewport when page becomes visible
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        positionNowLine();
+        synchronizeTimeIndicatorAndViewport();
       }
     });
     
-    // Reposition real-time indicator when window gains focus
+    // Synchronize time indicator and viewport when window gains focus
     window.addEventListener('focus', () => {
-      positionNowLine();
+      synchronizeTimeIndicatorAndViewport();
     });
      
     window.addEventListener('resize', () => {
       clearTimeout(window.resizeTimeout);
       window.resizeTimeout = setTimeout(() => {
         headerViewport.offsetHeight;
-        // Reposition the real-time indicator after resize
-        positionNowLine();
+        // Synchronize time indicator and viewport after resize
+        synchronizeTimeIndicatorAndViewport();
       }, 100);
     });
       
@@ -834,6 +836,7 @@
     headerViewport.addEventListener('scroll', () => {
       const x = headerViewport.scrollLeft;
       vpRows().forEach(v => v.scrollLeft = x);
+      // Only reposition the time indicator, don't change scroll position
       positionNowLine();
     });
 
@@ -1583,22 +1586,10 @@
      t.classList.add('is-selected');
      dd.classList.remove('open');
      
-     // Always scroll header back to beginning (09:00) when changing dates
-     // This ensures users start viewing from the beginning of the timeline
-     headerViewport.scrollTo({
-       left: 0,
-       behavior: 'smooth'
-     });
-     
-     const today = new Date();
-     if (sameDay(d, today)) {
-       setTimeout(() => {
-         scrollToCurrentTime();
-       }, 100);
-     }
-     
-     // Reposition the real-time indicator for the new date
-     positionNowLine();
+     // Synchronize time indicator and viewport for the new date
+     setTimeout(() => {
+       synchronizeTimeIndicatorAndViewport();
+     }, 100);
   });
 
   menu.addEventListener('scroll', () => {
@@ -2102,17 +2093,106 @@
       slotIndex = 0;
     }
     
-    // Use consistent values that match the CSS
+    // Use consistent values that match the CSS - same as positionNowLine
     const LEFT_PAD = 10; // Match the timebar padding-left: 10px
     const GAP = cssNumber('--rsv-gap', 10);
     const SLOT_W = cssNumber('--rsv-slot-w', 120);
     const SEG_W = SLOT_W + GAP;
     
-    // Position the scroll to show the start of the current slot
-    const slotPosition = LEFT_PAD + (slotIndex * SEG_W);
+    // Calculate the exact position where the current time indicator should be
+    let slotPosition;
+    if (m < startMin) {
+      // If current time is before 09:00, position at the very left edge
+      slotPosition = LEFT_PAD;
+    } else {
+      const slotStartMin = startMin + (slotIndex * RSV_STEP_MIN);
+      const positionInSlot = (m - slotStartMin) / RSV_STEP_MIN;
+      const clampedPositionInSlot = Math.min(positionInSlot, 1.0);
+      slotPosition = LEFT_PAD + (slotIndex * SEG_W) + (clampedPositionInSlot * SLOT_W);
+    }
+    
+    // Center the current time indicator in the viewport
     const viewportWidth = headerViewport.clientWidth;
-    const targetScrollLeft = slotPosition - (viewportWidth / 4);
+    const targetScrollLeft = slotPosition - (viewportWidth / 2);
     const finalScrollLeft = Math.max(0, targetScrollLeft);
+    
+    console.log('Scrolling to current time:', {
+      nowMin,
+      slotIndex,
+      slotPosition,
+      targetScrollLeft,
+      finalScrollLeft,
+      viewportWidth
+    });
+    
+    headerViewport.scrollTo({
+      left: finalScrollLeft,
+      behavior: 'smooth'
+    });
+  }
+
+  // Function to synchronize time indicator and viewport position
+  function synchronizeTimeIndicatorAndViewport() {
+    if (!headerViewport || !Array.isArray(timeline) || timeline.length < 2) return;
+    
+    const now = new Date();
+    const today = new Date();
+    const isToday = sameDay(selectedDate, today);
+    
+    if (!isToday) {
+      // If not today, hide time indicator and scroll to beginning
+      if (nowLineGlobal) {
+        nowLineGlobal.style.display = 'none';
+      }
+      headerViewport.scrollTo({
+        left: 0,
+        behavior: 'smooth'
+      });
+      return;
+    }
+    
+    // If it's today, position time indicator and scroll viewport to match
+    positionNowLine();
+    
+    // Use the same calculation logic as positionNowLine for perfect alignment
+    const startMin = t2m(RSV_START_TIME);
+    const endMin = t2m(RSV_END_TIME);
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const m = Math.min(Math.max(nowMin, startMin), endMin);
+    
+    let slotIndex = Math.floor((m - startMin) / RSV_STEP_MIN);
+    let positionInSlot = 0;
+    
+    const LEFT_PAD = 10;
+    const GAP = cssNumber('--rsv-gap', 10);
+    const SLOT_W = cssNumber('--rsv-slot-w', 120);
+    const SEG_W = SLOT_W + GAP;
+    
+    let xInside;
+    if (m < startMin) {
+      slotIndex = 0;
+      xInside = LEFT_PAD;
+    } else {
+      const slotStartMin = startMin + (slotIndex * RSV_STEP_MIN);
+      positionInSlot = (m - slotStartMin) / RSV_STEP_MIN;
+      positionInSlot = Math.min(positionInSlot, 1.0);
+      xInside = LEFT_PAD + (slotIndex * SEG_W) + (positionInSlot * SLOT_W) - 1;
+    }
+    
+    // Center the time indicator in the viewport
+    const viewportWidth = headerViewport.clientWidth;
+    const targetScrollLeft = xInside - (viewportWidth / 2);
+    const finalScrollLeft = Math.max(0, targetScrollLeft);
+    
+    console.log('Synchronizing time indicator and viewport:', {
+      nowMin,
+      slotIndex,
+      positionInSlot,
+      xInside,
+      targetScrollLeft,
+      finalScrollLeft,
+      viewportWidth
+    });
     
     headerViewport.scrollTo({
       left: finalScrollLeft,
