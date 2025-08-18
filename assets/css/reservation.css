@@ -1999,6 +1999,7 @@ datalist {
     width: 95vw;
     margin: 20px;
     border-radius: 16px;
+    max-height: 95vh;
   }
   
   .modal-header {
@@ -2018,18 +2019,23 @@ datalist {
   
   .form__label {
     min-width: auto;
+    font-size: 16px;
+    margin-bottom: 4px;
   }
   
   .modal__title {
     font-size: 24px;
+    margin: 0 0 6px 0;
   }
   
   .modal__subtitle {
     font-size: 20px;
+    margin-top: 2px;
   }
   
   .time-pills {
     gap: 12px;
+    flex-wrap: wrap;
   }
   
   .time-pill {
@@ -2041,6 +2047,22 @@ datalist {
   .email-domain {
     flex: 0 0 180px;
   }
+  
+  .form__input,
+  .form__textarea {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+  
+  .duration-display {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .btn-submit {
+    padding: 18px 16px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2049,10 +2071,19 @@ datalist {
     margin: 0;
     border-radius: 0;
     min-height: 100vh;
+    max-height: 100vh;
   }
   
   .modal-header {
     padding: 20px 16px 16px 16px;
+  }
+  
+  .modal__close {
+    right: 16px;
+    top: 20px;
+    font-size: 40px;
+    width: 32px;
+    height: 32px;
   }
   
   .form {
@@ -2068,25 +2099,35 @@ datalist {
   
   .form__label {
     min-width: auto;
-    font-size: 13px;
+    font-size: 15px;
+    margin-bottom: 4px;
   }
   
   .modal__title {
     font-size: 22px;
+    margin: 0 0 4px 0;
   }
   
   .modal__subtitle {
     font-size: 18px;
+    margin-top: 2px;
   }
   
   .time-pills {
     flex-direction: column;
     gap: 8px;
+    width: 100%;
   }
   
   .time-pill {
     min-width: 100%;
     text-align: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .time-arrow {
+    display: none;
   }
   
   .email-split-container {
@@ -2102,6 +2143,87 @@ datalist {
   
   .email-domain {
     flex: 1;
+  }
+  
+  .form__input,
+  .form__textarea {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+  
+  .form__textarea {
+    height: 100px;
+  }
+  
+  .duration-display {
+    padding: 12px 14px;
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .btn-submit {
+    padding: 16px 14px;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+  
+  .form__check {
+    margin: 16px 0;
+    gap: 10px;
+  }
+  
+  .form__check input {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .form__check span {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 360px) {
+  .modal__dialog {
+    width: 100vw;
+    margin: 0;
+  }
+  
+  .modal-header {
+    padding: 16px 12px 12px 12px;
+  }
+  
+  .form {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+  
+  .form__label {
+    font-size: 14px;
+  }
+  
+  .modal__title {
+    font-size: 20px;
+  }
+  
+  .modal__subtitle {
+    font-size: 16px;
+  }
+  
+  .form__input,
+  .form__textarea {
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+  
+  .time-pill {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .btn-submit {
+    padding: 14px 12px;
+    font-size: 15px;
   }
 }
 
@@ -2485,40 +2607,38 @@ datalist {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: white;
   border: none;
-  padding: 14px 28px;
+  width: 100%;
+  padding: 20px 10px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
   position: relative;
   overflow: hidden;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-family: inherit;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
-  filter: brightness(1.1);
+  box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
 }
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:disabled {
-  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  background: #9ca3af;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+  box-shadow: none;
 }
 
 /* Loading state for OTP button */

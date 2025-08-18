@@ -3,6 +3,16 @@ const SPREADSHEET_ID = '1SOOKXawQ93WMI-4z2TQ2fwRmeRy2UpiQqCoNh0SvmbI';
 const SHEET_NAME     = 'SD-Workshop-Bookings';
 const ADMIN_EMAIL    = 'khowaja.ashfaqali1996@gmail.com';
 
+function doOptions(e) {
+  return ContentService.createTextOutput('')
+    .setMimeType(ContentService.MimeType.TEXT)
+    .setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+}
+
 /***** UTILITIES *****/
 const out = obj =>
   ContentService.createTextOutput(JSON.stringify(obj))
@@ -11,6 +21,18 @@ const out = obj =>
 const t2m = t => { const [h, m] = (t||'').split(':').map(Number); return h*60 + m; };
 const overlaps = (s1,e1,s2,e2) => s1 < e2 && s2 < e1;
 
+
+// Add this function at the top of your file, after the utilities section
+function extractTimeOnly(timeValue) {
+  if (timeValue instanceof Date) {
+    // If it's a Date object, extract just the time
+    return timeValue.toTimeString().substring(0, 5); // Returns "HH:MM"
+  } else {
+    // If it's already a string, just return it
+    const timeStr = String(timeValue || '').trim();
+    return timeStr;
+  }
+}
 /**
  * Sequential booking ID generator:
  * SD-WS-2025-000000, 000001, ...
@@ -161,16 +183,17 @@ function listBookingsForDateRange(fromDate, toDate) {
       // Format date as YYYY-MM-DD for consistency with frontend
       const formattedDate = `${bookingDate.getFullYear()}-${String(bookingDate.getMonth() + 1).padStart(2, '0')}-${String(bookingDate.getDate()).padStart(2, '0')}`;
 
-      const booking = {
-        device: String(row[col['Equipment']] || '').trim(),
-        date: formattedDate,
-        start: String(row[col['Start Time']] || '').trim(),
-        end: String(row[col['End Time']] || '').trim(),
-        name: String(row[col['Name']] || '').trim(),
-        purpose: String(row[col['Purpose']] || '').trim(),
-        id: String(row[col['Booking ID']] || '').trim(),
-        email: String(row[col['Email']] || '').trim()
-      };
+
+        const booking = {
+      device: String(row[col['Equipment']] || '').trim(),
+      date: formattedDate,
+      start: extractTimeOnly(row[col['Start Time']]),  // Use the new function
+      end: extractTimeOnly(row[col['End Time']]),      // Use the new function
+      name: String(row[col['Name']] || '').trim(),
+      purpose: String(row[col['Purpose']] || '').trim(),
+      id: String(row[col['Booking ID']] || '').trim(),
+      email: String(row[col['Email']] || '').trim()
+    };
 
       // Only include bookings with valid required data
       if (booking.device && booking.start && booking.end && booking.name) {
@@ -479,8 +502,8 @@ function createBooking(p) {
       }
       if (rowDate !== date) continue;
       
-      const exS = t2m(String(row[col['Start Time']] || ''));
-      const exE = t2m(String(row[col['End Time']] || ''));
+      const exS = t2m(extractTimeOnly(row[col['Start Time']]));
+      const exE = t2m(extractTimeOnly(row[col['End Time']]));
       if (overlaps(exS, exE, newS, newE)) {
         console.log(`Conflict detected with existing booking: ${rowDevice} on ${rowDate} from ${row[col['Start Time']]} to ${row[col['End Time']]}`);
         return out({ ok:false, error:'Time slot conflict. Please choose another time.' });
