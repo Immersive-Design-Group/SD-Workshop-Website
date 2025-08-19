@@ -718,6 +718,72 @@ body .reservation-container #rsv-rows .equip-row {
 #rsv-rows .equip-name{ font-weight: 600; font-size: 14px; line-height: 1.1; }
 #rsv-rows .equip-model{ font-weight: 600; font-size: 14px; }
 
+/* Equipment status badges */
+.equip-status {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.equip-status--broken {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.equip-status--maintenance {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fed7aa;
+}
+
+.equip-status--out-of-service {
+  background: #fef2f2;
+  color: #7f1d1d;
+  border: 1px solid #fecaca;
+}
+
+/* Broken equipment row styling */
+.equip-row--broken .equip-thumb {
+  opacity: 0.6;
+  filter: grayscale(100%);
+}
+
+.equip-row--broken .equip-thumb img {
+  filter: grayscale(100%);
+}
+
+/* Broken slot styling */
+.slot.broken {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.slot.broken::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(220, 38, 38, 0.1) 2px,
+    rgba(220, 38, 38, 0.1) 4px
+  );
+  pointer-events: none;
+}
+
 
 /* ===== Remove the big border/background panel behind slots ===== */
 #rsv-rows .row-viewport{
@@ -1139,6 +1205,13 @@ datalist {
     width: 95% !important;
     padding: 20px !important;
   }
+  
+  /* Responsive status badges */
+  .equip-status {
+    font-size: 10px;
+    padding: 3px 6px;
+    margin-top: 6px;
+  }
 }
 
 /* Enhanced error messaging */
@@ -1521,6 +1594,19 @@ datalist {
     flex: 1;
     margin-top: auto;
     margin-bottom: auto;
+  }
+}
+
+/* Responsive styles for smaller screens */
+@media (max-width: 576px) {
+  .equip-status {
+    font-size: 9px;
+    padding: 2px 4px;
+    margin-top: 4px;
+  }
+  
+  .equip-row--broken .equip-thumb {
+    height: 80px;
   }
 }
 

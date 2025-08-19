@@ -620,10 +620,27 @@
       const row = document.createElement('div');
       row.className = 'equip-row';
 
+      // Check equipment status
+      const isEquipmentBroken = eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service';
+      
+      if (isEquipmentBroken) {
+        row.className = 'equip-row equip-row--broken';
+      }
+
       const left = document.createElement('div');
       left.className = 'equip-left';
 
       const imgSrc = normalizeImage(eq.image);
+
+      // Add status indicator
+      let statusBadge = '';
+      if (eq.status === 'broken') {
+        statusBadge = '<div class="equip-status equip-status--broken">🚫 BROKEN</div>';
+      } else if (eq.status === 'maintenance') {
+        statusBadge = '<div class="equip-status equip-status--maintenance">🔧 MAINTENANCE</div>';
+      } else if (eq.status === 'out_of_service') {
+        statusBadge = '<div class="equip-status equip-status--out-of-service">⛔ OUT OF SERVICE</div>';
+      }
 
       left.innerHTML = `
         <div class="equip-card">
@@ -634,6 +651,7 @@
         <div class="equip-meta-below">
           <div class="equip-name">${eq.name || ''}</div>
           <div class="equip-model">${eq.model || ''}</div>
+          ${statusBadge}
         </div>
       `;
 
@@ -677,6 +695,27 @@
         const isPastSlot = isSlotInPast(i, selectedDate);
         
         console.log(`Slot ${i} (${slotStartTime}-${slotEndTime}): isPast=${isPastSlot}, isBooked=${bookedSlots.has(i)}`);
+        
+        // If equipment is broken, show all slots as unavailable
+        if (isEquipmentBroken) {
+          cell.className = 'slot broken';
+          cell.innerHTML = `
+            <div style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100%;
+              color: #dc2626;
+              font-size: 12px;
+              text-align: center;
+              font-weight: 600;
+            ">
+              Equipment Unavailable
+            </div>
+          `;
+          row.appendChild(cell);
+          continue;
+        }
         
         if (bookedSlots.has(i)) {
           // Find the original booking for this slot
@@ -749,11 +788,23 @@
           // Add event listeners for available slots
           cell.addEventListener('mousedown', (e) => {
             e.preventDefault();
+            
+            // Prevent selection if equipment is broken
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+              return;
+            }
+            
             startSelection(e, eq, i);
           });
           
           cell.addEventListener('mouseenter', (e) => {
             if (isSelecting && isDragging) {
+              // Prevent selection if equipment is broken
+              if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+                return;
+              }
+              
               // Clear any pending modal opening during drag
               if (modalOpenTimeout) {
                 clearTimeout(modalOpenTimeout);
@@ -770,6 +821,12 @@
           
           cell.addEventListener('click', (e) => {
             e.preventDefault();
+            
+            // Prevent selection if equipment is broken
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+              return;
+            }
             
             // Clear any pending modal opening for this click
             if (modalOpenTimeout) {
@@ -804,6 +861,11 @@
           cell.addEventListener('dblclick', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            
+            // Prevent selection if equipment is broken
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+              return;
+            }
             
             // Clear any pending modal opening
             if (modalOpenTimeout) {
@@ -1247,6 +1309,12 @@
   
   function openModalWithSelectedSlots(eq) {
     if (selectedSlots.size === 0) return;
+    
+    // Check if equipment is broken/out of service
+    if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+      showError(`Cannot book ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+      return;
+    }
     
     // Enforce selection limit before opening modal
     if (selectedSlots.size > 10) {
