@@ -646,12 +646,12 @@
         <div class="equip-card">
           <div class="equip-thumb">
             ${imgSrc ? `<img src="${imgSrc}" alt="${eq.name}">` : ''}
+            ${statusBadge}
           </div>
         </div>
         <div class="equip-meta-below">
           <div class="equip-name">${eq.name || ''}</div>
           <div class="equip-model">${eq.model || ''}</div>
-          ${statusBadge}
         </div>
       `;
 
@@ -696,26 +696,13 @@
         
         console.log(`Slot ${i} (${slotStartTime}-${slotEndTime}): isPast=${isPastSlot}, isBooked=${bookedSlots.has(i)}`);
         
-        // If equipment is broken, show all slots as unavailable
-        if (isEquipmentBroken) {
-          cell.className = 'slot broken';
-          cell.innerHTML = `
-            <div style="
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 100%;
-              color: #dc2626;
-              font-size: 12px;
-              text-align: center;
-              font-weight: 600;
-            ">
-              Equipment Unavailable
-            </div>
-          `;
-          row.appendChild(cell);
-          continue;
-        }
+                 // If equipment is broken, show all slots as unavailable (without text)
+         if (isEquipmentBroken) {
+           cell.className = 'slot broken';
+           // No innerHTML - just show the visual styling
+           strip.appendChild(cell);
+           continue;
+         }
         
         if (bookedSlots.has(i)) {
           // Find the original booking for this slot

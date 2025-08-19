@@ -12,7 +12,7 @@ rules:
     - "For use on holidays, please email the workshop administrator at designworkshop@sustech.edu.cn (example email provided)."
 
 
-# working, broken, maintenance, out_of_service
+#Status: working, broken, maintenance, out_of_service
 
 equipment:
   - id: "eq1"
@@ -38,14 +38,14 @@ equipment:
     name: "3D PRINTER 5"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
-    status: "working"  
+    status: "out_of_service"  
   - id: "eq6"
     name: "3D PRINTER 6"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
     status: "working"
   - id: "eq7"
-    name: "Laser Cutting Machine Speed 400 1"
+    name: "Laser Cutting Machine Speed 400"
     model: 
     image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
     status: "working"
