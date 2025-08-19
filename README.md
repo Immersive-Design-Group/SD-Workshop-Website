@@ -83,7 +83,7 @@ SD-Workshop-Website/
 3. **Production Deployment**
    - Push to GitHub repository
    - Enable GitHub Pages in repository settings
-   - Website will be available at: `https://yourusername.github.io/SD-Workshop-Website`
+   - Website is available at: `sustechsdworkshop.com`
 
 ### Configuration
 
@@ -175,9 +175,6 @@ The website is optimized for all device sizes:
 6. Push to branch: `git push origin feature-name`
 7. Submit a Pull Request
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 📞 Support
 
@@ -203,4 +200,4 @@ For technical support or questions:
 
 **Built with ❤️ for the SUSTech SD Community**
 
-*Last updated: August 2025*
+*Last updated: August 19th, 2025*
