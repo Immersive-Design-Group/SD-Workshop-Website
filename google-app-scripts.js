@@ -64,6 +64,7 @@ function nextBookingId() {
   - /exec?action=get_booking_details&id=BOOKING_ID                  (get specific booking details)
   - /exec?action=send_otp&email=EMAIL&id=BOOKING_ID                (send OTP for deletion)
 */
+
 function doGet(e) {
   const action = (e.parameter.action || '').toLowerCase();
   if (action === 'list_bookings') return listBookings(e);
