@@ -7,7 +7,7 @@ room: 1114
 thumb: assets/images/Equipments/speed400.png
 
 hero:
-  image: assets/images/Equipments/Laser-cutting-machine/Speed400.png
+  image: /assets/images/Equipments/Laser-cutting-machine/Speed400.png
   alt: Soldering Station overview
 
 # Right-column spec values (any of these are optional)
