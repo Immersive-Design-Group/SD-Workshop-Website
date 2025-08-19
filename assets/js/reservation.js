@@ -870,7 +870,10 @@
           });
         }
         
-        strip.appendChild(cell);
+        // Only append cell if it hasn't been appended yet (for broken equipment)
+        if (!isEquipmentBroken || !cell.parentNode) {
+          strip.appendChild(cell);
+        }
       }
 
       viewport.appendChild(strip);

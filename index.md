@@ -14,6 +14,9 @@ title: 首页 HOME
       Space hour： Mon-Fri 9:00-22:00<br/>
       Office hour： Mon-Fri 9:00-17:30
     </p>
+    <div class="status-indicator" id="workshop-status">
+      <span class="status-text" id="status-text">Loading...</span>
+    </div>
   </div>
 
   <div class="hero-image">
