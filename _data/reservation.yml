@@ -42,7 +42,3 @@ equipment:
     name: "Laser Cutting Machine Speed 400 1"
     model: 
     image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
-  - id: "eq8"
-    name: "Laser Cutting Machine 2"
-    model: 
-    image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
