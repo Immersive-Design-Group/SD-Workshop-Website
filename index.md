@@ -137,3 +137,60 @@ title: 首页 HOME
     {% endfor %}
   </div>
 </section>
+
+<!-- Team Members Section -->
+<section class="team-section" id="team">
+  <h2 class="team-ghost">{{ site.data.team.title }}</h2>
+  
+  <div class="team-container">
+    <!-- Designers Row -->
+    <div class="team-row">
+      <h3 class="team-row-title">
+        <span class="title-text">Designers</span>
+        {% if site.data.team.designers.group_name %}
+          <span class="group-name">{{ site.data.team.designers.group_name }}</span>
+        {% endif %}
+      </h3>
+      <div class="team-members">
+        {% for designer in site.data.team.designers.members %}
+          <div class="team-member">
+            <div class="member-avatar">
+              {% if designer.image %}
+                <img src="{{ designer.image | relative_url }}" alt="{{ designer.name }}">
+              {% endif %}
+            </div>
+            <div class="member-info">
+              <div class="member-name">{{ designer.name }}</div>
+              <div class="member-degree">{{ designer.degree }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    
+    <!-- Developers Row -->
+    <div class="team-row">
+      <h3 class="team-row-title">
+        <span class="title-text">Developers</span>
+        {% if site.data.team.developers.group_name %}
+          <span class="group-name">{{ site.data.team.developers.group_name }}</span>
+        {% endif %}
+      </h3>
+      <div class="team-members">
+        {% for developer in site.data.team.developers.members %}
+          <div class="team-member">
+            <div class="member-avatar">
+              {% if developer.image %}
+                <img src="{{ developer.image | relative_url }}" alt="{{ developer.name }}">
+              {% endif %}
+            </div>
+            <div class="member-info">
+              <div class="member-name">{{ developer.name }}</div>
+              <div class="member-degree">{{ developer.degree }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>

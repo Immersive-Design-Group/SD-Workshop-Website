@@ -1,0 +1,39 @@
+title: "Team Members"
+
+designers:
+  group_name: ""
+  members:
+    - name: "Wang Kezhuo"
+      degree: "XYZ"
+      image: "/assets/images/team/wang-kezhuo.jpg"
+      
+    - name: "Niu Wenke"
+      degree: "XYZ"
+      image: "/assets/images/team/niu-wenke.jpg"
+      
+    - name: "Lin Xiaozheng"
+      degree: "XYZ"
+      image: "/assets/images/team/lin-xiaozheng.jpg"
+      
+    - name: "Chen Yutai"
+      degree: "XYZ"
+      image: "/assets/images/team/chen-yutai.jpg"
+      
+    - name: "Yan Wenxin"
+      degree: "Masters"
+      image: "/assets/images/team/Wenxin-yan.jpg"
+      
+    - name: "Li Heyue"
+      degree: "Bachelor"
+      image: "/assets/images/team/li-heyue.jpg"
+
+developers:
+  group_name: "Immersive Design Group"
+  members:
+    - name: "Jiang Weitao"
+      degree: "PHD"
+      image: "/assets/images/team/weitao.jpg"
+      
+    - name: "Ashfaque Khowaja"
+      degree: "PHD"
+      image: "/assets/images/team/khowaja.jpg"
