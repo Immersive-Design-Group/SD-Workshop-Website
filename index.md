@@ -143,6 +143,37 @@ title: 首页 HOME
   <h2 class="team-ghost">{{ site.data.team.title }}</h2>
   
   <div class="team-container">
+    <!-- Organizers Row -->
+    <div class="team-row">
+      <h3 class="team-row-title">
+        <span class="title-text">Organizers</span>
+        {% if site.data.team.organizers.group_name %}
+          <span class="group-name">{{ site.data.team.organizers.group_name }}</span>
+        {% endif %}
+      </h3>
+      <div class="team-members">
+        {% for organizer in site.data.team.organizers.members %}
+          <div class="team-member">
+            <div class="member-avatar">
+              {% if organizer.image and organizer.link %}
+                <a href="{{ organizer.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
+                  <img src="{{ organizer.image | relative_url }}" alt="{{ organizer.name }}">
+                </a>
+              {% elsif organizer.image %}
+                <img src="{{ organizer.image | relative_url }}" alt="{{ organizer.name }}">
+              {% endif %}
+            </div>
+            <div class="member-info">
+              <div class="member-name">{{ organizer.name }}</div>
+              {% if organizer.degree %}
+                <div class="member-degree">{{ organizer.degree }}</div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    
     <!-- Designers Row -->
     <div class="team-row">
       <h3 class="team-row-title">
@@ -155,7 +186,11 @@ title: 首页 HOME
         {% for designer in site.data.team.designers.members %}
           <div class="team-member">
             <div class="member-avatar">
-              {% if designer.image %}
+              {% if designer.image and designer.link %}
+                <a href="{{ designer.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
+                  <img src="{{ designer.image | relative_url }}" alt="{{ designer.name }}">
+                </a>
+              {% elsif designer.image %}
                 <img src="{{ designer.image | relative_url }}" alt="{{ designer.name }}">
               {% endif %}
             </div>
@@ -180,7 +215,11 @@ title: 首页 HOME
         {% for developer in site.data.team.developers.members %}
           <div class="team-member">
             <div class="member-avatar">
-              {% if developer.image %}
+              {% if developer.image and developer.link %}
+                <a href="{{ developer.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
+                  <img src="{{ developer.image | relative_url }}" alt="{{ developer.name }}">
+                </a>
+              {% elsif developer.image %}
                 <img src="{{ developer.image | relative_url }}" alt="{{ developer.name }}">
               {% endif %}
             </div>

@@ -1,11 +1,23 @@
 title: "Team Members"
 
+organizers:
+  group_name: ""
+  members:
+    - name: "Seungwoo Je"
+      degree: "Assistant Professor"
+      image: "/assets/images/team/Seung Woo Je.jpg"
+      link: "https://immersivedesignresearch.com/seungwoo"
+    - name: "Zhao Yue"
+      degree: "Member"
+      image: ""
+
 designers:
   group_name: ""
   members:
     - name: "Wang Kezhuo"
-      degree: "XYZ"
+      degree: "Masters"
       image: "/assets/images/team/wang-kezhuo.jpg"
+ 
       
     - name: "Niu Wenke"
       degree: "XYZ"
@@ -26,6 +38,7 @@ designers:
     - name: "Li Heyue"
       degree: "Bachelor"
       image: "/assets/images/team/li-heyue.jpg"
+      
 
 developers:
   group_name: "Immersive Design Group"
@@ -33,7 +46,9 @@ developers:
     - name: "Jiang Weitao"
       degree: "PHD"
       image: "/assets/images/team/weitao.jpg"
+      link: "https://portfolio-weitao.vercel.app/infopage"
       
     - name: "Ashfaque Khowaja"
       degree: "PHD"
       image: "/assets/images/team/khowaja.jpg"
+      link: "https://ashfaquekhowaja.com"
