@@ -15,7 +15,7 @@ title: 首页 HOME
       Office hour： Mon-Fri 9:00-17:30
     </p>
     <div class="status-indicator" id="workshop-status">
-      <!-- <span class="status-text" id="status-text">Loading...</span> -->
+      <span class="status-text" id="status-text">Loading...</span>
     </div>
   </div>
 
