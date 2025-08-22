@@ -166,6 +166,7 @@
   
   /* Multi-slot selection */
   let selectedSlots = new Set();
+  let selectedEquipment = null; // Track which equipment is currently selected
   let isSelecting = false;
   let isDragging = false;
   let currentEquipment = null;
@@ -954,6 +955,14 @@
       currentEquipment = eq;
     }
     
+    // Also clear if user tries to select from different equipment than what's already selected
+    if (selectedEquipment && selectedEquipment.name !== eq.name) {
+      clearSelection();
+      selectedEquipment = eq;
+      // Highlight the new equipment
+      highlightSelectedEquipment(eq);
+    }
+    
     addSlotToSelection(eq, slotIndex);
     document.body.style.userSelect = 'none';
     
@@ -1073,6 +1082,12 @@
       return;
     }
     
+    // Enforce single equipment rule: if user has selected slots from different equipment, prevent selection
+    if (selectedEquipment && selectedEquipment.name !== eq.name) {
+      showError(`You can only select slots from one equipment at a time. Please clear your current selection from ${selectedEquipment.name} first.`);
+      return;
+    }
+    
     // Strict limit enforcement: don't allow any new selections if already at 10 slots
     if (selectedSlots.size >= 10 && !selectedSlots.has(slotIndex)) {
       if (!document.querySelector('.limit-message')) showLimitMessage();
@@ -1088,6 +1103,14 @@
     
     if (!selectedSlots.has(slotIndex)) {
       const wasEmpty = selectedSlots.size === 0;
+      
+      // Set the selected equipment when first slot is selected
+      if (wasEmpty) {
+        selectedEquipment = eq;
+        // Highlight the selected equipment row
+        highlightSelectedEquipment(eq);
+      }
+      
       selectedSlots.add(slotIndex);
 
       const slotEl = document.querySelector(
@@ -1150,6 +1173,8 @@
       
       // Update modal or close if no slots selected
       if (selectedSlots.size === 0) {
+        selectedEquipment = null; // Clear selected equipment when no slots remain
+        clearEquipmentHighlighting(); // Remove equipment highlighting
         closeModal();
       } else {
         // Schedule modal opening with delay to allow for more deselections
@@ -1168,6 +1193,7 @@
   
   function clearSelection() {
     selectedSlots.clear();
+    selectedEquipment = null; // Clear the selected equipment
     
     // Clear any pending modal opening
     if (modalOpenTimeout) {
@@ -1181,11 +1207,32 @@
       delete slot.dataset.selectionOrder;
     });
     
+    // Remove equipment highlighting
+    clearEquipmentHighlighting();
+    
     updateSelectionCounter();
     
     // Reset interaction tracking
     userActionInProgress = false;
     lastSlotInteractionTime = Date.now();
+  }
+  
+  function highlightSelectedEquipment(eq) {
+    // Remove highlighting from all equipment rows
+    clearEquipmentHighlighting();
+    
+    // Add highlighting to the selected equipment row
+    const equipmentRow = document.querySelector(`[data-equipment-id="${eq.name}"]`);
+    if (equipmentRow) {
+      equipmentRow.classList.add('selected-equipment');
+    }
+  }
+  
+  function clearEquipmentHighlighting() {
+    // Remove highlighting from all equipment rows
+    document.querySelectorAll('.equipment-row.selected-equipment').forEach(row => {
+      row.classList.remove('selected-equipment');
+    });
   }
       
   function updateSelectionCounter() {
@@ -1201,7 +1248,8 @@
         counter.style.display = 'none';
       } else {
         counter.style.display = 'block';
-        counter.textContent = `${selectedSlots.size} slot${selectedSlots.size === 1 ? '' : 's'} selected (${(selectedSlots.size * 0.5).toFixed(1)}h)`;
+        const equipmentName = selectedEquipment ? selectedEquipment.name : '';
+        counter.textContent = `${selectedSlots.size} slot${selectedSlots.size === 1 ? '' : 's'} selected on ${equipmentName} (${(selectedSlots.size * 0.5).toFixed(1)}h)`;
         
 
         
@@ -1255,6 +1303,12 @@
           slotEl.dataset.selectionOrder = index + 1;
         }
       });
+      
+      // Clear selectedEquipment if no slots remain
+      if (selectedSlots.size === 0) {
+        selectedEquipment = null;
+        clearEquipmentHighlighting(); // Remove equipment highlighting
+      }
       
       console.log(`Enforced selection limit: removed ${slotsToRemove.length} excess slots, kept ${selectedSlots.size} slots`);
       

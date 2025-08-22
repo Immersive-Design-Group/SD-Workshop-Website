@@ -188,6 +188,25 @@
 }
 
 /* =========================
+   Equipment Selection Highlighting
+========================= */
+
+.equipment-row.selected-equipment {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-left: 4px solid #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.equipment-row.selected-equipment .equip-col {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.equipment-row.selected-equipment .equip-name {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+/* =========================
    Selection Counter
 ========================= */
 

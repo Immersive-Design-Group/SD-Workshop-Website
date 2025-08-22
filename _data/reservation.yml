@@ -2,11 +2,13 @@
 rules:
   cn:
     - "请在下方设备日程中选择空闲时段预约，最长不可超过 5 小时（工坊开放时间：周一至周五 09:00–22:00）。"
+    - "每次只能选择一台设备的时段。选择不同设备的时段将清除您之前的选择。"
     - "超 22 点后工坊将关闭，机器可继续运行，可在 22 点前开始打印，第二天早上来取。"
     - "首次使用需完成安全培训；使用设备前，请仔细阅读设备操作手册。"
     - "节假日使用请邮件联系工坊管理员（designworkshop@sustech.edu.cn） 邮件示例。"
   eng:
     - "Please select a free slot below for booking, with a maximum duration of 5 hours (Mon–Fri 09:00–22:00)."
+    - "You can only select slots from one equipment at a time. Selecting slots from different equipment will clear your previous selection."
     - "Workshop closes after 22:00, but machines run on. You may start printing before 22:00 and pick up next morning."
     - "Safety training must be completed before first use; please read the operation manual carefully before using the equipment."
     - "For use on holidays, please email the workshop administrator at designworkshop@sustech.edu.cn (example email provided)."
