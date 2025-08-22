@@ -8,8 +8,8 @@ organizers:
       image: "/assets/images/team/Seung Woo Je.jpg"
       link: "https://immersivedesignresearch.com/seungwoo"
     - name: "Zhao Yue"
-      degree: "Member"
-      image: ""
+      degree: "Teaching Technician"
+      image: "/assets/images/team/zhao-yue.jpg"
 
 designers:
   group_name: ""
