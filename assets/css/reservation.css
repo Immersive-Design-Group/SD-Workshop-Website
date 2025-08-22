@@ -870,7 +870,7 @@ body .reservation-container #rsv-rows .equip-row {
 
 /* Add visual hint for interaction - only on hover and only on available slots */
 #rsv-rows .slot.available::after {
-  content: "Click to select • Double-click to unselect • Drag for multiple";
+  content: "Click to select • Drag for multiple";
   position: absolute;
   bottom: -20px;
   left: 50%;
