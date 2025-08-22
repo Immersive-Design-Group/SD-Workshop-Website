@@ -1790,6 +1790,9 @@
       clearTimeout(modalOpenTimeout);
       modalOpenTimeout = null;
     }
+    
+    // Clear the slot selection when modal is closed
+    clearSelection();
   }
 
   function updateModalFromSelection(eq) {
