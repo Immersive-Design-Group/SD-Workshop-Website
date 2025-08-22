@@ -1,54 +1,49 @@
-title: "Team Members"
+title: "Contributors"
 
-organizers:
-  group_name: ""
-  members:
-    - name: "Seungwoo Je"
-      degree: "Assistant Professor"
-      image: "/assets/images/team/Seung Woo Je.jpg"
-      link: "https://immersivedesignresearch.com/seungwoo"
-    - name: "Zhao Yue"
-      degree: "Teaching Technician"
-      image: "/assets/images/team/zhao-yue.jpg"
+members:
+  - name: "Seungwoo Je"
+    degree: "Assistant Professor"
+    image: "/assets/images/team/Seung Woo Je.jpg"
+    link: "https://immersivedesignresearch.com/seungwoo"
+  
+  - name: "Zhao Yue"
+    degree: "Teaching Technician"
+    image: "/assets/images/team/zhao-yue.jpg"
 
-designers:
-  group_name: ""
-  members:
-    - name: "Wang Kezhuo"
-      degree: "Masters"
-      image: "/assets/images/team/wang-kezhuo.jpg"
- 
-      
-    - name: "Niu Wenke"
-      degree: "XYZ"
-      image: "/assets/images/team/niu-wenke.jpg"
-      
-    - name: "Lin Xiaozheng"
-      degree: "XYZ"
-      image: "/assets/images/team/lin-xiaozheng.jpg"
-      
-    - name: "Chen Yutai"
-      degree: "XYZ"
-      image: "/assets/images/team/chen-yutai.jpg"
-      
-    - name: "Yan Wenxin"
-      degree: "Masters"
-      image: "/assets/images/team/Wenxin-Yan.jpg"
-      
-    - name: "Li Heyue"
-      degree: "Bachelor"
-      image: "/assets/images/team/Li-Heyue.jpg"
-      
+  - name: "Ashfaque Khowaja"
+    degree: "PHD"
+    image: "/assets/images/team/khowaja.jpg"
+    link: "https://ashfaquekhowaja.com"
 
-developers:
-  group_name: "Immersive Design Group"
-  members:
-    - name: "Jiang Weitao"
-      degree: "PHD"
-      image: "/assets/images/team/weitao.jpg"
-      link: "https://portfolio-weitao.vercel.app/infopage"
-      
-    - name: "Ashfaque Khowaja"
-      degree: "PHD"
-      image: "/assets/images/team/khowaja.jpg"
-      link: "https://ashfaquekhowaja.com"
+  - name: "Jiang Weitao"
+    degree: "PHD"
+    image: "/assets/images/team/weitao.jpg"
+    link: "https://portfolio-weitao.vercel.app/infopage"
+    
+  - name: "Wang Kezhuo"
+    degree: "Masters"
+    image: "/assets/images/team/wang-kezhuo.jpg"
+    
+  - name: "Niu Wenke"
+    degree: "XYZ"
+    image: "/assets/images/team/niu-wenke.jpg"
+    
+  - name: "Lin Xiaozheng"
+    degree: "XYZ"
+    image: "/assets/images/team/lin-xiaozheng.jpg"
+    
+  - name: "Chen Yutai"
+    degree: "XYZ"
+    image: "/assets/images/team/chen-yutai.jpg"
+    
+  - name: "Yan Wenxin"
+    degree: "Masters"
+    image: "/assets/images/team/Wenxin-Yan.jpg"
+    
+  - name: "Li Heyue"
+    degree: "Bachelor"
+    image: "/assets/images/team/Li-Heyue.jpg"
+    
+
+    
+

@@ -143,93 +143,30 @@ title: 首页 HOME
   <h2 class="team-ghost">{{ site.data.team.title }}</h2>
   
   <div class="team-container">
-    <!-- Organizers Row -->
-    <div class="team-row">
-      <h3 class="team-row-title">
-        <span class="title-text">Organizers</span>
-        {% if site.data.team.organizers.group_name %}
-          <span class="group-name">{{ site.data.team.organizers.group_name }}</span>
-        {% endif %}
-      </h3>
-      <div class="team-members">
-        {% for organizer in site.data.team.organizers.members %}
-          <div class="team-member">
-            <div class="member-avatar">
-              {% if organizer.image and organizer.link %}
-                <a href="{{ organizer.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
-                  <img src="{{ organizer.image | relative_url }}" alt="{{ organizer.name }}">
-                </a>
-              {% elsif organizer.image %}
-                <img src="{{ organizer.image | relative_url }}" alt="{{ organizer.name }}">
-              {% endif %}
-            </div>
-            <div class="member-info">
-              <div class="member-name">{{ organizer.name }}</div>
-              {% if organizer.degree %}
-                <div class="member-degree">{{ organizer.degree }}</div>
-              {% endif %}
-            </div>
+    <div class="team-members">
+      {% for member in site.data.team.members %}
+        <div class="team-member">
+          <div class="member-avatar">
+            {% if member.image and member.link %}
+              <a href="{{ member.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
+                <img src="{{ member.image | relative_url }}" alt="{{ member.name }}">
+              </a>
+            {% elsif member.image %}
+              <img src="{{ member.image | relative_url }}" alt="{{ member.name }}">
+            {% endif %}
           </div>
-        {% endfor %}
-      </div>
-    </div>
-    
-    <!-- Designers Row -->
-    <div class="team-row">
-      <h3 class="team-row-title">
-        <span class="title-text">Designers</span>
-        {% if site.data.team.designers.group_name %}
-          <span class="group-name">{{ site.data.team.designers.group_name }}</span>
-        {% endif %}
-      </h3>
-      <div class="team-members">
-        {% for designer in site.data.team.designers.members %}
-          <div class="team-member">
-            <div class="member-avatar">
-              {% if designer.image and designer.link %}
-                <a href="{{ designer.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
-                  <img src="{{ designer.image | relative_url }}" alt="{{ designer.name }}">
-                </a>
-              {% elsif designer.image %}
-                <img src="{{ designer.image | relative_url }}" alt="{{ designer.name }}">
-              {% endif %}
-            </div>
-            <div class="member-info">
-              <div class="member-name">{{ designer.name }}</div>
-              <div class="member-degree">{{ designer.degree }}</div>
-            </div>
+          <div class="member-info">
+            <div class="member-name">{{ member.name }}</div>
+            {% if member.degree %}
+              <div class="member-degree">{{ member.degree }}</div>
+            {% endif %}
           </div>
-        {% endfor %}
-      </div>
-    </div>
-    
-    <!-- Developers Row -->
-    <div class="team-row">
-      <h3 class="team-row-title">
-        <span class="title-text">Developers</span>
-        {% if site.data.team.developers.group_name %}
-          <span class="group-name">{{ site.data.team.developers.group_name }}</span>
+        </div>
+        
+        {% if member.name == "Zhao Yue" %}
+          <div class="team-break" style="width: 100%; height: 0px; clear: both;"></div>
         {% endif %}
-      </h3>
-      <div class="team-members">
-        {% for developer in site.data.team.developers.members %}
-          <div class="team-member">
-            <div class="member-avatar">
-              {% if developer.image and developer.link %}
-                <a href="{{ developer.link }}" target="_blank" rel="noopener noreferrer" class="member-link">
-                  <img src="{{ developer.image | relative_url }}" alt="{{ developer.name }}">
-                </a>
-              {% elsif developer.image %}
-                <img src="{{ developer.image | relative_url }}" alt="{{ developer.name }}">
-              {% endif %}
-            </div>
-            <div class="member-info">
-              <div class="member-name">{{ developer.name }}</div>
-              <div class="member-degree">{{ developer.degree }}</div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
