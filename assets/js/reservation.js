@@ -1720,7 +1720,7 @@
   });
 
     /* ====== Apps Script endpoint ====== */
-   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_Qaun32dCk4a75S_Xtp_rZnGiHSmL8gUJP6vW3GDNKjbTj9GtWaUjqlrGpxf_mRQzZg/exec';
+   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKLgraSpgpA_uNkymby7k68bH9uzieYsNfC2FZLFAWlBOtBKW-Ww3khrjAylAH8IdE9w/exec';
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };

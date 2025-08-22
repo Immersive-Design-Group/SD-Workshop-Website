@@ -64,7 +64,6 @@ function nextBookingId() {
   - /exec?action=get_booking_details&id=BOOKING_ID                  (get specific booking details)
   - /exec?action=send_otp&email=EMAIL&id=BOOKING_ID                (send OTP for deletion)
 */
-
 function doGet(e) {
   const action = (e.parameter.action || '').toLowerCase();
   if (action === 'list_bookings') return listBookings(e);
@@ -246,6 +245,24 @@ function getBookingDetails(e) {
           return out({ ok: false, error: 'This booking has been cancelled.' });
         }
         
+        // Properly handle the date value from the spreadsheet
+        let dateValue = row[col['Date']];
+        let formattedDate;
+        
+        if (dateValue instanceof Date) {
+          // If it's already a Date object, format it properly
+          formattedDate = `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(2, '0')}-${String(dateValue.getDate()).padStart(2, '0')}`;
+        } else {
+          // If it's a string or other format, try to parse it
+          const parsedDate = new Date(dateValue);
+          if (!isNaN(parsedDate)) {
+            formattedDate = `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}-${String(parsedDate.getDate()).padStart(2, '0')}`;
+          } else {
+            // Fallback to original string if parsing fails
+            formattedDate = String(dateValue || '').trim();
+          }
+        }
+        
         booking = {
           id: rowId,
           name: String(row[col['Name']] || '').trim(),
@@ -253,9 +270,9 @@ function getBookingDetails(e) {
           purpose: String(row[col['Purpose']] || '').trim(),
           device: String(row[col['Equipment']] || '').trim(),
           model: String(row[col['Model']] || '').trim(),
-          date: String(row[col['Date']] || '').trim(),
-          start: String(row[col['Start Time']] || '').trim(),
-          end: String(row[col['End Time']] || '').trim(),
+          date: formattedDate,
+          start: extractTimeOnly(row[col['Start Time']]),
+          end: extractTimeOnly(row[col['End Time']]),
           totalHours: parseFloat(row[col['Total Hours']] || 0),
           createdDate: row[col['Created Date']] instanceof Date ? 
             row[col['Created Date']].toISOString().split('T')[0] : 
@@ -325,13 +342,32 @@ function sendOTP(e) {
         }
         
         bookingRow = r;
+        
+        // Properly handle the date value from the spreadsheet
+        let dateValue = row[col['Date']];
+        let formattedDate;
+        
+        if (dateValue instanceof Date) {
+          // If it's already a Date object, format it properly
+          formattedDate = `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(2, '0')}-${String(dateValue.getDate()).padStart(2, '0')}`;
+        } else {
+          // If it's a string or other format, try to parse it
+          const parsedDate = new Date(dateValue);
+          if (!isNaN(parsedDate)) {
+            formattedDate = `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}-${String(parsedDate.getDate()).padStart(2, '0')}`;
+        } else {
+            // Fallback to original string if parsing fails
+            formattedDate = String(dateValue || '').trim();
+          }
+        }
+        
         booking = {
           id: rowId,
           name: String(row[col['Name']] || '').trim(),
           device: String(row[col['Equipment']] || '').trim(),
-          date: String(row[col['Date']] || '').trim(),
-          start: String(row[col['Start Time']] || '').trim(),
-          end: String(row[col['End Time']] || '').trim()
+          date: formattedDate,
+          start: extractTimeOnly(row[col['Start Time']]),
+          end: extractTimeOnly(row[col['End Time']])
         };
         break;
       }
@@ -506,7 +542,7 @@ function createBooking(p) {
       const exS = t2m(extractTimeOnly(row[col['Start Time']]));
       const exE = t2m(extractTimeOnly(row[col['End Time']]));
       if (overlaps(exS, exE, newS, newE)) {
-        console.log(`Conflict detected with existing booking: ${rowDevice} on ${rowDate} from ${row[col['Start Time']]} to ${row[col['End Time']]}`);
+        console.log(`Conflict detected with existing booking: ${rowDevice} on ${rowDate} from ${extractTimeOnly(row[col['Start Time']])} to ${extractTimeOnly(row[col['End Time']])}`);
         return out({ ok:false, error:'Time slot conflict. Please choose another time.' });
       }
     }
@@ -634,13 +670,32 @@ function deleteBooking(p) {
         }
         
         bookingRow = r;
+        
+        // Properly handle the date value from the spreadsheet
+        let dateValue = row[col['Date']];
+        let formattedDate;
+        
+        if (dateValue instanceof Date) {
+          // If it's already a Date object, format it properly
+          formattedDate = `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(2, '0')}-${String(dateValue.getDate()).padStart(2, '0')}`;
+        } else {
+          // If it's a string or other format, try to parse it
+          const parsedDate = new Date(dateValue);
+          if (!isNaN(parsedDate)) {
+            formattedDate = `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}-${String(parsedDate.getDate()).padStart(2, '0')}`;
+          } else {
+            // Fallback to original string if parsing fails
+            formattedDate = String(dateValue || '').trim();
+          }
+        }
+        
         booking = {
           id: rowId,
           name: String(row[col['Name']] || '').trim(),
           device: String(row[col['Equipment']] || '').trim(),
-          date: String(row[col['Date']] || '').trim(),
-          start: String(row[col['Start Time']] || '').trim(),
-          end: String(row[col['End Time']] || '').trim()
+          date: formattedDate,
+          start: extractTimeOnly(row[col['Start Time']]),
+          end: extractTimeOnly(row[col['End Time']])
         };
         break;
       }
