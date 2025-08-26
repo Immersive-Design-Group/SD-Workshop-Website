@@ -23,22 +23,22 @@ members:
   - name: "Wang Kezhuo"
     degree: "Masters"
     image: "/assets/images/team/wang-kezhuo.jpg"
+
+  - name: "Chen Yutai"
+    degree: "Masters"
+    image: "/assets/images/team/chen-yutai.jpg"
+    
+  - name: "Yan Wenxin"
+    degree: "Masters"
+    image: "/assets/images/team/yan-wenxin.jpg"
     
   - name: "Niu Wenke"
     degree: "Bachelor"
     image: "/assets/images/team/niu-wenke.jpg"
     
   - name: "Lin Xiaozheng"
-    degree: "XYZ"
+    degree: "Bachelor"
     image: "/assets/images/team/lin-xiaozheng.jpg"
-    
-  - name: "Chen Yutai"
-    degree: "XYZ"
-    image: "/assets/images/team/chen-yutai.jpg"
-    
-  - name: "Yan Wenxin"
-    degree: "Masters"
-    image: "/assets/images/team/yan.jpg"
     
   - name: "Li Heyue"
     degree: "Bachelor"
