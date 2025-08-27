@@ -2881,3 +2881,149 @@ datalist {
   z-index: 10000;
   max-width: 400px;
 }
+
+/* Additional mobile improvements for better accessibility */
+@media (max-width: 480px) {
+  /* Ensure modal content is scrollable */
+  .modal__dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full height on mobile */
+    overflow-y: auto;
+  }
+  
+  /* Make the form take remaining space */
+  .form {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding-bottom: 100px; /* Space for fixed button */
+  }
+  
+  /* Ensure submit button is always visible at bottom */
+  .btn-submit {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    margin: 0;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    width: 100vw;
+  }
+  
+  /* Add visual indicator that content is scrollable */
+  .form::before {
+    content: '↓ Scroll to see all fields ↓';
+    display: block;
+    text-align: center;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 8px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+  
+  /* Hide scroll indicator after first scroll */
+  .form.scrolled::before {
+    display: none;
+  }
+  
+  /* Improve touch targets */
+  .form__input,
+  .form__textarea,
+  .btn-submit {
+    min-height: 44px; /* iOS recommended touch target size */
+  }
+  
+  .checkbox-container {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Better spacing for mobile */
+  .form__row {
+    margin-bottom: 16px;
+  }
+  
+  /* Ensure time pills are easily tappable */
+  .time-pill {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Ensure form fields are properly spaced */
+  .form__row + .form__row {
+    margin-top: 20px;
+  }
+  
+  /* Make the submit button more prominent */
+  .btn-submit {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-submit:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Ensure proper spacing around form elements */
+  .form__input,
+  .form__textarea {
+    margin-bottom: 8px;
+  }
+  
+  /* Better checkbox styling for mobile */
+  .checkbox-container {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .checkbox-container:hover {
+    background: #f1f5f9;
+  }
+  
+  /* Improve time pills visibility on mobile */
+  .time-pills {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  /* Better email field layout on mobile */
+  .email-split-container {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  /* Ensure duration display is visible */
+  .duration-display {
+    background: #eff6ff;
+    border: 2px solid #bfdbfe;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    color: #1d4ed8;
+  }
+}
+
+/* Very small screen optimizations */

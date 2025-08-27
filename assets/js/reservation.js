@@ -1842,6 +1842,91 @@
   el('rsv-modal-close').addEventListener('click', closeModal);
   el('rsv-modal-backdrop').addEventListener('click', closeModal);
 
+  // Add mobile-specific enhancements
+  function enhanceMobileExperience() {
+    const modal = el('rsv-modal');
+    const form = el('rsv-form');
+    
+    if (!modal || !form) return;
+    
+    // Hide scroll indicator after first scroll
+    let hasScrolled = false;
+    form.addEventListener('scroll', () => {
+      if (!hasScrolled) {
+        hasScrolled = true;
+        form.classList.add('scrolled');
+      }
+    });
+    
+    // Reset scroll indicator when modal opens
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+          if (modal.getAttribute('aria-hidden') === 'false') {
+            // Modal opened, reset scroll state
+            hasScrolled = false;
+            form.classList.remove('scrolled');
+            form.scrollTop = 0;
+          }
+        }
+      });
+    });
+    
+    observer.observe(modal, { attributes: true });
+    
+    // Prevent body scroll when modal is open on mobile
+    function preventBodyScroll() {
+      if (window.innerWidth <= 768) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+      }
+    }
+    
+    function restoreBodyScroll() {
+      if (window.innerWidth <= 768) {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+      }
+    }
+    
+    // Apply scroll prevention when modal opens
+    const modalObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+          if (modal.getAttribute('aria-hidden') === 'false') {
+            preventBodyScroll();
+          } else {
+            restoreBodyScroll();
+          }
+        }
+      });
+    });
+    
+    modalObserver.observe(modal, { attributes: true });
+    
+    // Handle orientation change on mobile
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (modal.getAttribute('aria-hidden') === 'false') {
+          // Recalculate modal dimensions after orientation change
+          const dialog = modal.querySelector('.modal__dialog');
+          if (dialog) {
+            dialog.style.height = '100vh';
+          }
+        }
+      }, 100);
+    });
+  }
+  
+  // Initialize mobile enhancements when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', enhanceMobileExperience);
+  } else {
+    enhanceMobileExperience();
+  }
+
   /* Submit form */
      el('rsv-form').addEventListener('submit', async (e) => {
      e.preventDefault();
