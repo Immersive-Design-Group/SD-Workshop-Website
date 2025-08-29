@@ -1140,7 +1140,7 @@ a {
 }
 .footer-top {
   display: flex;
-  justify-content: flex-start; /* left on desktop */
+  justify-content: space-between; /* Changed back to space-between to position content on left and right sides */
   align-items: center;
   padding: 2rem 5%;
 }
@@ -1153,6 +1153,33 @@ a {
   height: 72px;
   max-width: 160px;
   object-fit: contain;
+}
+.footer-right {
+  display: flex;
+  align-items: center;
+  text-align: right; /* Keep right alignment */
+  justify-content: flex-end; /* Ensure content is pushed to the right */
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Change from flex-end to flex-start so both texts start from same left edge */
+  text-align: right; /* Keep text right-aligned */
+}
+.contact-info h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-align: right; /* Ensure heading is right-aligned */
+}
+.contact-info p {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.95rem;
+  opacity: 0.95;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: right; /* Ensure email is right-aligned */
 }
 /* .footer-divider {
   width: 1px;
@@ -1198,12 +1225,20 @@ a {
   .footer-text p {
     font-size: 0.9rem;
   }
+  .contact-info h3 {
+    font-size: 1.1rem;
+  }
+  .contact-info p {
+    font-size: 0.9rem;
+  }
 }
 
 /* Phones: stack vertically, center for balance */
 @media (max-width: 768px) {
   .footer-top {
-    justify-content: center; /* center the block on small screens */
+    flex-direction: column; /* stack left and right sections */
+    justify-content: center;
+    gap: 1.5rem;
     padding: 1.25rem 6%;
   }
   .footer-left {
@@ -1224,6 +1259,15 @@ a {
   .footer-text p {
     font-size: 0.9rem;
   }
+  .footer-right {
+    text-align: center;
+  }
+  .contact-info h3 {
+    font-size: 1rem;
+  }
+  .contact-info p {
+    font-size: 0.9rem;
+  }
   .footer-bottom {
     font-size: 0.85rem;
     padding: 0.8rem 6%;
@@ -1240,6 +1284,12 @@ a {
     font-size: 0.95rem;
   }
   .footer-text p {
+    font-size: 0.85rem;
+  }
+  .contact-info h3 {
+    font-size: 0.95rem;
+  }
+  .contact-info p {
     font-size: 0.85rem;
   }
 }
