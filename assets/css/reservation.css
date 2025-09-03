@@ -585,13 +585,19 @@ body .reservation-container .slots-viewport .timebar .time-label {
 }
 
 .date-item:hover{ 
-  background:#0b0b0b; 
-  color:#fff; 
+  background:#f3f4f6; 
+  color:#111827; 
   transition: all 0.2s ease;
 }
 
-.date-item.is-selected{ background:#0b0b0b; color:#fff; }  /* selected date */
-.date-item.is-today{ outline:1px dashed #111; }            /* today hint (optional) */
+.date-item.is-selected{ 
+  background:#0b0b0b; 
+  color:#fff; 
+  border: none;
+}  /* selected date */
+.date-item.is-today{ 
+  outline:none; 
+}            /* today hint (optional) */
 
 /* =========================
    Weekend and Holiday Dates - Unified Styling
