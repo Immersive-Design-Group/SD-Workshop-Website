@@ -112,7 +112,7 @@ The team section styles are located in the CSS file under the "Team Members Sect
 - Link hover shadow: `rgba(59, 130, 246, 0.3)`
 
 ### Typography
-- Uses Inter and Noto Sans SC fonts
+- Uses Roboto and Source Han Sans fonts
 - Group names use the same font size and weight as section titles
 - Responsive font sizing
 - Consistent with other sections

@@ -12,7 +12,7 @@
 }
 
 .reservation-container{ max-width:1400px; margin:0 auto; padding:24px 0 64px;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--ink-900); }
+  font-family:'Roboto','Source Han Sans',sans-serif; color:var(--ink-900); }
 
 /* Responsive container padding */
 @media (max-width: 768px) {
@@ -37,14 +37,14 @@
 .reservation-title{ margin:0 0 18px 0; line-height:0.7;letter-spacing:-.5px; display:block !important; }
 .title-our{ 
   display:block; 
-  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans', sans-serif;
   font-size:66px; 
   font-weight:600; 
   color:#9ca3af; /* Same as other ghost titles */
 }
 .title-reservation{ 
   display:block; 
-  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans', sans-serif;
   font-size:66px; 
   font-weight:800; 
   color:#1a2238; /* Dark color for main title */
@@ -125,7 +125,7 @@
   }
 }
 .rules-heading{ 
-  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans', sans-serif;
   font-size:42px; 
   font-weight:600; 
   color:#9ca3af; /* Same as other ghost titles */
@@ -1785,7 +1785,7 @@ datalist {
   inset: 0; 
   display: none; 
   z-index: 1000; 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Roboto', 'Source Han Sans', sans-serif;
 }
 
 .modal[aria-hidden="false"]{ 
