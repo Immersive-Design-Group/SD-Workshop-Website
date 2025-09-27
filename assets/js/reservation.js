@@ -113,7 +113,8 @@
       
       // Always add booking (we cleared duplicates above)
       const bookingData = {
-        startSlot, endSlot, name: b.name || '', purpose: b.purpose || '', email: b.email || '', id: b.id || '', device: b.device || ''
+        startSlot, endSlot, name: b.name || '', purpose: b.purpose || '', email: b.email || '', 
+        id: b.id || b.booking_id || '', device: b.device || ''
       };
       console.log('Adding booking data:', bookingData);
       bookingsByDate[dateKey][dev].push(bookingData);
@@ -1480,7 +1481,16 @@
     }
 
     try {
+      console.log('Sending OTP for booking:', currentBooking);
+      console.log('Booking ID:', currentBooking.id);
+      
+      if (!currentBooking.id) {
+        showError('预约ID无效，请刷新页面重试');
+        return;
+      }
+      
       const url = `${SCRIPT_URL}/api/send-otp?email=${encodeURIComponent(email)}&id=${encodeURIComponent(currentBooking.id)}`;
+      console.log('OTP URL:', url);
       const res = await fetch(url);
       const data = await res.json();
       
