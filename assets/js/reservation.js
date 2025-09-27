@@ -125,12 +125,10 @@
   async function loadBookingsBetween(fromDate, toDate) {
     const fromISO = fmtISO(fromDate);
     const toISO   = fmtISO(toDate);
-    const apiUrl = `${API_BASE}/api/bookings?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
-    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+    const url = `${SCRIPT_URL}/api/bookings?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
     
     try {
       console.log('Loading bookings from:', url);
-      console.log('API URL:', apiUrl);
       showLoadingState();
       
       const res = await fetch(url, {
@@ -1480,8 +1478,7 @@
     }
 
     try {
-      const apiUrl = `${API_BASE}/api/send-otp?email=${encodeURIComponent(email)}&id=${encodeURIComponent(currentBooking.id)}`;
-      const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+      const url = `${SCRIPT_URL}/api/send-otp?email=${encodeURIComponent(email)}&id=${encodeURIComponent(currentBooking.id)}`;
       const res = await fetch(url);
       const data = await res.json();
       
@@ -1522,9 +1519,7 @@
         otp: otp
       });
 
-      const apiUrl = `${API_BASE}/api/delete-booking`;
-      const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-      const res = await fetch(url, {
+      const res = await fetch(`${SCRIPT_URL}/api/delete-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body
@@ -1741,8 +1736,7 @@
 
     /* ====== FC云函数 endpoint ====== */
    const API_BASE = 'https://reservation-api-labtckjrqs.cn-shenzhen.fcapp.run';
-   const SCRIPT_URL = 'https://api.allorigins.win/raw?url=' + 
-       encodeURIComponent(API_BASE);
+   const SCRIPT_URL = API_BASE;
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
@@ -2040,9 +2034,7 @@
      });
 
      try {
-       const apiUrl = `${API_BASE}/api/bookings`;
-       const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-       const res = await fetch(url, {
+       const res = await fetch(`${SCRIPT_URL}/api/bookings`, {
          method: 'POST',
          headers: { 'Content-Type':'application/json' },
          body

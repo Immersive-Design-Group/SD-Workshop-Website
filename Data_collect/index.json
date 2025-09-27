@@ -96,7 +96,7 @@ exports.handler = async (rawEvent, context) => {
   ]);
   
   function corsHeaders(event) {
-    // 让FC平台处理CORS，我们只返回内容类型
+    // 完全移除CORS头部，让浏览器处理
     return {
       'Content-Type': 'application/json'
     };
