@@ -99,7 +99,23 @@
     
     list.forEach(b => {
       console.log('Processing booking object:', b);
-      const dateKey = b.date;
+      
+      // Handle date format - convert Date object to YYYY-MM-DD string
+      let dateKey;
+      console.log('Processing date:', b.date, 'Type:', typeof b.date);
+      
+      if (b.date instanceof Date) {
+        dateKey = b.date.toISOString().split('T')[0];
+        console.log('Converted Date object to:', dateKey);
+      } else if (typeof b.date === 'string') {
+        // If it's already a string, extract just the date part
+        dateKey = b.date.split('T')[0];
+        console.log('Extracted date from string:', dateKey);
+      } else {
+        dateKey = b.date;
+        console.log('Using date as-is:', dateKey);
+      }
+      
       const dev = b.device || '';
       const startTime = b.start_time || b.start;
       const endTime = b.end_time || b.end;
@@ -120,6 +136,26 @@
       bookingsByDate[dateKey][dev].push(bookingData);
     });
     console.log('Final bookings cache:', bookingsByDate);
+  }
+
+  // Load initial bookings on page load
+  async function loadInitialBookings() {
+    console.log('Loading initial bookings from database...');
+    
+    // Load bookings for the next 30 days to cover the date range
+    const today = new Date();
+    const futureDate = new Date(today);
+    futureDate.setDate(futureDate.getDate() + 30);
+    
+    try {
+      await loadBookingsBetween(today, futureDate);
+      console.log('Initial bookings loaded successfully');
+      // Re-render to show the loaded bookings
+      renderRows();
+    } catch (error) {
+      console.error('Failed to load initial bookings:', error);
+      // Continue without bookings - user can still make new reservations
+    }
   }
 
   // Load a date range from FC云函数 and index it
@@ -153,7 +189,10 @@
       hideLoadingState();
       
       console.log('Loaded bookings response:', data);
+      console.log('Number of bookings received:', (data.bookings || []).length);
+      console.log('Raw booking data:', JSON.stringify(data.bookings, null, 2));
       indexBookingsIntoMap(data.bookings || []);
+      console.log('After indexing, bookingsByDate:', JSON.stringify(bookingsByDate, null, 2));
       renderRows(); // re-render now that server data exists
     } catch (error) {
       hideLoadingState();
@@ -205,6 +244,9 @@
     
     // Initialize date selector with proper validation FIRST
     initializeDateSelector();
+    
+    // Load bookings from database on page load
+    loadInitialBookings();
     
     // Then setup the rest
     setupSync();
@@ -1423,6 +1465,7 @@
     const serverData = bookingsByDate[dateKey]?.[eq.name] || [];
     console.log(`Getting bookings for ${eq.name} on ${dateKey}:`, serverData);
     console.log(`Full bookingsByDate for ${dateKey}:`, bookingsByDate[dateKey]);
+    console.log(`All bookingsByDate:`, bookingsByDate);
     return serverData;
   }
 

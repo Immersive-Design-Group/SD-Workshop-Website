@@ -142,6 +142,8 @@ exports.handler = async (rawEvent, context) => {
   const qIdx = String(pathCandidate).indexOf('?');
   const rawPath = (qIdx >= 0 ? pathCandidate.slice(0, qIdx) : pathCandidate) || '/';
   const path = String(rawPath).toLowerCase();
+  
+  console.log('Processing request - Method:', method, 'Path:', path);
 
   // Query
   const rawQuery =
@@ -189,8 +191,14 @@ exports.handler = async (rawEvent, context) => {
     }
 
     if (path === '/api/bookings' && method === 'GET') {
+      console.log('GET /api/bookings request received');
+      console.log('Query parameters:', qsObj);
+      console.log('Event object keys:', Object.keys(event));
       event.queryStringParameters = qsObj;
-      return await handleGetBookings(event, headersBase);
+      console.log('About to call handleGetBookings');
+      const result = await handleGetBookings(event, headersBase);
+      console.log('handleGetBookings completed');
+      return result;
     }
 
     if (path === '/api/bookings' && method === 'POST') {
@@ -252,6 +260,7 @@ async function handleGetBookings(event, headers) {
 
   const pool = getPool();
   try {
+    console.log(`Querying bookings from ${from} to ${to}`);
     const [rows] = await pool.execute(
       `SELECT
           \`id\`,
@@ -261,7 +270,7 @@ async function handleGetBookings(event, headers) {
           \`purpose\`,
           \`device\`,
           \`model\`,
-          \`date\`,
+          DATE_FORMAT(\`date\`, '%Y-%m-%d') as \`date\`,
           \`start_time\`,
           \`end_time\`,
           \`total_slots\`,
@@ -269,11 +278,12 @@ async function handleGetBookings(event, headers) {
           \`status\`,
           \`created_at\`
        FROM \`bookings\`
-       WHERE \`date\` BETWEEN ? AND ?
+       WHERE DATE(\`date\`) BETWEEN ? AND ?
          AND \`status\` = 'CONFIRMED'
        ORDER BY \`date\`, \`start_time\``,
       [from, to]
     );
+    console.log(`Found ${rows.length} bookings:`, rows);
     return ok(headers, { bookings: rows }, 200);
   } catch (e) {
     console.error('Get bookings error:', e && e.message);
@@ -341,6 +351,12 @@ async function handleCreateBooking(body, headers) {
       const totalHours = Number(slot.hours ?? 0);
 
       console.log('Inserting booking with ID:', bookingId);
+      console.log('Original date from frontend:', slot.date);
+      
+      // Use the date string directly to avoid timezone conversion issues
+      const dateString = slot.date; // Keep as YYYY-MM-DD string
+      console.log('Using date string directly:', dateString);
+      
       const [res] = await pool.execute(
         `INSERT INTO \`bookings\`
            (\`booking_id\`, \`name\`, \`email\`, \`purpose\`,
@@ -350,7 +366,7 @@ async function handleCreateBooking(body, headers) {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', NOW(), ?)`,
         [
           bookingId, name, email, purpose,
-          device, model, slot.date, slot.start_time, slot.end_time,
+          device, model, dateString, slot.start_time, slot.end_time,
           totalSlots, totalHours,
           slotsJson
         ]
