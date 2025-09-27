@@ -218,8 +218,12 @@
 
     // Load initial booking data for current date and nearby dates
     console.log('Loading initial bookings for date:', fmtISO(selectedDate));
+    
+    // Force refresh data from server on page load
+    console.log('🔄 Force refreshing data from server...');
     ensureDateLoaded(selectedDate).then(() => {
       console.log('Initial bookings loaded successfully');
+      console.log('📊 Current bookings cache:', bookingsByDate);
       
       // Only render rows after data is loaded to avoid showing warnings prematurely
       renderRows();
@@ -234,6 +238,21 @@
     
     // Update real-time indicator every 30 seconds for smoother movement
     setInterval(positionNowLine, 30 * 1000);
+    
+    // Auto-refresh data every 2 minutes to keep data current
+    setInterval(async () => {
+      console.log('🔄 Auto-refreshing data...');
+      try {
+        await ensureDateLoaded(selectedDate);
+        renderRows();
+        console.log('✅ Auto-refresh completed');
+      } catch (error) {
+        console.error('❌ Auto-refresh failed:', error);
+      }
+    }, 2 * 60 * 1000); // 2 minutes
+    
+    // Add refresh button functionality
+    setupRefreshButton();
     
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -1417,12 +1436,67 @@
     return name ? name.charAt(0).toUpperCase() : '?';
   }
 
+  // Setup refresh button functionality
+  function setupRefreshButton() {
+    // Create refresh button if it doesn't exist
+    let refreshBtn = document.getElementById('refresh-data-btn');
+    if (!refreshBtn) {
+      refreshBtn = document.createElement('button');
+      refreshBtn.id = 'refresh-data-btn';
+      refreshBtn.innerHTML = '🔄 刷新数据';
+      refreshBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.2s;
+      `;
+      document.body.appendChild(refreshBtn);
+    }
+    
+    refreshBtn.addEventListener('click', async () => {
+      console.log('🔄 Manual refresh triggered');
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '🔄 刷新中...';
+      
+      try {
+        // Clear existing cache
+        Object.keys(bookingsByDate).forEach(key => delete bookingsByDate[key]);
+        console.log('📝 Cleared existing cache');
+        
+        // Force reload data
+        await ensureDateLoaded(selectedDate);
+        console.log('✅ Data refreshed successfully');
+        
+        // Re-render the view
+        renderRows();
+        
+        showSuccess('数据已刷新！');
+      } catch (error) {
+        console.error('❌ Failed to refresh data:', error);
+        showError('刷新数据失败，请重试');
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = '🔄 刷新数据';
+      }
+    });
+  }
+
   // Get existing bookings for an equipment on the selected date
   function getExistingBookings(eq) {
     const dateKey = fmtISO(selectedDate);
     const serverData = bookingsByDate[dateKey]?.[eq.name] || [];
     console.log(`Getting bookings for ${eq.name} on ${dateKey}:`, serverData);
     console.log(`Full bookingsByDate for ${dateKey}:`, bookingsByDate[dateKey]);
+    console.log(`Total bookings in cache:`, Object.keys(bookingsByDate));
     return serverData;
   }
 

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多用户数据共享测试 - SUSTech SD Workshop</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e3a8a;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #374151;
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .data-display {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .instructions {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 多用户数据共享测试</h1>
+        
+        <div class="instructions">
+            <h3>📋 测试说明</h3>
+            <p>此页面用于测试多用户数据共享功能。请按照以下步骤进行测试：</p>
+            <ol>
+                <li>在浏览器中打开多个标签页访问预约系统</li>
+                <li>在一个标签页中创建预约</li>
+                <li>在另一个标签页中刷新页面，查看是否能看到新创建的预约</li>
+                <li>使用下方的测试按钮验证数据同步</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 数据状态检查</h2>
+            <button onclick="checkDataStatus()">检查当前数据状态</button>
+            <button onclick="forceRefreshData()">强制刷新数据</button>
+            <button onclick="clearLocalCache()">清除本地缓存</button>
+            <div id="dataStatus" class="data-display" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 预约数据测试</h2>
+            <button onclick="testCreateBooking()">创建测试预约</button>
+            <button onclick="testLoadBookings()">加载预约数据</button>
+            <button onclick="testDeleteBooking()">删除测试预约</button>
+            <div id="bookingTest" class="data-display" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 多用户模拟</h2>
+            <button onclick="simulateUser1()">模拟用户1操作</button>
+            <button onclick="simulateUser2()">模拟用户2操作</button>
+            <button onclick="compareData()">比较数据差异</button>
+            <div id="multiUserTest" class="data-display" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📈 实时监控</h2>
+            <button onclick="startMonitoring()">开始监控</button>
+            <button onclick="stopMonitoring()">停止监控</button>
+            <div id="monitoringStatus" class="status info" style="display: none;">
+                监控状态：未启动
+            </div>
+            <div id="monitoringLog" class="data-display" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const API_BASE = 'https://reservation-api-labtckjrqs.cn-shenzhen.fcapp.run';
+        let monitoringInterval = null;
+        let monitoringLog = [];
+
+        // 检查数据状态
+        async function checkDataStatus() {
+            const statusDiv = document.getElementById('dataStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '正在检查数据状态...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/bookings?from=2025-01-01&to=2025-12-31`);
+                const data = await response.json();
+                
+                statusDiv.innerHTML = `数据状态检查完成：
+API响应状态: ${response.status}
+预约总数: ${data.bookings ? data.bookings.length : 0}
+数据详情:
+${JSON.stringify(data, null, 2)}`;
+                
+                showStatus('数据状态检查完成', 'success');
+            } catch (error) {
+                statusDiv.innerHTML = `数据状态检查失败: ${error.message}`;
+                showStatus('数据状态检查失败', 'error');
+            }
+        }
+
+        // 强制刷新数据
+        async function forceRefreshData() {
+            showStatus('正在强制刷新数据...', 'info');
+            
+            try {
+                // 清除可能的缓存
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                }
+                
+                // 重新加载数据
+                const response = await fetch(`${API_BASE}/api/bookings?from=2025-01-01&to=2025-12-31`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                const data = await response.json();
+                showStatus('数据刷新完成', 'success');
+                
+                // 如果当前页面是预约系统，触发数据刷新
+                if (window.parent !== window) {
+                    window.parent.postMessage({type: 'refreshData'}, '*');
+                }
+            } catch (error) {
+                showStatus(`数据刷新失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 清除本地缓存
+        function clearLocalCache() {
+            try {
+                // 清除localStorage
+                localStorage.clear();
+                
+                // 清除sessionStorage
+                sessionStorage.clear();
+                
+                // 清除IndexedDB
+                if ('indexedDB' in window) {
+                    indexedDB.databases().then(databases => {
+                        databases.forEach(db => {
+                            indexedDB.deleteDatabase(db.name);
+                        });
+                    });
+                }
+                
+                showStatus('本地缓存已清除', 'success');
+            } catch (error) {
+                showStatus(`清除缓存失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 创建测试预约
+        async function testCreateBooking() {
+            const testDiv = document.getElementById('bookingTest');
+            testDiv.style.display = 'block';
+            testDiv.innerHTML = '正在创建测试预约...';
+
+            try {
+                const testBooking = {
+                    name: '测试用户',
+                    email: 'test@example.com',
+                    purpose: '多用户数据共享测试',
+                    slots: [{
+                        device: '3D打印机',
+                        model: 'X1E',
+                        date: new Date().toISOString().split('T')[0],
+                        start_time: '10:00',
+                        end_time: '11:00',
+                        slots: 1,
+                        hours: 1
+                    }]
+                };
+
+                const response = await fetch(`${API_BASE}/api/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testBooking)
+                });
+
+                const data = await response.json();
+                testDiv.innerHTML = `测试预约创建结果:
+状态: ${response.status}
+响应: ${JSON.stringify(data, null, 2)}`;
+                
+                showStatus('测试预约创建完成', 'success');
+            } catch (error) {
+                testDiv.innerHTML = `测试预约创建失败: ${error.message}`;
+                showStatus('测试预约创建失败', 'error');
+            }
+        }
+
+        // 加载预约数据
+        async function testLoadBookings() {
+            const testDiv = document.getElementById('bookingTest');
+            testDiv.style.display = 'block';
+            testDiv.innerHTML = '正在加载预约数据...';
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${API_BASE}/api/bookings?from=${today}&to=${today}`);
+                const data = await response.json();
+                
+                testDiv.innerHTML = `预约数据加载结果:
+状态: ${response.status}
+数据: ${JSON.stringify(data, null, 2)}`;
+                
+                showStatus('预约数据加载完成', 'success');
+            } catch (error) {
+                testDiv.innerHTML = `预约数据加载失败: ${error.message}`;
+                showStatus('预约数据加载失败', 'error');
+            }
+        }
+
+        // 删除测试预约
+        async function testDeleteBooking() {
+            const testDiv = document.getElementById('bookingTest');
+            testDiv.style.display = 'block';
+            testDiv.innerHTML = '正在删除测试预约...';
+
+            try {
+                // 这里需要实际的预约ID，暂时显示说明
+                testDiv.innerHTML = `删除测试预约:
+注意: 需要实际的预约ID才能删除
+请先创建预约，然后使用预约管理功能删除`;
+                
+                showStatus('删除测试预约说明已显示', 'info');
+            } catch (error) {
+                testDiv.innerHTML = `删除测试预约失败: ${error.message}`;
+                showStatus('删除测试预约失败', 'error');
+            }
+        }
+
+        // 模拟用户1操作
+        async function simulateUser1() {
+            const testDiv = document.getElementById('multiUserTest');
+            testDiv.style.display = 'block';
+            testDiv.innerHTML = '模拟用户1操作...';
+
+            try {
+                const user1Booking = {
+                    name: '用户1',
+                    email: 'user1@example.com',
+                    purpose: '用户1的预约',
+                    slots: [{
+                        device: '3D打印机',
+                        model: 'X1E',
+                        date: new Date().toISOString().split('T')[0],
+                        start_time: '14:00',
+                        end_time: '15:00',
+                        slots: 1,
+                        hours: 1
+                    }]
+                };
+
+                const response = await fetch(`${API_BASE}/api/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(user1Booking)
+                });
+
+                const data = await response.json();
+                testDiv.innerHTML = `用户1操作结果:
+状态: ${response.status}
+响应: ${JSON.stringify(data, null, 2)}`;
+                
+                showStatus('用户1操作完成', 'success');
+            } catch (error) {
+                testDiv.innerHTML = `用户1操作失败: ${error.message}`;
+                showStatus('用户1操作失败', 'error');
+            }
+        }
+
+        // 模拟用户2操作
+        async function simulateUser2() {
+            const testDiv = document.getElementById('multiUserTest');
+            testDiv.style.display = 'block';
+            testDiv.innerHTML = '模拟用户2操作...';
+
+            try {
+                const user2Booking = {
+                    name: '用户2',
+                    email: 'user2@example.com',
+                    purpose: '用户2的预约',
+                    slots: [{
+                        device: '激光切割机',
+                        model: 'Speed400',
+                        date: new Date().toISOString().split('T')[0],
+                        start_time: '16:00',
+                        end_time: '17:00',
+                        slots: 1,
+                        hours: 1
+                    }]
+                };
+
+                const response = await fetch(`${API_BASE}/api/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(user2Booking)
+                });
+
+                const data = await response.json();
+                testDiv.innerHTML = `用户2操作结果:
+状态: ${response.status}
+响应: ${JSON.stringify(data, null, 2)}`;
+                
+                showStatus('用户2操作完成', 'success');
+            } catch (error) {
+                testDiv.innerHTML = `用户2操作失败: ${error.message}`;
+                showStatus('用户2操作失败', 'error');
+            }
+        }
+
+        // 比较数据差异
+        async function compareData() {
+            const testDiv = document.getElementById('multiUserTest');
+            testDiv.style.display = 'block';
+            testDiv.innerHTML = '正在比较数据差异...';
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${API_BASE}/api/bookings?from=${today}&to=${today}`);
+                const data = await response.json();
+                
+                const bookings = data.bookings || [];
+                const user1Bookings = bookings.filter(b => b.name === '用户1');
+                const user2Bookings = bookings.filter(b => b.name === '用户2');
+                
+                testDiv.innerHTML = `数据比较结果:
+总预约数: ${bookings.length}
+用户1预约数: ${user1Bookings.length}
+用户2预约数: ${user2Bookings.length}
+所有预约: ${JSON.stringify(bookings, null, 2)}`;
+                
+                showStatus('数据比较完成', 'success');
+            } catch (error) {
+                testDiv.innerHTML = `数据比较失败: ${error.message}`;
+                showStatus('数据比较失败', 'error');
+            }
+        }
+
+        // 开始监控
+        function startMonitoring() {
+            if (monitoringInterval) {
+                showStatus('监控已在运行', 'info');
+                return;
+            }
+
+            monitoringInterval = setInterval(async () => {
+                try {
+                    const today = new Date().toISOString().split('T')[0];
+                    const response = await fetch(`${API_BASE}/api/bookings?from=${today}&to=${today}`);
+                    const data = await response.json();
+                    
+                    const logEntry = {
+                        timestamp: new Date().toLocaleTimeString(),
+                        status: response.status,
+                        bookingCount: data.bookings ? data.bookings.length : 0
+                    };
+                    
+                    monitoringLog.push(logEntry);
+                    updateMonitoringDisplay();
+                } catch (error) {
+                    const logEntry = {
+                        timestamp: new Date().toLocaleTimeString(),
+                        error: error.message
+                    };
+                    monitoringLog.push(logEntry);
+                    updateMonitoringDisplay();
+                }
+            }, 5000); // 每5秒检查一次
+
+            document.getElementById('monitoringStatus').style.display = 'block';
+            document.getElementById('monitoringStatus').textContent = '监控状态：运行中';
+            document.getElementById('monitoringStatus').className = 'status success';
+            
+            showStatus('监控已启动', 'success');
+        }
+
+        // 停止监控
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+
+            document.getElementById('monitoringStatus').textContent = '监控状态：已停止';
+            document.getElementById('monitoringStatus').className = 'status info';
+            
+            showStatus('监控已停止', 'info');
+        }
+
+        // 更新监控显示
+        function updateMonitoringDisplay() {
+            const logDiv = document.getElementById('monitoringLog');
+            logDiv.style.display = 'block';
+            logDiv.innerHTML = monitoringLog.map(entry => 
+                `${entry.timestamp}: ${entry.error ? `错误: ${entry.error}` : `状态${entry.status}, 预约数: ${entry.bookingCount}`}`
+            ).join('\n');
+        }
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            document.body.appendChild(statusDiv);
+            
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+        }
+
+        // 页面加载时自动检查数据状态
+        window.addEventListener('load', () => {
+            console.log('多用户数据共享测试页面已加载');
+            showStatus('测试页面已准备就绪', 'success');
+        });
+    </script>
+</body>
+</html>
