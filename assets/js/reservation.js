@@ -131,16 +131,25 @@
       console.log('Loading bookings from:', url);
       showLoadingState();
       
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      });
+      
+      console.log('Response status:', res.status);
+      console.log('Response headers:', res.headers);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      
       const data = await res.json();
+      console.log('Response data:', data);
       
       hideLoadingState();
-      
-      if (res.status !== 200) {
-        console.error('Failed to load bookings:', data.error);
-        showError('Failed to load existing bookings: ' + (data.error || 'Unknown error'));
-        return;
-      }
       
       console.log('Loaded bookings response:', data);
       indexBookingsIntoMap(data.bookings || []);
@@ -148,6 +157,11 @@
     } catch (error) {
       hideLoadingState();
       console.error('Error loading bookings:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        url: url
+      });
       showError('Failed to load bookings. Please refresh the page.');
     }
   }
