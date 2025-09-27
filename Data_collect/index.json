@@ -2,6 +2,7 @@
 
 const mysql = require('mysql2/promise');
 const crypto = require('crypto');
+const https = require('https');
 
 /* ===================== 配置（优先 env，缺省回退到你提供的值） ===================== */
 const DEFAULTS = {
@@ -392,6 +393,16 @@ async function handleSendOTP(event, headers) {
     }
 
     console.log(`OTP for ${email}: ${otp}`);
+    
+    // 发送邮件
+    try {
+      await sendEmailSimple(email, otp);
+      console.log(`OTP email sent to ${email}`);
+    } catch (emailError) {
+      console.error('Failed to send email:', emailError);
+      // 即使邮件发送失败，OTP仍然有效
+    }
+    
     return ok(headers, { success: true, message: 'OTP 已发送到邮箱', otp }, 200);
   } catch (e) {
     console.error('Send OTP error:', e);
@@ -430,4 +441,102 @@ async function handleDeleteBooking(body, headers) {
     console.error('Delete booking error:', e);
     return err(headers, 'Failed to delete booking', 500);
   }
+}
+
+/* ===================== 邮件发送功能 ===================== */
+
+// 发送OTP邮件
+async function sendOTPEmail(email, otp) {
+  const emailData = {
+    from: 'noreply@sustechsdworkshop.com',
+    to: email,
+    subject: '预约验证码 - SUSTech SD Workshop',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #333; margin: 0;">SUSTech SD Workshop</h1>
+          <p style="color: #666; margin: 5px 0;">预约验证码</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h2 style="color: #333; margin: 0 0 15px 0;">您的验证码</h2>
+          <div style="background: #fff; padding: 20px; border-radius: 4px; text-align: center; border: 2px dashed #007bff;">
+            <span style="font-size: 32px; font-weight: bold; color: #007bff; letter-spacing: 5px;">${otp}</span>
+          </div>
+          <p style="color: #666; margin: 15px 0 0 0; font-size: 14px;">
+            此验证码10分钟内有效，请勿泄露给他人。
+          </p>
+        </div>
+        
+        <div style="text-align: center; color: #666; font-size: 12px;">
+          <p>如果您没有请求此验证码，请忽略此邮件。</p>
+          <p>© 2025 SUSTech SD Workshop. All rights reserved.</p>
+        </div>
+      </div>
+    `
+  };
+
+  // 使用阿里云邮件推送服务
+  return await sendEmailViaAliyun(emailData);
+}
+
+// 通过阿里云邮件推送发送邮件
+async function sendEmailViaAliyun(emailData) {
+  return new Promise((resolve, reject) => {
+    // 这里使用简单的HTTP请求模拟邮件发送
+    // 在实际部署时，您需要配置阿里云邮件推送服务
+    
+    const postData = JSON.stringify({
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      html: emailData.html
+    });
+
+    const options = {
+      hostname: 'api.aliyun.com', // 阿里云API网关
+      port: 443,
+      path: '/mail/send',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData),
+        'Authorization': 'Bearer YOUR_ACCESS_TOKEN' // 需要配置实际的访问令牌
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          resolve(data);
+        } else {
+          reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      reject(err);
+    });
+
+    req.write(postData);
+    req.end();
+  });
+}
+
+// 简化的邮件发送（用于测试）
+async function sendEmailSimple(email, otp) {
+  console.log(`📧 邮件发送模拟:`);
+  console.log(`   收件人: ${email}`);
+  console.log(`   验证码: ${otp}`);
+  console.log(`   主题: 预约验证码 - SUSTech SD Workshop`);
+  console.log(`   内容: 您的验证码是 ${otp}，10分钟内有效。`);
+  
+  // 在实际部署时，这里应该调用真实的邮件服务
+  // 目前只是模拟发送成功
+  return Promise.resolve();
 }

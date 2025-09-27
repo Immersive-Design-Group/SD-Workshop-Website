@@ -1,0 +1,27 @@
+USE `sd_workshop`;
+
+CREATE TABLE IF NOT EXISTS `bookings` (
+  `id`           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `booking_id`   VARCHAR(50)     NOT NULL UNIQUE,
+  `name`         VARCHAR(100)    NOT NULL,
+  `email`        VARCHAR(200)    NOT NULL,
+  `purpose`      VARCHAR(200)    NOT NULL,
+  `device`       VARCHAR(100)    NOT NULL,
+  `model`        VARCHAR(100)    NULL,
+  `date`         DATE            NOT NULL,
+  `start_time`   TIME            NOT NULL,
+  `end_time`     TIME            NOT NULL,
+  `total_slots`  INT             NOT NULL DEFAULT 1,
+  `total_hours`  DECIMAL(5,2)    NOT NULL DEFAULT 0,
+  `status`       ENUM('CONFIRMED','CANCELLED') NOT NULL DEFAULT 'CONFIRMED',
+  `created_at`   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `otp`          VARCHAR(6)      NULL,
+  `otp_expiry`   DATETIME        NULL,
+  `cancelled_at` DATETIME        NULL,
+  `slots_json`   JSON            NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_booking_id` (`booking_id`),
+  KEY `idx_device_date` (`device`, `date`),
+  KEY `idx_email` (`email`),
+  KEY `idx_status_date` (`status`, `date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
