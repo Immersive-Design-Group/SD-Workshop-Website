@@ -101,10 +101,12 @@
       console.log('Processing booking object:', b);
       const dateKey = b.date;
       const dev = b.device || '';
-      const startSlot = slotIndexFromTime(b.start);
-      const endSlot   = slotIndexFromTime(b.end);
+      const startTime = b.start_time || b.start;
+      const endTime = b.end_time || b.end;
+      const startSlot = slotIndexFromTime(startTime);
+      const endSlot   = slotIndexFromTime(endTime);
       
-      console.log(`Processing booking: ${dev} on ${dateKey} from ${b.start} to ${b.end} (slots ${startSlot}-${endSlot})`);
+      console.log(`Processing booking: ${dev} on ${dateKey} from ${startTime} to ${endTime} (slots ${startSlot}-${endSlot})`);
       
       if (!bookingsByDate[dateKey]) bookingsByDate[dateKey] = Object.create(null);
       if (!bookingsByDate[dateKey][dev]) bookingsByDate[dateKey][dev] = [];
@@ -119,11 +121,11 @@
     console.log('Final bookings cache:', bookingsByDate);
   }
 
-  // Load a date range from Apps Script and index it
+  // Load a date range from FC云函数 and index it
   async function loadBookingsBetween(fromDate, toDate) {
     const fromISO = fmtISO(fromDate);
     const toISO   = fmtISO(toDate);
-    const url = `${SCRIPT_URL}?action=list_bookings&from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
+    const url = `${SCRIPT_URL}/api/bookings?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
     
     try {
       console.log('Loading bookings from:', url);
@@ -134,9 +136,9 @@
       
       hideLoadingState();
       
-      if (!data.ok) {
+      if (res.status !== 200) {
         console.error('Failed to load bookings:', data.error);
-        showError('Failed to load existing bookings: ' + data.error);
+        showError('Failed to load existing bookings: ' + (data.error || 'Unknown error'));
         return;
       }
       
@@ -1462,11 +1464,11 @@
     }
 
     try {
-      const url = `${SCRIPT_URL}?action=send_otp&email=${encodeURIComponent(email)}&id=${encodeURIComponent(currentBooking.id)}`;
+      const url = `${SCRIPT_URL}/api/send-otp?email=${encodeURIComponent(email)}&id=${encodeURIComponent(currentBooking.id)}`;
       const res = await fetch(url);
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.status === 200 && data.success) {
         // Show OTP input section
         el('otp-input-section').style.display = 'block';
         el('otp-email').disabled = true;
@@ -1497,22 +1499,21 @@
     const email = el('otp-email').value.trim();
 
     try {
-      const body = new URLSearchParams({
-        action: 'delete_booking',
+      const body = JSON.stringify({
         email: email,
         id: currentBooking.id,
         otp: otp
       });
 
-      const res = await fetch(SCRIPT_URL, {
+      const res = await fetch(`${SCRIPT_URL}/api/delete-booking`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/json' },
         body
       });
       
       const data = await res.json();
       
-      if (data.ok) {
+      if (res.status === 200 && data.success) {
         showSuccess('Booking deleted successfully!');
         closeBookingManagementModal();
         
@@ -1719,8 +1720,8 @@
     }
   });
 
-    /* ====== Apps Script endpoint ====== */
-   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKLgraSpgpA_uNkymby7k68bH9uzieYsNfC2FZLFAWlBOtBKW-Ww3khrjAylAH8IdE9w/exec';
+    /* ====== FC云函数 endpoint ====== */
+   const SCRIPT_URL = 'https://reservation-api-labtckjrqs.cn-shenzhen.fcapp.run';
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
@@ -1756,9 +1757,12 @@
     lastModal.hours = hours;
     lastModal.slots = sorted.map(i => ({
       device: eq.name,
+      model: eq.model || '',
       date: fmtISO(selectedDate),
-      start: timeline[i],
-      end: timeline[i+1]
+      start_time: timeline[i],
+      end_time: timeline[i+1],
+      slots: 1,
+      hours: RSV_STEP_MIN / 60
     }));
 
     el('rsv-modal-equip').textContent = eq.name || '';
@@ -1822,9 +1826,12 @@
     lastModal.hours  = hours;
     lastModal.slots  = sorted.map(i => ({
       device: eq.name,
+      model: eq.model || '',
       date: fmtISO(selectedDate),
-      start: timeline[i],
-      end: timeline[i+1]
+      start_time: timeline[i],
+      end_time: timeline[i+1],
+      slots: 1,
+      hours: RSV_STEP_MIN / 60
     }));
 
     el('rsv-pill-start').textContent = start;
@@ -2006,22 +2013,20 @@
      btnLoading.style.display = 'inline-block';
      submitBtn.style.opacity = '0.7';
 
-     const body = new URLSearchParams({
-       action: 'create_booking',
+     const body = JSON.stringify({
        name, email, purpose,
-       training: training ? 'true' : 'false',
-       slots: JSON.stringify(lastModal.slots)
+       slots: lastModal.slots
      });
 
      try {
-       const res = await fetch(SCRIPT_URL, {
+       const res = await fetch(`${SCRIPT_URL}/api/bookings`, {
          method: 'POST',
-         headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+         headers: { 'Content-Type':'application/json' },
          body
        });
        
        const data = await res.json();
-       if (!data.ok) throw new Error(data.error || 'Unknown error');
+       if (res.status !== 201 || !data.success) throw new Error(data.error || 'Unknown error');
 
        el('rsv-success-start').textContent = `${mmddLabel(selectedDate)} ${lastModal.start}`;
        el('rsv-success-equip').textContent = `${lastModal.eq.name} ${lastModal.eq.model}`;
