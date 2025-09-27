@@ -1735,7 +1735,8 @@
   });
 
     /* ====== FC云函数 endpoint ====== */
-   const SCRIPT_URL = 'https://reservation-api-labtckjrqs.cn-shenzhen.fcapp.run';
+   const SCRIPT_URL = 'https://api.allorigins.win/raw?url=' + 
+       encodeURIComponent('https://reservation-api-labtckjrqs.cn-shenzhen.fcapp.run');
 
   /* ====== Modal helpers & state ====== */
   let lastModal = { eq:null, sorted:[], start:'', end:'', hours:0, slots:[] };
