@@ -2074,7 +2074,7 @@
            name,
            purpose,
            email,
-           id: data.booking_id // Use the booking ID from server response
+           id: data.bookingIds[0] // Use the database ID from server response
          });
        });
        
