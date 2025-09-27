@@ -3,6 +3,7 @@
 const mysql = require('mysql2/promise');
 const crypto = require('crypto');
 const https = require('https');
+const nodemailer = require('nodemailer');
 
 /* ===================== 配置（优先 env，缺省回退到你提供的值） ===================== */
 const DEFAULTS = {
@@ -359,6 +360,15 @@ async function handleCreateBooking(body, headers) {
     }
     console.log('All insertions completed, booking IDs:', ids);
 
+    // 发送预约成功邮件
+    try {
+      await sendBookingSuccessEmail(name, email, slots);
+      console.log(`Booking success email sent to ${email}`);
+    } catch (emailError) {
+      console.error('Failed to send booking success email:', emailError);
+      // 即使邮件发送失败，预约仍然成功
+    }
+
     return ok(headers, { success: true, bookingIds: ids, message: '预约创建成功' }, 201);
   } catch (e) {
     console.error('Create booking error:', e);
@@ -396,11 +406,13 @@ async function handleSendOTP(event, headers) {
     
     // 发送邮件
     try {
-      await sendEmailSimple(email, otp);
-      console.log(`OTP email sent to ${email}`);
+      await sendOTPEmail(email, otp);
+      console.log(`OTP email sent to ${email} via SUSTech mail server`);
     } catch (emailError) {
-      console.error('Failed to send email:', emailError);
+      console.error('Failed to send email via SUSTech:', emailError);
       // 即使邮件发送失败，OTP仍然有效
+      // 临时解决方案：在控制台显示OTP
+      console.log(`📧 邮件发送失败，OTP验证码: ${otp}`);
     }
     
     return ok(headers, { success: true, message: 'OTP 已发送到邮箱', otp }, 200);
@@ -445,39 +457,148 @@ async function handleDeleteBooking(body, headers) {
 
 /* ===================== 邮件发送功能 ===================== */
 
-// 发送OTP邮件
-async function sendOTPEmail(email, otp) {
+// 创建SUSTech邮件传输器（基于腾讯企业邮箱）
+function createSustechTransporter() {
+  return nodemailer.createTransport({
+    host: 'smtp.exmail.qq.com', // 腾讯企业邮箱SMTP服务器
+    port: 465, // 使用SSL端口
+    secure: true, // 使用SSL
+    auth: {
+      user: '12431497@mail.sustech.edu.cn',
+      pass: process.env.SUSTECH_EMAIL_PASSWORD || 'Jwt15916509056'
+    },
+    tls: {
+      rejectUnauthorized: false // 允许自签名证书
+    }
+  });
+}
+
+// 通过SUSTech邮件服务器发送邮件
+async function sendEmailViaSustech(emailData) {
+  const transporter = createSustechTransporter();
+  
+  try {
+    const info = await transporter.sendMail({
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      html: emailData.html
+    });
+    
+    console.log('SUSTech邮件发送成功:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('SUSTech邮件发送失败:', error);
+    throw error;
+  }
+}
+
+// 发送预约成功邮件
+async function sendBookingSuccessEmail(name, email, slots) {
   const emailData = {
-    from: 'noreply@sustechsdworkshop.com',
+    from: '12431497@mail.sustech.edu.cn',
     to: email,
-    subject: '预约验证码 - SUSTech SD Workshop',
+    subject: '预约成功确认 - SUSTech SD Workshop',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #333; margin: 0;">SUSTech SD Workshop</h1>
-          <p style="color: #666; margin: 5px 0;">预约验证码</p>
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h2 style="color: #333; margin: 0 0 15px 0;">您的验证码</h2>
-          <div style="background: #fff; padding: 20px; border-radius: 4px; text-align: center; border: 2px dashed #007bff;">
-            <span style="font-size: 32px; font-weight: bold; color: #007bff; letter-spacing: 5px;">${otp}</span>
+      <div style="font-family: 'Microsoft YaHei', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+        <div style="background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #10b981; padding-bottom: 20px;">
+            <h1 style="color: #10b981; margin: 0; font-size: 24px;">✅ 预约成功</h1>
+            <h2 style="color: #374151; margin: 10px 0 0 0; font-size: 18px; font-weight: normal;">SUSTech SD Workshop</h2>
           </div>
-          <p style="color: #666; margin: 15px 0 0 0; font-size: 14px;">
-            此验证码10分钟内有效，请勿泄露给他人。
-          </p>
-        </div>
-        
-        <div style="text-align: center; color: #666; font-size: 12px;">
-          <p>如果您没有请求此验证码，请忽略此邮件。</p>
-          <p>© 2025 SUSTech SD Workshop. All rights reserved.</p>
+          
+          <div style="background: #f0fdf4; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #10b981;">
+            <h3 style="color: #10b981; margin: 0 0 15px 0; font-size: 18px;">🎉 恭喜您，预约已成功！</h3>
+            <p style="color: #374151; margin: 0 0 10px 0; font-size: 16px;">亲爱的 <strong>${name}</strong>，</p>
+            <p style="color: #374151; margin: 0; font-size: 16px;">您的设备预约已成功创建，请查看下方详细信息：</p>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h4 style="color: #374151; margin: 0 0 15px 0; font-size: 16px;">📋 预约详情</h4>
+            ${slots.map(slot => `
+              <div style="background: #fff; padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: bold; color: #1e3a8a;">${slot.device}</span>
+                  <span style="color: #6b7280; font-size: 14px;">${slot.model || ''}</span>
+                </div>
+                <div style="color: #374151; font-size: 14px;">
+                  <div>📅 日期：${slot.date}</div>
+                  <div>⏰ 时间：${slot.start_time} - ${slot.end_time}</div>
+                  <div>⏱️ 时长：${slot.hours}小时</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div style="background: #fef3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <p style="color: #92400e; margin: 0; font-size: 14px;">
+              <strong>📌 重要提醒：</strong>
+            </p>
+            <ul style="color: #92400e; margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
+              <li>请按时到达预约地点</li>
+              <li>如需取消预约，请使用预约管理功能</li>
+              <li>如有疑问，请联系工作人员</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; color: #6b7280; font-size: 12px; line-height: 1.6;">
+            <p style="margin: 0 0 5px 0;">感谢您使用SUSTech SD Workshop预约系统！</p>
+            <p style="margin: 0;">此邮件由系统自动发送，请勿回复。</p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+            <p style="margin: 0; color: #9ca3af;">© 2025 南方科技大学 SD Workshop. 保留所有权利。</p>
+          </div>
         </div>
       </div>
     `
   };
 
-  // 使用阿里云邮件推送服务
-  return await sendEmailViaAliyun(emailData);
+  // 使用SUSTech邮件服务器
+  return await sendEmailViaSustech(emailData);
+}
+
+// 发送OTP邮件
+async function sendOTPEmail(email, otp) {
+  const emailData = {
+    from: '12431497@mail.sustech.edu.cn',
+    to: email,
+    subject: '预约验证码 - SUSTech SD Workshop',
+    html: `
+      <div style="font-family: 'Microsoft YaHei', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+        <div style="background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px;">
+            <h1 style="color: #1e3a8a; margin: 0; font-size: 24px;">南方科技大学</h1>
+            <h2 style="color: #374151; margin: 10px 0 0 0; font-size: 18px; font-weight: normal;">SD Workshop 预约系统</h2>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #1e3a8a;">
+            <h3 style="color: #1e3a8a; margin: 0 0 15px 0; font-size: 18px;">您的验证码</h3>
+            <div style="background: #fff; padding: 25px; border-radius: 6px; text-align: center; border: 2px solid #e5e7eb;">
+              <span style="font-size: 36px; font-weight: bold; color: #1e3a8a; letter-spacing: 8px; font-family: 'Courier New', monospace;">${otp}</span>
+            </div>
+            <p style="color: #6b7280; margin: 15px 0 0 0; font-size: 14px; text-align: center;">
+              ⏰ 此验证码10分钟内有效，请勿泄露给他人
+            </p>
+          </div>
+          
+          <div style="background: #fef3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <p style="color: #92400e; margin: 0; font-size: 14px;">
+              <strong>安全提示：</strong>请勿将验证码告诉他人，工作人员不会主动索要您的验证码。
+            </p>
+          </div>
+          
+          <div style="text-align: center; color: #6b7280; font-size: 12px; line-height: 1.6;">
+            <p style="margin: 0 0 5px 0;">如果您没有请求此验证码，请忽略此邮件。</p>
+            <p style="margin: 0;">此邮件由系统自动发送，请勿回复。</p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+            <p style="margin: 0; color: #9ca3af;">© 2025 南方科技大学 SD Workshop. 保留所有权利。</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  // 使用SUSTech邮件服务器
+  return await sendEmailViaSustech(emailData);
 }
 
 // 通过阿里云邮件推送发送邮件
@@ -531,10 +652,12 @@ async function sendEmailViaAliyun(emailData) {
 // 简化的邮件发送（用于测试）
 async function sendEmailSimple(email, otp) {
   console.log(`📧 邮件发送模拟:`);
+  console.log(`   发件人: sdworkshop@sustech.edu.cn`);
   console.log(`   收件人: ${email}`);
   console.log(`   验证码: ${otp}`);
   console.log(`   主题: 预约验证码 - SUSTech SD Workshop`);
   console.log(`   内容: 您的验证码是 ${otp}，10分钟内有效。`);
+  console.log(`   邮件模板: 南方科技大学 SD Workshop 官方邮件模板`);
   
   // 在实际部署时，这里应该调用真实的邮件服务
   // 目前只是模拟发送成功
