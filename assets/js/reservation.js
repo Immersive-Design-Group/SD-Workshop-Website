@@ -1427,6 +1427,8 @@
 
   // Booking management functions
   function openBookingManagementModal(booking) {
+    console.log('Opening booking management modal for booking:', booking);
+    console.log('Booking ID:', booking.id);
     currentBooking = booking;
     
     // Populate modal with booking details
