@@ -480,8 +480,8 @@ function createSustechTransporter() {
     port: 465, // 使用SSL端口
     secure: true, // 使用SSL
     auth: {
-      user: '12431497@mail.sustech.edu.cn',
-      pass: process.env.SUSTECH_EMAIL_PASSWORD || 'Jwt15916509056'
+      user: 'designworkshop@sustech.edu.cn',
+      pass: process.env.SUSTECH_EMAIL_PASSWORD || 'JyhhWbgmpdAMkxzb'
     },
     tls: {
       rejectUnauthorized: false // 允许自签名证书
@@ -512,7 +512,7 @@ async function sendEmailViaSustech(emailData) {
 // 发送预约成功邮件
 async function sendBookingSuccessEmail(name, email, slots) {
   const emailData = {
-    from: '12431497@mail.sustech.edu.cn',
+    from: 'designworkshop@sustech.edu.cn',
     to: email,
     subject: '预约成功确认 - SUSTech SD Workshop',
     html: `
@@ -575,7 +575,7 @@ async function sendBookingSuccessEmail(name, email, slots) {
 // 发送OTP邮件
 async function sendOTPEmail(email, otp) {
   const emailData = {
-    from: '12431497@mail.sustech.edu.cn',
+    from: 'designworkshop@sustech.edu.cn',
     to: email,
     subject: '预约验证码 - SUSTech SD Workshop',
     html: `
