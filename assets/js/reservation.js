@@ -54,8 +54,8 @@
     if (year === 2024 && month === 6 && day === 10) return true;
     if (year === 2025 && month === 5 && day === 31) return true;
     
-    // National Day - October 1-7
-    if (month === 10 && day >= 1 && day <= 7) return true;
+    // National Day - October 1-8
+    if (month === 10 && day >= 1 && day <= 8) return true;
     
     // Mid-Autumn Festival (Lunar calendar - approximate dates)
     if (year === 2024 && month === 9 && day === 17) return true;
@@ -586,9 +586,34 @@
   // Check if a date is weekend or Chinese holiday
   function isWeekendOrHoliday(date) {
     const dayOfWeek = date.getDay();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    // Special working days during Chinese holidays (compensation days)
+    if (year === 2025 && month === 9 && day === 28) {
+      console.log('September 28th detected as working day');
+      return false; // September 28th is a working day
+    }
+    if (year === 2025 && month === 10 && day === 11) {
+      console.log('October 11th detected as working day');
+      return false; // October 11th is a working day
+    }
+    
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const isChineseHoliday = isChineseHolidayDate(date);
-    return isWeekend || isChineseHoliday;
+    const result = isWeekend || isChineseHoliday;
+    
+    // Debug logging for special dates
+    if ((year === 2025 && month === 9 && day === 28) || (year === 2025 && month === 10 && day === 11)) {
+      console.log('isWeekendOrHoliday debug:', {
+        date: date.toDateString(),
+        month, day, year,
+        isWeekend, isChineseHoliday, result
+      });
+    }
+    
+    return result;
   }
 
   // Check if a slot is in the past
@@ -1659,9 +1684,26 @@
 
   function makeItem(d) {
     const dayOfWeek = d.getDay();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const year = d.getFullYear();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const isChineseHoliday = isChineseHolidayDate(d);
-    const isRestricted = isWeekend || isChineseHoliday;
+    
+    // Check if this is a special working day during holiday
+    const isSpecialWorkingDay = (year === 2025 && month === 9 && day === 28) || 
+                               (year === 2025 && month === 10 && day === 11);
+    
+    // Debug logging for special dates
+    if (isSpecialWorkingDay) {
+      console.log('Special working day detected:', {
+        date: d.toDateString(),
+        month, day, year,
+        isWeekend, isChineseHoliday, isSpecialWorkingDay
+      });
+    }
+    
+    const isRestricted = (isWeekend || isChineseHoliday) && !isSpecialWorkingDay;
     
     const b = document.createElement('button');
     b.className = 'date-item';
@@ -1683,6 +1725,12 @@
       b.innerHTML = `
         <span class="date-main">${fmtCN(d)}</span>
         <span class="date-status">${isWeekend ? dayName : 'Holiday'}</span>
+      `;
+    } else if (isSpecialWorkingDay) {
+      // Show working day status for compensation days
+      b.innerHTML = `
+        <span class="date-main">${fmtCN(d)}</span>
+        <span class="date-status">Working Day</span>
       `;
     } else {
       // Show day name for all dates, not just restricted ones

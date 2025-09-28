@@ -74,9 +74,26 @@
   function isWorkshopOpen() {
     const now = new Date();
     const dayOfWeek = now.getDay();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const year = now.getFullYear();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentTime = currentHour * 60 + currentMinute;
+    
+    // Special working days during Chinese holidays (compensation days)
+    if (year === 2025 && month === 9 && day === 28) {
+      // September 28th is a working day despite being Sunday
+      const openTime = 9 * 60; // 9:00 AM in minutes
+      const closeTime = 22 * 60; // 10:00 PM in minutes
+      return currentTime >= openTime && currentTime < closeTime;
+    }
+    if (year === 2025 && month === 10 && day === 11) {
+      // October 11th is a working day despite being Friday
+      const openTime = 9 * 60; // 9:00 AM in minutes
+      const closeTime = 22 * 60; // 10:00 PM in minutes
+      return currentTime >= openTime && currentTime < closeTime;
+    }
     
     // Check if it's weekend (Saturday = 6, Sunday = 0)
     if (dayOfWeek === 0 || dayOfWeek === 6) {
