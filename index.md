@@ -51,7 +51,7 @@ title: 首页 HOME
   </div>
 </section>
 <section class="space-section">
-  <h2 class="section-title">Main Space</h2>
+  <h2 class="howto-ghost">Main Space</h2>
 
   <div class="space-row">
     <!-- Item 1 -->
@@ -78,6 +78,58 @@ title: 首页 HOME
 <section class="howto-section">
   <h2 class="howto-ghost">How to use the workshop</h2>
 
+  <!-- How-to-use Workshop Steps -->
+  <div class="how-to-steps-container">
+    <!-- Step 1 -->
+    <div class="how-to-step step-1">
+      <div class="step-number">1</div>
+      <h3 class="step-title">签署承诺书<br>SIGN PLEDGE</h3>
+      <p class="step-description-cn">所有使用工坊的同学,均需签署<span class="highlight-blue">《工坊安全使用承诺书</span>》,打印后提交至赵悦老师处备份,此为使用工坊的前提条件。</p>
+      <p class="step-description-en">All Students must sign <span class="highlight-blue">Workshop Safety Pledge</span> before using the workshop. After signing, scan the document and send it to the workshop email for filing.</p>
+    </div>
+    <!-- Arrow 1-2 -->
+    <div class="step-arrow arrow-1-2">→</div>
+    <!-- Step 2 -->
+    <div class="how-to-step step-2">
+      <div class="step-number">2</div>
+      <h3 class="step-title">完成测试<br>PASS TEST</h3>
+      <p class="step-description-cn">使用工坊进行电路设计的同学,仅需完成<span class="highlight-blue">《基础安全》</span>测试;若需使用3D打印机或激光切割机,则须通过对应设备的测试。</p>
+      <p class="step-description-en">To use the workshop, everyone must complete 'Basic Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue">equipment-specific tests</span> (see the equipment introduction page for test access).</p>
+    </div>
+    <!-- Arrow 2-3 -->
+    <div class="step-arrow arrow-2-3">→</div>
+    <!-- Step 3 -->
+    <div class="how-to-step step-3-split step-3">
+      <div class="step-number">3</div>
+      <div class="step-3-content">
+        <div class="step-3-section working-day">
+          <div class="section-label">工作日<br>Working day</div>
+          <h4 class="section-title">线上预约<br>ONLINE BOOKING</h4>
+          <p class="section-description-cn">最早可以提<span class="highlight-blue">前三天</span>预约设备,预约成功后,系统会发送邮件通知。若计划有变,请依照邮件指引在网站端及时取消预约,以免影响他人使用。</p>
+          <p class="section-description-en">Equipment reservations can be made up to <span class="highlight-blue">three days</span> in advance. You'll get a confirmation email once reserved. If plans change, cancel on the website quickly as per email guide to not disrupt others' use.</p>
+        </div>
+        <div class="step-3-divider"></div>
+        <div class="step-3-section non-working-day">
+          <div class="section-label">非工作日或高风险设备<br>Non-Working Day or High-risk equip</div>
+          <h4 class="section-title">邮件预约<br>EMAIL BOOKING</h4>
+          <p class="section-description-cn">提前两天发送邮件至<a href="mailto:designworkshop@sustech.edu.cn">designworkshop@sustech.edu.cn</a>,并抄送指导教师,说明使用目的、涉及的设备、指导老师、使用时间和时长。</p>
+          <p class="section-description-en">Send an email to <a href="mailto:designworkshop@sustech.edu.cn">designworkshop@sustech.edu.cn</a> two days before use and CC to the supervisor. State the purpose of use, equipment involved, supervisor, time use and duration in the email.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Arrow 3-4 (horizontal) -->
+    <div class="step-arrow arrow-3-4">→</div>
+    
+    <!-- Step 4 -->
+    <div class="how-to-step step-4">
+      <div class="step-number">4</div>
+      <h3 class="step-title">预约使用<br>USE ON TIME</h3>
+      <p class="step-description-cn">依照预约时间前往工坊,完成签到,并出示测试通过证书。若未完成测试或承诺书签署可现场进行签署。</p>
+      <p class="step-description-en">Please go to the workshop at the scheduled time and complete the check-in. If you haven't signed the commitment letter, you can do so on-site.</p>
+    </div>
+  </div>
+  <!-- End How-to-use Workshop Steps -->
 
 </section>
 
