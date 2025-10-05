@@ -42,24 +42,32 @@
         <dl class="eqtop-spec-list">
           {% if page.model %}<div><dt>型号 Model:</dt><dd>{{ page.model }}</dd></div>{% endif %}
           {% if page.power %}<div><dt>功率 Power:</dt><dd>{{ page.power }}</dd></div>{% endif %}
+          {% if page.working_area %}<div><dt>工作区域 Working area:</dt><dd>{{ page.working_area }}</dd></div>{% endif %}
+          {% if page.workpiece_height %}<div><dt>工件高度 Workpiece height:</dt><dd>{{ page.workpiece_height }}</dd></div>{% endif %}
+          {% if page.laser_power %}<div><dt>激光功率 Laser power:</dt><dd>{{ page.laser_power }}</dd></div>{% endif %}
+          {% if page.print_size %}<div><dt>打印最大尺寸 Size:</dt><dd>{{ page.print_size }}</dd></div>{% endif %}
+          {% if page.nozzle_spec %}<div><dt>喷嘴规格:</dt><dd>{{ page.nozzle_spec }}</dd></div>{% endif %}
+          {% if page.material_type %}<div><dt>耗材类型:</dt><dd>{{ page.material_type }}</dd></div>{% endif %}
+          {% if page.materials %}<div><dt>可用材料 Applicable materials:</dt><dd>{{ page.materials }}</dd></div>{% endif %}
           {% if page.temp_range %}<div><dt>温度范围 Temperature Range:</dt><dd>{{ page.temp_range }}</dd></div>{% endif %}
           {% if page.purpose %}<div><dt>用途 Purpose:</dt><dd>{{ page.purpose }}</dd></div>{% endif %}
         </dl>
 
-        {% if page.spec_notes %}
-        <ul class="eqtop-notes">
-          {% for n in page.spec_notes %}
-            <li>
-              {% assign parts = n | split: " · " %}
-              {% if parts.size == 2 %}
-                <span class="cn">{{ parts[0] }}</span>
-                <span class="en">{{ parts[1] }}</span>
-              {% else %}
-                {{ n }}
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
+        {% if page.risk_level %}
+        <div class="eqtop-risk-box">
+          <div class="risk-level-header">
+            <span class="risk-label-cn">风险级别 Risk Level:</span>
+            <span class="risk-level-text risk-{{ page.risk_color }}">
+              {{ page.risk_level_cn }} {{ page.risk_level }}
+            </span>
+          </div>
+          {% if page.requirements_cn or page.requirements_en %}
+          <div class="risk-requirements">
+            {% if page.requirements_cn %}<p class="cn">{{ page.requirements_cn }}</p>{% endif %}
+            {% if page.requirements_en %}<p class="en">{{ page.requirements_en }}</p>{% endif %}
+          </div>
+          {% endif %}
+        </div>
         {% endif %}
       </aside>
     </div>
@@ -98,13 +106,25 @@
         
         <div class="proc-texts">
           {% for pair in step.pairs %}
-            {% if pair.cn or pair.en %}
+            {% if pair.cn or pair.en or pair.cn_lines or pair.en_lines %}
               <div class="proc-text-block">
                 {% if forloop.first %}
                   <div class="proc-watermark">{{ forloop.parentloop.index }}</div>
                 {% endif %}
-                {% if pair.cn %}<p class="cn">{{ pair.cn }}</p>{% endif %}
-                {% if pair.en %}<p class="en">{{ pair.en }}</p>{% endif %}
+                {% if pair.cn_lines %}
+                  {% for line in pair.cn_lines %}
+                    <p class="cn">{{ line }}</p>
+                  {% endfor %}
+                {% elsif pair.cn %}
+                  <p class="cn">{{ pair.cn }}</p>
+                {% endif %}
+                {% if pair.en_lines %}
+                  {% for line in pair.en_lines %}
+                    <p class="en">{{ line }}</p>
+                  {% endfor %}
+                {% elsif pair.en %}
+                  <p class="en">{{ pair.en }}</p>
+                {% endif %}
               </div>
             {% endif %}
           {% endfor %}
@@ -121,15 +141,27 @@
         </figure>
       {% endif %}
 
-      {% if pair.cn or pair.en %}
+      {% if pair.cn or pair.en or pair.cn_lines or pair.en_lines %}
         <div class="proc-mobile-text">
           {% if forloop.first %}
            
             <div class="proc-mobile-watermark">{{ forloop.parentloop.index }}</div>
           {% endif %}
 
-          {% if pair.cn %}<p class="cn">{{ pair.cn }}</p>{% endif %}
-          {% if pair.en %}<p class="en">{{ pair.en }}</p>{% endif %}
+          {% if pair.cn_lines %}
+            {% for line in pair.cn_lines %}
+              <p class="cn">{{ line }}</p>
+            {% endfor %}
+          {% elsif pair.cn %}
+            <p class="cn">{{ pair.cn }}</p>
+          {% endif %}
+          {% if pair.en_lines %}
+            {% for line in pair.en_lines %}
+              <p class="en">{{ line }}</p>
+            {% endfor %}
+          {% elsif pair.en %}
+            <p class="en">{{ pair.en }}</p>
+          {% endif %}
         </div>
       {% endif %}
     </div>

@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&family=Source+Han+Sans+CN:wght@300;400;500;600;700;800;900&display=swap');
+
 /* =========================
-   Base / Reset
+  Base / Reset
 ========================= */
 :root {
   --header-h: 84px; /* real header height */
@@ -18,7 +20,7 @@ body {
   overflow-x: hidden;
 }
 body {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   color: #1a2238;
   line-height: 1.5;
   background-color: #fff;
@@ -59,9 +61,9 @@ a {
 }
 .logo-left span,
 .logo-right span {
-  font-family: 'Source Han Sans', sans-serif;
+  font-family: 'Source Han Sans CN', sans-serif;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 500;
   margin-left: 0.5rem;
 }
 
@@ -77,11 +79,11 @@ a {
   color: #020202;
   font-weight: 500;
   font-size: 1rem;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   transition: color 0.3s ease;
   overflow: hidden; /* This will prevent the lines from being seen outside the link's bounds */
 }
 
-.nav-link:hover,
 .nav-link.active {
   color: #020202;
 }
@@ -155,6 +157,7 @@ a {
 .mobile-link{
   display:block; padding:.9rem 0; font-size:1.05rem; color:#0f1219; text-decoration:none;
   border-bottom:1px solid rgba(0,0,0,.08);
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
 }
 .mobile-link.active{ color:#3b52a0; font-weight:700; }
 
@@ -208,7 +211,7 @@ a {
 }
 
 .cn-title {
-  font-family: 'Source Han Sans', sans-serif;
+  font-family: 'Source Han Sans CN', sans-serif;
   /* responsive: small → big */
   font-size: clamp(2rem, 4.5vw, 4rem);
   font-weight: 600;
@@ -221,6 +224,7 @@ a {
   font-size: clamp(1.1rem, 2.2vw, 2rem);
   color: #7f8a9b;
   margin-bottom: 1.25rem;
+  font-family: 'Roboto', sans-serif;
 }
 .meta {
   font-size: clamp(0.95rem, 1.6vw, 1.15rem);
@@ -428,7 +432,7 @@ a {
   margin-left: auto; /* hugs the right edge */
 }
 .about-title {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af; /* Same as TA Schedule */
@@ -437,7 +441,7 @@ a {
   text-align: left;
 }
 .about-cn {
-  font-family: 'Source Han Sans', sans-serif;
+  font-family: 'Source Han Sans CN', sans-serif;
   font-size: clamp(1rem, 1.8vw, 1.25rem);
   color: #7c8794;
   line-height: 2;
@@ -485,7 +489,7 @@ a {
 }
 
 .section-title{
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af; /* Same as TA Schedule */
@@ -570,7 +574,7 @@ a {
 
 /* Pale title like your style */
 .howto-ghost{
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af; /* Same as TA Schedule */
@@ -660,7 +664,7 @@ a {
 }
 
 .ta-ghost{
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af; /* Light gray like in the image */
@@ -694,7 +698,7 @@ a {
   flex-direction: column;
   justify-content: flex-end; /* Move text to bottom */
   gap: 0.25rem;
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 1rem;
   color: black;
 }
@@ -826,7 +830,7 @@ a {
 }
 
 .team-ghost{
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af;
@@ -850,7 +854,7 @@ a {
 }
 
 .team-row-title {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 1.4rem;
   font-weight: 800;
   color: #000;
@@ -866,7 +870,7 @@ a {
 }
 
 .group-name {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 1.4rem;
   font-weight: 800;
   color: #000;
@@ -951,7 +955,7 @@ a {
 }
 
 .member-name {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
   color: #000;
@@ -963,7 +967,7 @@ a {
 }
 
 .member-degree {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 0.8rem;
   font-weight: 500;
   color: #374151;
@@ -1136,7 +1140,7 @@ a {
 .site-footer {
   background-color: #2c2c2c;
   color: #fff;
-  font-family: 'Source Han Sans', sans-serif;
+  font-family: 'Source Han Sans CN', sans-serif;
 }
 .footer-top {
   display: flex;
@@ -1357,10 +1361,10 @@ a {
   position:absolute; left:.9rem; bottom:.9rem; right:.9rem; color:#fff;
 }
 .equip-roomcard-cn{
-  font-family:'Source Han Sans',sans-serif; font-weight:800; font-size:clamp(1.05rem,2.4vw,1.5rem);
+  font-family:'Source Han Sans CN',sans-serif; font-weight:500; font-size:clamp(1.05rem,2.4vw,1.5rem);
 }
 .equip-roomcard-en{
-  margin-top:.25rem; font-weight:700; opacity:.95; font-size:clamp(.95rem,1.8vw,1.15rem);
+  margin-top:.25rem; font-weight:400; opacity:.95; font-size:clamp(.95rem,1.8vw,1.15rem);
 }
 
 /* ---------- Equip cards ---------- */
@@ -1409,6 +1413,130 @@ a {
 .equip-name-cn{ margin:0 0 .25rem; font-weight:800; color:#0f1219; font-size:1.05rem; }
 .equip-name{ margin:0 0 .35rem; font-weight:800; color:#151b28; font-size:1.05rem; }
 .equip-sub{ margin:0; color:#6a7483; font-size:.92rem; }
+.equip-model{ margin:.25rem 0 0; color:#9ca3af; font-size:.85rem; font-weight:500; }
+
+/* Risk Level Info for Equipment Cards */
+.equip-risk-info {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid #e2e8f0;
+}
+
+.risk-level-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.risk-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.risk-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.risk-text.risk-green {
+  color: #10b981;
+}
+
+.risk-text.risk-orange {
+  color: #f59e0b;
+}
+
+.risk-text.risk-red {
+  color: #ef4444;
+}
+
+.risk-requirement-cn {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #1f2937;
+  line-height: 1.4;
+}
+
+.risk-requirement-en {
+  margin: 0.1rem 0 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Risk Level Box for Equipment Detail Pages */
+.eqtop-risk-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.risk-level-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.risk-label-cn {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.risk-level-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.risk-level-text.risk-green {
+  color: #10b981;
+}
+
+.risk-level-text.risk-orange {
+  color: #f59e0b;
+}
+
+.risk-level-text.risk-red {
+  color: #ef4444;
+}
+
+.risk-requirements {
+  margin-top: 0.5rem;
+}
+
+.risk-requirements p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.risk-requirements .cn {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.risk-requirements .en {
+  color: #6b7280;
+}
+
+/* Red text in braces for highlighting important information */
+.proc-text-block .red-brace,
+.proc-mobile-text .red-brace {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Blue highlighting for test names */
+.risk-requirements .test-name {
+  color: #3b82f6;
+  font-weight: 600;
+}
 
 
 /* ---------- Responsive ---------- */
@@ -1509,7 +1637,7 @@ a {
 /* Titles */
 .eqtop-ghost{
   margin:0 0 6px;
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-weight:400;
   color:#9ca3af; /* Same as other ghost titles */
   letter-spacing:.2px;
@@ -1565,18 +1693,19 @@ a {
 
 .eqtop-spec-h .cn {
   display: inline;
-  font-family: 'Source Han Sans', sans-serif;
+  font-family: 'Source Han Sans CN', sans-serif;
   margin-right: 0.5rem;
-  font-size: 2.5rem;
+  font-size: 3rem;
   color: black;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .eqtop-spec-h .en {
   display: inline;
   color: black;
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 2.5rem;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
 }
 
 .eqtop-spec-h {
@@ -1603,13 +1732,15 @@ a {
 .eqtop-spec-list dt{ 
   font-weight:600; 
   color:#222; 
-  font-size:22px;
+  font-size:16px;
+  font-family: 'Roboto', sans-serif;
 }
 
 .eqtop-spec-list dd{ 
   margin:0; 
   color:#111;
-  font-size:22px;
+  font-size:16px;
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Medium screens */
@@ -1618,13 +1749,13 @@ a {
   .eqtop-grid{ grid-template-columns:1fr; }
   .eqtop-spec-list dt,
   .eqtop-spec-list dd {
-    font-size: 20px;
+    font-size: 16px;
   }
   .eqtop-spec-h .cn {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
   }
   .eqtop-spec-h .en {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
   }
   .eqtop-spec-h {
     border-bottom: 2px solid #e7e7e7;
@@ -1648,13 +1779,13 @@ a {
   }
   .eqtop-spec-list dt,
   .eqtop-spec-list dd {
-    font-size: 18px;
+    font-size: 16px;
   }
   .eqtop-spec-h .cn {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
   .eqtop-spec-h .en {
-    font-size: 1.6rem;
+    font-size: 2rem;
   }
   .eqtop-spec-h {
     border-bottom: 2px solid #e7e7e7;
@@ -1680,10 +1811,10 @@ a {
     font-size: 16px;
   }
   .eqtop-spec-h .cn {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
   .eqtop-spec-h .en {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
   }
   .eqtop-spec-h {
     border-bottom: 1px solid #e7e7e7;
@@ -1724,7 +1855,7 @@ a {
 }
 
 .eqtop-notes li .cn {
-  font-family: 'Source Han Sans', sans-serif;
+  font-family: 'Source Han Sans CN', sans-serif;
   font-weight: 800;
 }
 
@@ -1748,7 +1879,7 @@ a {
 }
 .proc-ghost{
   margin:0 0 6px; 
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-weight:400;
   color:#9ca3af; /* Same as other ghost titles */
   letter-spacing:.2px; 
@@ -1768,8 +1899,9 @@ a {
 .proc-step:last-child{ border-bottom:0; }
 
 .proc-step-title{
-  margin:0 0 10px; font-weight:900; color:#111;
-  font-size:clamp(1.05rem,3.2vw,1.35rem);
+  margin:0 0 10px; font-weight:600; color:#111;
+  font-size:1.5rem;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
 }
 .proc-step-title .num{ margin-right:.4rem; }
 
@@ -1835,8 +1967,8 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;        
-  align-items: center;            
-  text-align: center;             
+  align-items: flex-start;            
+  text-align: left;             
   padding: 16px;
 }
 
@@ -1858,6 +1990,7 @@ a {
 
 .proc-text-block p.en {
   color: #374151;
+  font-family: 'Roboto', sans-serif;
 }
 
 /* MOBILE LAYOUT */
@@ -1912,10 +2045,10 @@ a {
 }
   
   .proc-mobile-text {
-  position: relative;
-  padding: 24px 8px 12px;  /* top padding so the watermark has room */
-  text-align: center;      /* optional: center the text too */
-}
+    position: relative;
+    padding: 24px 8px 12px;  /* top padding so the watermark has room */
+    text-align: left;      /* left align the text */
+  }
   
   .proc-mobile-text p {
     margin: .25rem 0 .65rem;
@@ -1928,6 +2061,7 @@ a {
   
   .proc-mobile-text p.en {
     color: #374151;
+    font-family: 'Roboto', sans-serif;
   }
 }
 
@@ -1946,7 +2080,7 @@ a {
 
 .safety-title{
   margin:26px 0 2px;
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-weight:400;                 /* slightly lighter than 900 for a cleaner look */
   color:#9ca3af; /* Same as other ghost titles */
   font-size:clamp(1.35rem,3.2vw,4rem);
@@ -1995,29 +2129,30 @@ a {
   top:.05rem;                      /* tiny vertical nudge */
 }
 
-/* Place both CN & EN paragraphs in the text column; inline on one line */
+/* Place both CN & EN paragraphs in the text column; stacked vertically */
 .safety-list p{
   grid-column:2;
   margin:0;
-  display:inline;
+  display:block;
   white-space:normal;
 }
 
 .safety-list p.cn{
-  font-weight:700;
+  font-weight:500;
   color:#111;
-  font-weight: 400;
-  font-size:1.5rem;
-  display: inline;
-  margin: 0; 
+  font-size:1rem;
+  display: block;
+  margin: 0 0 0.25rem 0; 
+  font-family: 'Source Han Sans CN', sans-serif;
 
 }
-.safety-list p.en{
+.safety-list p.cn .en{
   color:#374151;
-  font-size:1.5rem;
-  display: inline; 
+  font-size:1rem;
+  display: block; 
   margin: 0;
-
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
 }
 
 
@@ -2027,7 +2162,7 @@ a {
   .safety-title-cn{ font-size:clamp(1rem,3.8vw,1.2rem); }
   .safety-list li{ margin:8px 0 14px; }
   .safety-list p.cn,
-  .safety-list p.en{ font-size:0.98rem; }
+  .safety-list p.en{ font-size:1rem; }
 }
 
 
@@ -2041,7 +2176,7 @@ a {
 
 .rt-ghost{
   margin:0 0 4px;
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-weight:400;
   color:#9ca3af; /* Same as other ghost titles */
   letter-spacing:.2px;
@@ -2059,41 +2194,67 @@ a {
   padding: 24px 24px;
 }
 
-/* Hero with overlay card in top-left */
+/* Hero with overlay card on the right side */
 .rt-hero{
   position:relative;
   margin:0 24px 28px;
   border-radius:12px;
   overflow:visible;
   box-shadow:0 12px 26px rgba(0,0,0,.08);
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  align-items: stretch;
+  gap: 0;
+  min-height: 400px;
 }
 .rt-hero img{
   width:100%;
-  height:auto;
+  height:100%;
+  object-fit: cover;
   display:block;
-  border-radius:12px;        
+  border-radius:12px 0 0 12px;        
 }
 .rt-hero-overlay{
-  position:absolute;
-  left:-18px;
-  top:-16px;                 /* lift it a little outside the image */
-  max-width:min(580px, 65%);
+  position: static;
+  width: 100%;
+  height: 100%;
   color:#fff;
-  background: linear-gradient(180deg, rgba(0,0,0,.35) 0, rgba(0,0,0,.35) 100%);
-  padding: clamp(20px, 5vw, 60px) clamp(6px, 3vw, 24px);
-  border-radius:8px;
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); /* subtle floating effect */
+  background: #000;
+  padding: 32px;
+  border-radius:0 12px 12px 0;
+  box-shadow: 0 6px 14px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .rt-hero-title .cn{
-  font-weight:900; font-size:clamp(1.05rem,2.6vw,1.4rem); margin-left:10px;
+  font-weight:500; font-size:1.1rem; margin:0 0 0.5rem 0;
+  font-family: 'Source Han Sans CN', sans-serif;
 }
 .rt-hero-title .en{
-  margin-top:2px; opacity:.95;
-  font-weight:700; font-size:clamp(.95rem,2.2vw,1.2rem); margin-left:10px;
+  margin:0 0 1rem 0; opacity:.95;
+  font-weight:600; font-size:1.4rem;
+  font-family: 'Roboto', sans-serif;
 }
-.rt-hero-overlay p{ margin:.5rem 0 0; margin-top:6px; margin-left:10px;}
+.rt-hero-overlay p{ 
+  margin:0 0 0.5rem 0; 
+  font-size: 1rem;
+  line-height: 1.5;
+  display: block;
+}
+.rt-hero-overlay p:last-child{
+  margin-bottom: 0;
+}
+.rt-hero-overlay p.cn{
+  font-family: 'Source Han Sans CN', sans-serif;
+  font-weight: 400;
+}
+.rt-hero-overlay p.en{
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
 
-/* Row = two columns */
+/* Row = two columns - image left, text right */
 .rt-row{
   display:grid;
   grid-template-columns: minmax(280px, 48%) 1fr;
@@ -2102,7 +2263,9 @@ a {
   margin:24px 24px 36px;
   align-items:center;
 }
-.rt-row.right{ grid-template-columns: 1fr minmax(280px, 48%); }
+.rt-row.right{ 
+  grid-template-columns: 1fr minmax(280px, 48%); 
+}
 .rt-row.right .rt-media{ order:2; }
 .rt-row.right .rt-text{ order:1; }
 
@@ -2115,13 +2278,48 @@ a {
   width:100%; height:auto; display:block;
 }
 
-.rt-text p{ margin:.35rem 0; line-height:1.75; color:#374151; }
-.rt-text p.cn{ font-weight:700; color:#151b28; }
-.rt-text p.strong{ margin-bottom:.25rem; }
-.rt-text p.en{ color:#374151; }
+.rt-text p{ 
+  margin:0.5rem 0; 
+  line-height:1.6; 
+  color:#374151; 
+  font-size: 1rem;
+}
+.rt-text p.cn{ 
+  font-weight:500; 
+  color:#151b28; 
+  font-family: 'Source Han Sans CN', sans-serif;
+}
+.rt-text p.strong{ 
+  margin-bottom:0.5rem; 
+  font-weight:600;
+}
+.rt-text p.en{ 
+  color:#374151; 
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+}
 
 /* Mobile */
 @media (max-width: 900px){
+  .rt-hero{
+    grid-template-columns: 1fr;
+    gap: 0;
+    min-height: auto;
+  }
+  
+  .rt-hero img{
+    height: 300px;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .rt-hero-overlay{
+    position: static;
+    width: 100%;
+    height: auto;
+    border-radius: 0 0 12px 12px;
+    margin-top: 0;
+  }
+  
   .rt-row,
   .rt-row.right{
     grid-template-columns: 1fr;
@@ -2132,12 +2330,6 @@ a {
   /* on mobile the text sits below, so don't force vertical centering */
   .rt-row{ align-items:stretch; }
   .rt-text{ justify-content:flex-start; }
-
-  .rt-hero-overlay{
-    left:16px;
-    top:-10px;              /* still slightly outside, but tighter on small screens */
-    max-width:86%;
-  }
 }
 
 
@@ -2151,7 +2343,7 @@ a {
 
 /* Equipment ghost title - same style as other section titles */
 .equip-ghost {
-  font-family: 'Roboto', 'Source Han Sans', sans-serif;
+  font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af; /* Same as TA Schedule, About, etc. */

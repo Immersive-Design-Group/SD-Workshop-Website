@@ -57,6 +57,9 @@ permalink: /equipments/
         {% if it.type_cn %}{{ it.type_cn }}{% if it.type %} · {% endif %}{% endif %}
         {{ it.type }}
       </p>
+      {% if it.model %}
+      <p class="equip-model">{{ it.model }}</p>
+      {% endif %}
     </div>
   </a>
 {% endfor %}

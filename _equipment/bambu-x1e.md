@@ -1,6 +1,6 @@
 ---
 title: BambuLab X1E
-title_cn: 
+title_cn: 3D打印机
 type: 3D Printer
 type_cn: 3D打印机
 category: Digital Fabrication
@@ -12,15 +12,18 @@ hero:
   alt: 3D Printer X1E
 
 # Right-column spec values (any of these are optional)
-model: Bambulab X1E
-power: 1000W
-temp_range: 200°C – 480°C
-purpose: 焊接 Soldering
+model: Bambulab P1S/X1E
+print_size: 宽256mm; 深256mm; 高256mm (Width 256mm; Depth 256mm; Height 256mm)
+nozzle_spec: 0.4
+material_type: PLA only
+purpose: 造型 Modeling
 
-# Red bullet notes below specs (optional)
-spec_notes:
-  - 只适用于培训过的学生 · Only for trained members
-  - 在助教指导下使用 · Use under the supervision of TA
+# Risk level and requirements
+risk_level: Medium
+risk_level_cn: 中
+risk_color: orange
+requirements_cn: 通过《<span class="test-name">实验室安全</span>》及《<span class="test-name">3D打印机使用</span>》测试后预约使用。
+requirements_en: Reservation and use require passing both '<span class="test-name">Laboratory Safety test</span>' and '<span class="test-name">3D Printer Operation test</span>'.
 
 process:
   title_en: "Soldering Process Guide"

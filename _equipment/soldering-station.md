@@ -15,15 +15,17 @@ hero:
   alt: Soldering Station overview
 
 # Right-column spec values (any of these are optional)
-model: FX-888D
+model: Weller WY1071
 power: 60W – 100W
 temp_range: 200°C – 480°C
 purpose: 焊接 Soldering
 
-# Red bullet notes below specs (optional)
-spec_notes:
-  - 只适用于培训过的学生 · Only for trained members
-  - 在助教指导下使用 · Use under the supervision of TA
+# Risk level and requirements
+risk_level: Low
+risk_level_cn: 低
+risk_color: green
+requirements_cn: 需通过《<span class="test-name">实验室安全</span>》后使用。
+requirements_en: use require passing '<span class="test-name">Laboratory Safety test</span>'
 
 process:
   title_en: "Soldering Process Guide"
