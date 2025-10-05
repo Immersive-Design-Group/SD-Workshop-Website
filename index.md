@@ -78,35 +78,7 @@ title: 首页 HOME
 <section class="howto-section">
   <h2 class="howto-ghost">How to use the workshop</h2>
 
-  <!-- Row 1 -->
-  <div class="howto-grid howto-top">
-    <!-- Hero card -->
-    <a class="howto-card howto-hero" href="#">
-      <img src="{{ 'assets/images/Rectangle 12.png' | relative_url }}" alt="Weekday">
-      <div class="howto-overlay">
-        <h3>Weekday</h3>
-        <span class="howto-cta">VIEW MORE <span aria-hidden>→</span></span>
-      </div>
-    </a>
 
-    <!-- Right image card -->
-    <a class="howto-card" href="#">
-      <img src="{{ 'assets\images\image 15.png' | relative_url }}" alt="">
-    </a>
-  </div>
-
-  <!-- Row 2 -->
-  <div class="howto-grid howto-bottom">
-    <a class="howto-card" href="#">
-      <img src="{{ 'assets/images/image 16.png' | relative_url }}" alt="">
-    </a>
-    <a class="howto-card" href="#">
-      <img src="{{ 'assets/images/image 17.png' | relative_url }}" alt="">
-    </a>
-    <a class="howto-card" href="#">
-      <img src="{{ 'assets/images/image 18.png' | relative_url }}" alt="">
-    </a>
-  </div>
 </section>
 
 
