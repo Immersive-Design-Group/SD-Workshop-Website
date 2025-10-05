@@ -78,10 +78,26 @@
         <span class="email-preview-text"></span>
       </div>
 
-      <!-- Purpose field -->
+      <!-- Purpose field with split inputs -->
       <div class="form__row">
-        <label class="form__label" for="purpose">Purpose <span class="required">*</span></label>
-        <textarea class="form__input form__textarea" id="purpose" name="purpose" required></textarea>
+        <label class="form__label" for="purpose-category">Purpose <span class="required">*</span></label>
+        <div class="purpose-split-container">
+          <select class="form__input purpose-category" id="purpose-category" required>
+            <option value="">Select category</option>
+            <option value="Course">Course</option>
+            <option value="Research">Research</option>
+            <option value="Others">Others</option>
+          </select>
+          <input 
+            type="text" 
+            class="form__input purpose-details" 
+            id="purpose-details"
+            placeholder="Course number, research group, or other details" 
+            required
+          >
+          <!-- Hidden field that combines both parts for form submission -->
+          <input type="hidden" name="purpose" id="purpose-combined">
+        </div>
         <div class="form__error" id="purpose-error">Purpose is required</div>
       </div>
 

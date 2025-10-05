@@ -1892,7 +1892,7 @@ datalist {
 }
 
 .required{ 
-  color: #6b7280; 
+  color: #dc2626; 
   font-weight: 700;
   margin-left: 2px;
 }
@@ -1976,6 +1976,34 @@ datalist {
 }
 
 .email-domain:focus {
+  border-left: 2px solid #3b82f6;
+}
+
+/* Purpose Split Container */
+.purpose-split-container {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  position: relative;
+}
+
+.purpose-category {
+  flex: 0 0 200px;
+  border-radius: 12px 0 0 12px;
+  border-right: none;
+}
+
+.purpose-details {
+  flex: 1;
+  border-radius: 0 12px 12px 0;
+  border-left: none;
+}
+
+.purpose-category:focus {
+  border-right: 2px solid #3b82f6;
+}
+
+.purpose-details:focus {
   border-left: 2px solid #3b82f6;
 }
 
@@ -2304,6 +2332,21 @@ datalist {
   }
   
   .email-domain {
+    flex: 1;
+  }
+  
+  .purpose-split-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .purpose-category,
+  .purpose-details {
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+  }
+  
+  .purpose-details {
     flex: 1;
   }
   

@@ -2095,6 +2095,24 @@
     }
   }
   
+  // Purpose field combination function
+  function updateCombinedPurpose() {
+    const category = document.getElementById('purpose-category');
+    const details = document.getElementById('purpose-details');
+    const combined = document.getElementById('purpose-combined');
+    
+    if (category && details && combined) {
+      const categoryValue = category.value;
+      const detailsValue = details.value.trim();
+      
+      if (categoryValue && detailsValue) {
+        combined.value = `${categoryValue}: ${detailsValue}`;
+      } else {
+        combined.value = '';
+      }
+    }
+  }
+  
   // Add real-time validation
   function setupFormValidation() {
     // Name field validation
@@ -2124,13 +2142,20 @@
     }
     
     // Purpose field validation
-    const purposeField = document.getElementById('purpose');
-    if (purposeField) {
-      purposeField.addEventListener('input', () => {
-        if (purposeField.value.trim()) {
+    const purposeCategory = document.getElementById('purpose-category');
+    const purposeDetails = document.getElementById('purpose-details');
+    if (purposeCategory && purposeDetails) {
+      const validatePurpose = () => {
+        const category = purposeCategory.value;
+        const details = purposeDetails.value.trim();
+        if (category && details) {
           clearFieldError('purpose');
         }
-      });
+        updateCombinedPurpose();
+      };
+      
+      purposeCategory.addEventListener('change', validatePurpose);
+      purposeDetails.addEventListener('input', validatePurpose);
     }
     
     // Training agreement validation
@@ -2183,7 +2208,8 @@
      const name    = e.target.name.value.trim();
      const emailInput = document.getElementById('email-combined') || e.target.email;
      const email   = emailInput.value.trim();
-     const purpose = e.target.purpose.value.trim();
+     const purposeInput = document.getElementById('purpose-combined');
+     const purpose = purposeInput.value.trim();
      const training = el('rsv-agree').checked;
 
      // Clear previous errors
@@ -2212,8 +2238,13 @@
      }
      
      // Validate purpose
-     if (!purpose) {
-       showFieldError('purpose', 'Purpose is required');
+     const purposeCategory = document.getElementById('purpose-category');
+     const purposeDetails = document.getElementById('purpose-details');
+     const categoryValue = purposeCategory?.value;
+     const detailsValue = purposeDetails?.value.trim();
+     
+     if (!categoryValue || !detailsValue) {
+       showFieldError('purpose', 'Please select a category and provide details');
        hasErrors = true;
      }
      

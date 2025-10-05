@@ -49,3 +49,8 @@ equipment:
     model: 
     image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
     status: "working"
+  - id: "eq8"
+    name: "3D Scanner"
+    model: 
+    image: "/assets/images/Equipments/3D-Scanner/3d-scanner.png"
+    status: "working"
