@@ -49,6 +49,13 @@
         <div class="form__error" id="name-error">Name is required</div>
       </div>
 
+      <!-- Student Number field -->
+      <div class="form__row">
+        <label class="form__label" for="student-number">SID <span class="required">*</span></label>
+        <input class="form__input" id="student-number" name="student_number" type="text" required placeholder="Enter your student number">
+        <div class="form__error" id="student-number-error">SID is required</div>
+      </div>
+
       <!-- Email field with split inputs -->
       <div class="form__row">
         <label class="form__label" for="email-username">Email <span class="required">*</span></label>
@@ -126,9 +133,9 @@
         <label class="checkbox-container">
           <input type="checkbox" id="rsv-agree" name="training" required>
           <span class="checkmark"></span>
-          <span class="checkbox-text">I have accepted the training instructions.</span>
+          <span class="checkbox-text">I have completed the safety training and accept the training instructions.</span>
         </label>
-        <div class="form__error" id="training-error">You must accept the training instructions</div>
+        <div class="form__error" id="training-error">You must complete safety training and accept the instructions</div>
       </div>
 
       <!-- Submit button -->

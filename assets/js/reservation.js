@@ -2113,6 +2113,121 @@
     }
   }
   
+  // Training verification function - reads local CSV file
+  async function verifyTrainingStatus(sid, name, equipment) {
+    try {
+      // Load training data from local CSV file
+      const trainingData = await loadTrainingData();
+      
+      // Find student in training records
+      const student = trainingData.find(record => 
+        record.sid === sid && 
+        record.name.toLowerCase().trim() === name.toLowerCase().trim()
+      );
+      
+      if (!student) {
+        return { 
+          ok: false, 
+          error: 'Student not found in training records. Please ensure you have completed safety training.',
+          trainingStatus: 'not_found'
+        };
+      }
+      
+      if (student.trainingstatus !== 'Completed') {
+        return { 
+          ok: false, 
+          error: 'Safety training not completed. Please complete training before booking equipment.',
+          trainingStatus: 'incomplete'
+        };
+      }
+      
+      // Check if training covers the requested equipment
+      if (equipment && student.equipmenttype !== 'All Equipment') {
+        // Normalize equipment names for comparison
+        const normalizedRequested = equipment.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizedTrained = student.equipmenttype.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        // Check if the trained equipment type matches the requested equipment
+        const isMatch = normalizedTrained.includes('all') || 
+                       normalizedRequested.includes(normalizedTrained) ||
+                       normalizedTrained.includes(normalizedRequested);
+        
+        if (!isMatch) {
+          return { 
+            ok: false, 
+            error: `Training not completed for ${equipment}. Please complete training for this equipment type.`,
+            trainingStatus: 'equipment_not_covered'
+          };
+        }
+      }
+      
+      return { 
+        ok: true, 
+        message: 'Training verification successful',
+        trainingStatus: 'verified',
+        trainingDate: student.trainingdate
+      };
+      
+    } catch (error) {
+      console.error('Training verification error:', error);
+      return { ok: false, error: 'Training verification failed. Please try again.' };
+    }
+  }
+
+  // Load training data from local CSV file
+  async function loadTrainingData() {
+    try {
+      const response = await fetch('/Data_collect/safety_training.csv');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const csvText = await response.text();
+      
+      // Parse CSV data
+      const lines = csvText.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        throw new Error('CSV file is empty or has no data rows');
+      }
+      
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line) {
+          const values = line.split(',').map(v => v.trim());
+          if (values.length >= headers.length) {
+            const record = {};
+            headers.forEach((header, index) => {
+              // Convert header to lowercase and remove spaces for consistent property names
+              const propertyName = header.toLowerCase().replace(/\s+/g, '');
+              record[propertyName] = values[index];
+            });
+            data.push(record);
+          }
+        }
+      }
+      
+      console.log('Successfully loaded training data from CSV:', data);
+      console.log('CSV Headers:', headers);
+      console.log('Parsed records:', data.length);
+      return data;
+    } catch (error) {
+      console.error('Error loading training data from CSV:', error);
+      // Show user-friendly error message
+      alert('Error loading training data. Please ensure the CSV file is accessible and try again.');
+      return [];
+    }
+  }
+
+  // Test function to verify CSV loading (for debugging)
+  window.testTrainingData = async function() {
+    console.log('Testing training data loading...');
+    const data = await loadTrainingData();
+    console.log('Training data test result:', data);
+    return data;
+  };
+
   // Add real-time validation
   function setupFormValidation() {
     // Name field validation
@@ -2121,6 +2236,16 @@
       nameField.addEventListener('input', () => {
         if (nameField.value.trim()) {
           clearFieldError('name');
+        }
+      });
+    }
+    
+    // SID field validation
+    const sidField = document.getElementById('student-number');
+    if (sidField) {
+      sidField.addEventListener('input', () => {
+        if (sidField.value.trim()) {
+          clearFieldError('student-number');
         }
       });
     }
@@ -2161,8 +2286,37 @@
     // Training agreement validation
     const trainingCheckbox = document.getElementById('rsv-agree');
     if (trainingCheckbox) {
-      trainingCheckbox.addEventListener('change', () => {
+      trainingCheckbox.addEventListener('change', async () => {
         if (trainingCheckbox.checked) {
+          // Get current form values
+          const name = document.getElementById('name').value.trim();
+          const sid = document.getElementById('student-number').value.trim();
+          const equipment = lastModal.eq ? lastModal.eq.name : '';
+          
+          if (name && sid) {
+            // Show loading state
+            const trainingError = document.getElementById('training-error');
+            trainingError.textContent = 'Verifying training status...';
+            trainingError.classList.add('show');
+            
+            try {
+              // Verify training status
+              const result = await verifyTrainingStatus(sid, name, equipment);
+              
+              if (result.ok) {
+                clearFieldError('training');
+                console.log('Training verification successful:', result);
+              } else {
+                showFieldError('training', result.error);
+              }
+            } catch (error) {
+              console.error('Training verification error:', error);
+              showFieldError('training', 'Training verification failed. Please try again.');
+            }
+          } else {
+            clearFieldError('training');
+          }
+        } else {
           clearFieldError('training');
         }
       });
@@ -2206,6 +2360,7 @@
      }
 
      const name    = e.target.name.value.trim();
+     const sid = document.getElementById('student-number').value.trim();
      const emailInput = document.getElementById('email-combined') || e.target.email;
      const email   = emailInput.value.trim();
      const purposeInput = document.getElementById('purpose-combined');
@@ -2220,6 +2375,12 @@
      // Validate name
      if (!name) {
        showFieldError('name', 'Name is required');
+       hasErrors = true;
+     }
+     
+     // Validate SID
+     if (!sid) {
+       showFieldError('student-number', 'SID is required');
        hasErrors = true;
      }
      
@@ -2264,6 +2425,22 @@
        return;
      }
 
+     // Verify training status before proceeding
+     try {
+       const trainingResult = await verifyTrainingStatus(sid, name, lastModal.eq.name);
+       
+       if (!trainingResult.ok) {
+         showFieldError('training', trainingResult.error);
+         return;
+       }
+       
+       console.log('Training verification successful:', trainingResult);
+     } catch (error) {
+       console.error('Training verification failed:', error);
+       showFieldError('training', 'Training verification failed. Please try again.');
+       return;
+     }
+
      if (!lastModal.slots.length) {
        alert('No slots selected.');
        return;
@@ -2289,7 +2466,7 @@
      submitBtn.style.opacity = '0.7';
 
      const body = JSON.stringify({
-       name, email, purpose,
+       name, sid: sid, email, purpose,
        slots: lastModal.slots
      });
 
