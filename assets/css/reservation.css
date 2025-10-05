@@ -1388,9 +1388,7 @@ datalist {
 }
 
 /* Ensure time labels align perfectly with slots */
-.timebar {
-  /* padding-left is set in the main .timebar rule above */
-}
+/* padding-left is set in the main .timebar rule above */
 
 .timebar .time-label {
   /* Ensure each time label covers exactly one slot width */
@@ -1894,7 +1892,7 @@ datalist {
 }
 
 .required{ 
-  color: #dc2626; 
+  color: #6b7280; 
   font-weight: 700;
   margin-left: 2px;
 }
@@ -1920,8 +1918,30 @@ datalist {
 }
 
 .form__input:invalid{ 
-  border-color: #dc2626; 
-  background: #fef2f2; 
+  border-color: #e2e8f0; 
+  background: #f8fafc; 
+}
+
+/* Error message styling */
+.form__error {
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 4px;
+  display: none;
+  font-weight: 500;
+}
+
+.form__error.show {
+  display: block;
+}
+
+.form__row.error .form__input {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.form__row.error .form__label {
+  color: #dc2626;
 }
 
 .form__textarea{ 

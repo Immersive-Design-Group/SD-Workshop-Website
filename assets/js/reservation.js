@@ -1899,6 +1899,9 @@
     console.log('Setting modal aria-hidden to false');
     el('rsv-modal').setAttribute('aria-hidden', 'false');
     console.log('Modal should now be visible');
+    
+    // Setup form validation
+    setupFormValidation();
   }
 
   function closeModal() {
@@ -2052,6 +2055,95 @@
     enhanceMobileExperience();
   }
 
+  // Form validation helper functions
+  function showFieldError(fieldName, message) {
+    const errorElement = document.getElementById(`${fieldName}-error`);
+    const formRow = errorElement.closest('.form__row');
+    
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.classList.add('show');
+    }
+    
+    if (formRow) {
+      formRow.classList.add('error');
+    }
+  }
+  
+  function clearFormErrors() {
+    // Clear all error messages
+    document.querySelectorAll('.form__error').forEach(error => {
+      error.classList.remove('show');
+    });
+    
+    // Remove error styling from all form rows
+    document.querySelectorAll('.form__row').forEach(row => {
+      row.classList.remove('error');
+    });
+  }
+  
+  function clearFieldError(fieldName) {
+    const errorElement = document.getElementById(`${fieldName}-error`);
+    const formRow = errorElement?.closest('.form__row');
+    
+    if (errorElement) {
+      errorElement.classList.remove('show');
+    }
+    
+    if (formRow) {
+      formRow.classList.remove('error');
+    }
+  }
+  
+  // Add real-time validation
+  function setupFormValidation() {
+    // Name field validation
+    const nameField = document.getElementById('name');
+    if (nameField) {
+      nameField.addEventListener('input', () => {
+        if (nameField.value.trim()) {
+          clearFieldError('name');
+        }
+      });
+    }
+    
+    // Email field validation
+    const emailUsername = document.getElementById('email-username');
+    const emailDomain = document.getElementById('email-domain');
+    if (emailUsername && emailDomain) {
+      const validateEmail = () => {
+        const username = emailUsername.value.trim();
+        const domain = emailDomain.value;
+        if (username && domain) {
+          clearFieldError('email');
+        }
+      };
+      
+      emailUsername.addEventListener('input', validateEmail);
+      emailDomain.addEventListener('change', validateEmail);
+    }
+    
+    // Purpose field validation
+    const purposeField = document.getElementById('purpose');
+    if (purposeField) {
+      purposeField.addEventListener('input', () => {
+        if (purposeField.value.trim()) {
+          clearFieldError('purpose');
+        }
+      });
+    }
+    
+    // Training agreement validation
+    const trainingCheckbox = document.getElementById('rsv-agree');
+    if (trainingCheckbox) {
+      trainingCheckbox.addEventListener('change', () => {
+        if (trainingCheckbox.checked) {
+          clearFieldError('training');
+        }
+      });
+    }
+  }
+
   /* Submit form */
      el('rsv-form').addEventListener('submit', async (e) => {
      e.preventDefault();
@@ -2094,16 +2186,50 @@
      const purpose = e.target.purpose.value.trim();
      const training = el('rsv-agree').checked;
 
-     if (!name || !email || !purpose || !training) {
-       alert('Please complete all fields and accept training.');
-       return;
+     // Clear previous errors
+     clearFormErrors();
+     
+     let hasErrors = false;
+     
+     // Validate name
+     if (!name) {
+       showFieldError('name', 'Name is required');
+       hasErrors = true;
      }
-
-     // Validate email domain for split input
-     const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
-     const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
-     if (!isValidEmail) {
-       alert('Email must end with @mail.sustech.edu.cn or @sustech.edu.cn');
+     
+     // Validate email
+     if (!email) {
+       showFieldError('email', 'Email is required');
+       hasErrors = true;
+     } else {
+       // Validate email domain for split input
+       const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
+       const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
+       if (!isValidEmail) {
+         showFieldError('email', 'Email must end with @mail.sustech.edu.cn or @sustech.edu.cn');
+         hasErrors = true;
+       }
+     }
+     
+     // Validate purpose
+     if (!purpose) {
+       showFieldError('purpose', 'Purpose is required');
+       hasErrors = true;
+     }
+     
+     // Validate time selection
+     if (selectedSlots.size === 0) {
+       showFieldError('time', 'Please select a time slot');
+       hasErrors = true;
+     }
+     
+     // Validate training agreement
+     if (!training) {
+       showFieldError('training', 'You must accept the training instructions');
+       hasErrors = true;
+     }
+     
+     if (hasErrors) {
        return;
      }
 

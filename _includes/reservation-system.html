@@ -46,6 +46,7 @@
       <div class="form__row">
         <label class="form__label" for="name">Name <span class="required">*</span></label>
         <input class="form__input" id="name" name="name" type="text" required>
+        <div class="form__error" id="name-error">Name is required</div>
       </div>
 
       <!-- Email field with split inputs -->
@@ -69,6 +70,7 @@
           <!-- Hidden field that combines both parts for form submission -->
           <input type="hidden" name="email" id="email-combined">
         </div>
+        <div class="form__error" id="email-error">Email is required</div>
       </div>
       
       <!-- Email preview on separate line -->
@@ -80,6 +82,7 @@
       <div class="form__row">
         <label class="form__label" for="purpose">Purpose <span class="required">*</span></label>
         <textarea class="form__input form__textarea" id="purpose" name="purpose" required></textarea>
+        <div class="form__error" id="purpose-error">Purpose is required</div>
       </div>
 
       <!-- Time selection -->
@@ -91,6 +94,7 @@
           <div class="time-arrow">→</div>
           <div class="time-pill" id="rsv-pill-end">--:--</div>
         </div>
+        <div class="form__error" id="time-error">Please select a time slot</div>
       </div>
 
       <!-- Duration info -->
@@ -108,6 +112,7 @@
           <span class="checkmark"></span>
           <span class="checkbox-text">I have accepted the training instructions.</span>
         </label>
+        <div class="form__error" id="training-error">You must accept the training instructions</div>
       </div>
 
       <!-- Submit button -->
