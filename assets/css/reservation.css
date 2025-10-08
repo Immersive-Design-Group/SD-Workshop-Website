@@ -11,25 +11,189 @@
   --page-gutter: 24px;
 }
 
-.reservation-container{ max-width:1400px; margin:0 auto; padding:24px 0 64px;
-  font-family:'Roboto','Source Han Sans',sans-serif; color:var(--ink-900); }
+.reservation-container{ 
+  max-width:1400px; 
+  margin:0; 
+  padding:24px 0 64px;
+  font-family:'Roboto','Source Han Sans',sans-serif; 
+  color:var(--ink-900); 
+  position: relative;
+  left: 0;
+  width: 100%;
+  padding-left: 100px; /* Add more space from the left edge */
+}
+
+/* Ultra large screens - expand rules box and reservation slots */
+@media (min-width: 1920px) {
+  .reservation-container {
+    max-width: 100%;
+    padding: 32px 0 80px;
+    padding-left: 120px; /* More space on ultra large screens */
+  }
+  
+  .rules-card {
+    padding: 32px 40px;
+    margin-top: 24px;
+    border-radius: 16px;
+  }
+  
+  .rules-heading {
+    font-size: 48px;
+    margin: 0 0 16px;
+  }
+  
+  .rules-group li {
+    font-size: 18px;
+    line-height: 2.1;
+  }
+  
+  /* Expand reservation slots on ultra large screens */
+  :root {
+    --rsv-slot-w: 100px;
+    --rsv-slot-h: 140px;
+    --rsv-equip-w: 140px;
+    --rsv-equip-h: 140px;
+  }
+  
+  .reservation-schedule {
+    margin: 24px 0 80px;
+  }
+  
+  .schedule-header {
+    gap: 16px;
+  }
+  
+  .timebar .time-label {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  .equip-name {
+    font-size: 16px;
+  }
+  
+  .equip-model {
+    font-size: 16px;
+  }
+}
+
+/* Large screens - moderate expansion */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .reservation-container {
+    max-width: 100%;
+    padding: 28px 0 72px;
+    padding-left: 110px; /* Moderate space on large screens */
+  }
+  
+  .rules-card {
+    padding: 28px 36px;
+    margin-top: 20px;
+    border-radius: 14px;
+  }
+  
+  .rules-heading {
+    font-size: 44px;
+    margin: 0 0 14px;
+  }
+  
+  .rules-group li {
+    font-size: 17px;
+    line-height: 2.0;
+  }
+  
+  /* Slightly expand reservation slots */
+  :root {
+    --rsv-slot-w: 90px;
+    --rsv-slot-h: 130px;
+    --rsv-equip-w: 130px;
+    --rsv-equip-h: 130px;
+  }
+  
+  .reservation-schedule {
+    margin: 20px 0 72px;
+  }
+  
+  .timebar .time-label {
+    font-size: 17px;
+  }
+  
+  .equip-name {
+    font-size: 15px;
+  }
+  
+  .equip-model {
+    font-size: 15px;
+  }
+}
 
 /* Responsive container padding */
 @media (max-width: 768px) {
   .reservation-container {
     padding: 20px 0 48px;
+    padding-left: 50px; /* Less space on mobile */
   }
 }
 
 @media (max-width: 576px) {
   .reservation-container {
     padding: 16px 0 40px;
+    padding-left: 40px; /* Minimal space on small mobile */
   }
 }
 
 @media (max-width: 480px) {
   .reservation-container {
     padding: 12px 0 32px;
+    padding-left: 30px; /* Very minimal space on very small screens */
+  }
+}
+
+/* Medium screens - balanced layout */
+@media (min-width: 769px) and (max-width: 1439px) {
+  .reservation-container {
+    max-width: 100%;
+    padding: 24px 0 64px;
+    padding-left: 100px; /* Consistent space on medium screens */
+  }
+  
+  .rules-card {
+    padding: 24px 32px;
+    margin-top: 18px;
+    border-radius: 12px;
+  }
+  
+  .rules-heading {
+    font-size: 40px;
+    margin: 0 0 12px;
+  }
+  
+  .rules-group li {
+    font-size: 16px;
+    line-height: 1.9;
+  }
+  
+  /* Standard reservation slot sizes */
+  :root {
+    --rsv-slot-w: 80px;
+    --rsv-slot-h: 120px;
+    --rsv-equip-w: 120px;
+    --rsv-equip-h: 120px;
+  }
+  
+  .reservation-schedule {
+    margin: 18px 0 60px;
+  }
+  
+  .timebar .time-label {
+    font-size: 16px;
+  }
+  
+  .equip-name {
+    font-size: 14px;
+  }
+  
+  .equip-model {
+    font-size: 14px;
   }
 }
 
@@ -665,8 +829,8 @@ body .reservation-container .slots-viewport .timebar .time-label {
   display: flex !important; 
   align-items: stretch !important; 
   margin-top: 0 !important; 
-  padding-left: var(--page-gutter) !important;
-  padding-right: var(--page-gutter) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
   gap: 0 !important;
   position: static !important;
   grid-template-columns: none !important;
