@@ -1874,6 +1874,7 @@ datalist {
   flex-direction: column; 
   gap: 24px;
   padding: 32px;
+  padding-bottom: 50px; /* Increased space for submit button */
 }
 
 .form__row{ 
@@ -1979,7 +1980,7 @@ datalist {
   border-left: 2px solid #3b82f6;
 }
 
-/* Purpose Split Container */
+/* Purpose Split Container - compact horizontal layout */
 .purpose-split-container {
   display: flex;
   gap: 0;
@@ -1988,7 +1989,7 @@ datalist {
 }
 
 .purpose-category {
-  flex: 0 0 200px;
+  flex: 0 0 180px;
   border-radius: 12px 0 0 12px;
   border-right: none;
 }
@@ -2156,6 +2157,7 @@ datalist {
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px; /* Increased space at bottom */
 }
 
 /* Success View Button */
@@ -2205,21 +2207,29 @@ datalist {
   border-radius: 50%;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Medium devices - add scroll functionality */
+@media (max-width: 1024px) and (min-width: 769px) {
   .modal__dialog {
-    width: 95vw;
+    width: 90vw;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
     margin: 20px;
     border-radius: 16px;
-    max-height: 95vh;
+    display: flex;
+    flex-direction: column;
   }
   
   .modal-header {
-    padding: 24px 20px 20px 20px;
+    flex-shrink: 0;
+    padding: 24px 20px 16px 20px;
   }
   
   .form {
-    padding: 24px 20px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 20px 30px 20px;
     gap: 20px;
   }
   
@@ -2277,29 +2287,28 @@ datalist {
   }
 }
 
-@media (max-width: 480px) {
+/* Small to medium screens - enhanced scroll */
+@media (max-width: 768px) and (min-width: 481px) {
   .modal__dialog {
-    width: 100vw;
-    margin: 0;
-    border-radius: 0;
-    min-height: 100vh;
-    max-height: 100vh;
+    width: 95vw;
+    margin: 15px;
+    border-radius: 16px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
   
   .modal-header {
-    padding: 20px 16px 16px 16px;
-  }
-  
-  .modal__close {
-    right: 16px;
-    top: 20px;
-    font-size: 40px;
-    width: 32px;
-    height: 32px;
+    flex-shrink: 0;
+    padding: 20px 18px 12px 18px;
   }
   
   .form {
-    padding: 20px 16px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 18px 30px 18px;
     gap: 18px;
   }
   
@@ -2312,8 +2321,242 @@ datalist {
   .form__label {
     min-width: auto;
     font-size: 15px;
+    margin-bottom: 3px;
+  }
+  
+  .modal__title {
+    font-size: 22px;
+    margin: 0 0 4px 0;
+  }
+  
+  .modal__subtitle {
+    font-size: 18px;
+    margin-top: 2px;
+  }
+  
+  .time-pills {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .time-pill {
+    min-width: 70px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  
+  .email-domain {
+    flex: 0 0 160px;
+  }
+  
+  .form__input,
+  .form__textarea {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+  
+  .duration-display {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  
+  .btn-submit {
+    padding: 16px 14px;
+    font-size: 15px;
+    margin-top: 8px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal__dialog {
+    width: 95vw;
+    margin: 20px;
+    border-radius: 16px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modal-header {
+    flex-shrink: 0;
+    padding: 24px 20px 16px 20px;
+  }
+  
+  .form {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 20px 30px 20px;
+    gap: 20px;
+  }
+  
+  .form__row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .form__label {
+    min-width: auto;
+    font-size: 16px;
     margin-bottom: 4px;
   }
+  
+  .modal__title {
+    font-size: 24px;
+    margin: 0 0 6px 0;
+  }
+  
+  .modal__subtitle {
+    font-size: 20px;
+    margin-top: 2px;
+  }
+  
+  .time-pills {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .time-pill {
+    min-width: 80px;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .email-domain {
+    flex: 0 0 180px;
+  }
+  
+  .form__input,
+  .form__textarea {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+  
+  .duration-display {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .btn-submit {
+    padding: 18px 16px;
+    font-size: 16px;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal__dialog {
+    width: 100vw;
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+  }
+  
+  /* Mobile-specific Purpose section styling - compact horizontal */
+  .purpose-split-container {
+    flex-direction: row !important;
+    gap: 0;
+    display: flex;
+    margin-top: 2px;
+  }
+  
+  /* Override form row column direction for Purpose section */
+  .form__row.purpose-row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 8px;
+  }
+  
+  .purpose-category {
+    flex: 0 0 140px;
+    padding: 8px 10px;
+    font-size: 12px;
+    min-height: 32px;
+    border-radius: 8px 0 0 8px;
+  }
+  
+  .purpose-details {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+    min-height: 32px;
+    border-radius: 0 8px 8px 0;
+  }
+  
+  .purpose-category:focus {
+    border-right: 1px solid #3b82f6;
+  }
+  
+  .purpose-details:focus {
+    border-left: 1px solid #3b82f6;
+  }
+  
+  /* Ensure Purpose section label doesn't take too much space */
+  .purpose-row .form__label {
+    flex: 0 0 80px;
+    font-size: 13px;
+    margin-bottom: 0;
+    margin-right: 8px;
+    align-self: center;
+    line-height: 1.2;
+  }
+  
+  .modal-header {
+    padding: 16px 14px 12px 14px;
+  }
+  
+  .modal__close {
+    right: 16px;
+    top: 20px;
+    font-size: 40px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .form {
+    padding: 16px 14px;
+    gap: 14px;
+  }
+  
+  /* More compact form elements on mobile */
+  .form__input,
+  .form__select,
+  .form__textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-height: 38px;
+    line-height: 1.3;
+  }
+  
+  .form__label {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  
+  .form__row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  
+  /* Ultra compact time pills on mobile */
+  .time-pills {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .time-pill {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-width: 50px;
+    min-height: 32px;
+  }
+  
+  /* Remove duplicate form__label rule */
   
   .modal__title {
     font-size: 22px;
