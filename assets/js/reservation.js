@@ -1120,7 +1120,7 @@
         let modalDelay;
         if (selectedSlots.size === 1) {
           // Single slot: quick delay to allow for double-click but not too slow
-          modalDelay = 100; // Reduced from 1000ms to 200ms
+          modalDelay = 300; // 
         } else {
           // Multiple slots: longer delay to allow user to select more slots
           modalDelay = 100; // Increased delay for multiple slot selection
