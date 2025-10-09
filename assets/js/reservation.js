@@ -914,14 +914,14 @@
                 // User clicked on unselected slot - select it
                 addSlotToSelection(eq, i);
                 
-                // For single slot selections, open modal immediately for better responsiveness
+                // For single slot selections, open modal with proper delay
                 if (selectedSlots.size === 1) {
-                  console.log('Single slot selected, opening modal immediately');
+                  console.log('Single slot selected, opening modal with delay');
                   setTimeout(() => {
                     if (selectedSlots.size === 1 && currentEquipment) {
                       openModalWithSelectedSlots(currentEquipment);
                     }
-                  }, 100); // Very short delay to allow for double-click
+                  }, 500); // Use same delay as main logic
                 }
               }
             }
@@ -1120,10 +1120,10 @@
         let modalDelay;
         if (selectedSlots.size === 1) {
           // Single slot: quick delay to allow for double-click but not too slow
-          modalDelay = 200; // Reduced from 1000ms to 200ms
+          modalDelay = 100; // Reduced from 1000ms to 200ms
         } else {
-          // Multiple slots: very quick delay for immediate feedback
-          modalDelay = 100; // Reduced from 800ms to 100ms
+          // Multiple slots: longer delay to allow user to select more slots
+          modalDelay = 100; // Increased delay for multiple slot selection
         }
         
         // Set the modal opening timeout
@@ -1210,14 +1210,14 @@
 
       updateSelectionCounter();
       
-      // For single slot selections, open modal immediately for better responsiveness
+      // For single slot selections, open modal with proper delay
       if (selectedSlots.size === 1 && wasEmpty) {
-        // Small delay to allow for double-click, but much faster than before
+        // Use same delay as main logic for consistency
         setTimeout(() => {
           if (selectedSlots.size === 1 && !modalOpenTimeout) {
             openModalWithSelectedSlots(eq);
           }
-        }, 150); // Reduced from previous delays
+        }, 500); // Use same delay as main logic
       }
       // For multiple slots, modal will be opened in endSelectionGlobally() after user finishes their action
     }
