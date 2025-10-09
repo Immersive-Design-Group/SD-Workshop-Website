@@ -51,14 +51,12 @@ permalink: /equipments/
       <span class="equip-number">{{ idx }}</span>
     </div>
     <div class="equip-meta">
-      {% if it.title_cn %}<h4 class="equip-name-cn">{{ it.title_cn }}</h4>{% endif %}
       <h4 class="equip-name">{{ it.title }}</h4>
       <p class="equip-sub">
         {% if it.type_cn %}{{ it.type_cn }}{% if it.type %} · {% endif %}{% endif %}
         {{ it.type }}
       </p>
       {% if it.model %}
-      <p class="equip-model">{{ it.model }}</p>
       {% endif %}
     </div>
   </a>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Merged Bookings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .feature-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .feature-list h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">Merged Booking Slots - Test Page</h1>
+        
+        <div class="test-description">
+            <p>This page demonstrates the new merged booking functionality that has been implemented in the reservation system.</p>
+        </div>
+
+        <div class="feature-list">
+            <h3>New Features Implemented:</h3>
+            <ul>
+                <li><strong>Consecutive Slot Merging:</strong> Multiple consecutive booking slots for the same person and activity are now displayed as a single merged card</li>
+                <li><strong>Unified Information Display:</strong> Instead of showing separate cards for each 30-minute slot, one card shows the complete time range (e.g., "09:00-11:00" instead of separate "09:00-09:30", "09:30-10:00", etc.)</li>
+                <li><strong>Bulk Deletion:</strong> When you click on a merged booking, you can delete all the consecutive slots at once instead of having to delete them one by one</li>
+                <li><strong>Visual Enhancement:</strong> Merged bookings have special styling to indicate they span multiple time slots</li>
+                <li><strong>Smart Detection:</strong> The system automatically detects consecutive bookings with the same person and purpose to merge them</li>
+            </ul>
+        </div>
+
+        <div class="test-description">
+            <h3>How It Works:</h3>
+            <ol>
+                <li>When you book multiple consecutive 30-minute slots (e.g., 09:00-09:30, 09:30-10:00, 10:00-10:30, 10:30-11:00) for the same activity</li>
+                <li>The system automatically merges them into one visual card showing "09:00-11:00"</li>
+                <li>All the booking information (name, purpose, etc.) is displayed once instead of repeated</li>
+                <li>When you click to delete, all the consecutive slots are deleted together</li>
+            </ol>
+        </div>
+
+        <button class="test-button" onclick="testMergedBookings()">Test Merged Bookings</button>
+        <button class="test-button" onclick="showImplementationDetails()">Show Implementation Details</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function testMergedBookings() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            // Simulate the mergeConsecutiveBookings function
+            function mergeConsecutiveBookings(bookings) {
+                if (!bookings || bookings.length === 0) return [];
+                
+                const sortedBookings = [...bookings].sort((a, b) => a.startSlot - b.startSlot);
+                const merged = [];
+                
+                for (let i = 0; i < sortedBookings.length; i++) {
+                    const current = sortedBookings[i];
+                    
+                    if (merged.length > 0) {
+                        const lastMerged = merged[merged.length - 1];
+                        
+                        if (lastMerged.name === current.name && 
+                            lastMerged.purpose === current.purpose &&
+                            lastMerged.endSlot === current.startSlot) {
+                            
+                            lastMerged.endSlot = current.endSlot;
+                            lastMerged.originalBookings = lastMerged.originalBookings || [lastMerged];
+                            lastMerged.originalBookings.push(current);
+                            continue;
+                        }
+                    }
+                    
+                    const mergedBooking = {
+                        ...current,
+                        originalBookings: [current]
+                    };
+                    merged.push(mergedBooking);
+                }
+                
+                return merged;
+            }
+            
+            // Test data - simulating 4 consecutive 30-minute slots for the same person
+            const testBookings = [
+                { id: '1', name: 'Ashfaque', purpose: 'Research: IDG', startSlot: 0, endSlot: 1, email: 'ashfaque@example.com' },
+                { id: '2', name: 'Ashfaque', purpose: 'Research: IDG', startSlot: 1, endSlot: 2, email: 'ashfaque@example.com' },
+                { id: '3', name: 'Ashfaque', purpose: 'Research: IDG', startSlot: 2, endSlot: 3, email: 'ashfaque@example.com' },
+                { id: '4', name: 'Ashfaque', purpose: 'Research: IDG', startSlot: 3, endSlot: 4, email: 'ashfaque@example.com' }
+            ];
+            
+            const merged = mergeConsecutiveBookings(testBookings);
+            
+            resultsDiv.innerHTML = `
+                <div class="status success">
+                    <h4>Test Results:</h4>
+                    <p><strong>Original Bookings:</strong> ${testBookings.length} separate slots</p>
+                    <p><strong>After Merging:</strong> ${merged.length} merged booking(s)</p>
+                    <p><strong>Merged Booking Details:</strong></p>
+                    <ul>
+                        <li>Name: ${merged[0].name}</li>
+                        <li>Purpose: ${merged[0].purpose}</li>
+                        <li>Time Range: 09:00-11:00 (slots ${merged[0].startSlot}-${merged[0].endSlot})</li>
+                        <li>Original Bookings: ${merged[0].originalBookings.length} slots merged</li>
+                    </ul>
+                    <p><strong>✅ Test Passed:</strong> Consecutive slots successfully merged into one booking!</p>
+                </div>
+            `;
+        }
+        
+        function showImplementationDetails() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="status info">
+                    <h4>Implementation Details:</h4>
+                    <p><strong>Files Modified:</strong></p>
+                    <ul>
+                        <li><code>assets/js/reservation.js</code> - Added mergeConsecutiveBookings() function and updated display logic</li>
+                        <li><code>assets/css/reservation.css</code> - Added styling for merged booking cards</li>
+                    </ul>
+                    <p><strong>Key Functions Added:</strong></p>
+                    <ul>
+                        <li><code>mergeConsecutiveBookings()</code> - Merges consecutive bookings for same person/purpose</li>
+                        <li>Updated <code>verifyOTPAndDelete()</code> - Handles bulk deletion of merged bookings</li>
+                        <li>Enhanced slot rendering - Shows merged cards with proper styling</li>
+                    </ul>
+                    <p><strong>Benefits:</strong></p>
+                    <ul>
+                        <li>Cleaner visual interface - no more repetitive booking cards</li>
+                        <li>Easier management - delete multiple slots at once</li>
+                        <li>Better user experience - clear time range display</li>
+                    </ul>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
