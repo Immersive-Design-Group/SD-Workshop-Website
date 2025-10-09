@@ -226,6 +226,17 @@
   let isSelecting = false;
   let isDragging = false;
   let currentEquipment = null;
+  let interactionMode = 'click'; // 'click' for single slot, 'drag' for multiple slots
+  let mouseDownTime = 0;
+  let mouseDownPosition = { x: 0, y: 0 };
+  
+  // Update interaction mode indicator
+  function updateInteractionModeIndicator() {
+    const indicator = document.getElementById('interaction-mode-indicator');
+    if (indicator) {
+      indicator.className = `interaction-mode-indicator ${interactionMode}-mode`;
+    }
+  }
   let isInitialLoad = true; // Track if this is the initial page load
   let modalOpenTimeout = null;
   let userActionInProgress = false;
@@ -244,6 +255,9 @@
     
     // Initialize date selector with proper validation FIRST
     initializeDateSelector();
+    
+    // Initialize interaction mode indicator
+    updateInteractionModeIndicator();
     
     // Load bookings from database on page load
     loadInitialBookings();
@@ -867,27 +881,48 @@
               return;
             }
             
+            // Record mouse down time and position for interaction mode detection
+            mouseDownTime = Date.now();
+            mouseDownPosition = { x: e.clientX, y: e.clientY };
+            
+            // Start selection process
             startSelection(e, eq, i);
           });
           
           cell.addEventListener('mouseenter', (e) => {
-            if (isSelecting && isDragging) {
-              // Prevent selection if equipment is broken
-              if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
-                return;
+            if (isSelecting) {
+              // Check if this is actually a drag operation
+              const timeSinceMouseDown = Date.now() - mouseDownTime;
+              const mouseMovement = Math.sqrt(
+                Math.pow(e.clientX - mouseDownPosition.x, 2) + 
+                Math.pow(e.clientY - mouseDownPosition.y, 2)
+              );
+              
+              // If enough time has passed or mouse has moved significantly, treat as drag
+              if (timeSinceMouseDown > 100 || mouseMovement > 5) {
+                isDragging = true;
+                interactionMode = 'drag';
+                updateInteractionModeIndicator();
               }
               
-              // Clear any pending modal opening during drag
-              if (modalOpenTimeout) {
-                clearTimeout(modalOpenTimeout);
-                modalOpenTimeout = null;
+              if (isDragging) {
+                // Prevent selection if equipment is broken
+                if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+                  return;
+                }
+                
+                // Clear any pending modal opening during drag
+                if (modalOpenTimeout) {
+                  clearTimeout(modalOpenTimeout);
+                  modalOpenTimeout = null;
+                }
+                
+                updateSelection(e, eq, i);
+                
+                // Update interaction tracking
+                lastSlotInteractionTime = Date.now();
+                userActionInProgress = true;
               }
-              
-              updateSelection(e, eq, i);
-              
-              // Update interaction tracking
-              lastSlotInteractionTime = Date.now();
-              userActionInProgress = true;
             }
           });
           
@@ -906,7 +941,24 @@
               modalOpenTimeout = null;
             }
             
-            if (!isDragging) {
+            // Check if this was a click (not a drag) based on time and movement
+            const clickDuration = Date.now() - mouseDownTime;
+            const mouseMovement = Math.sqrt(
+              Math.pow(e.clientX - mouseDownPosition.x, 2) + 
+              Math.pow(e.clientY - mouseDownPosition.y, 2)
+            );
+            
+            // If it was a quick click with minimal movement, treat as single slot selection
+            if (clickDuration < 200 && mouseMovement < 5 && !isDragging) {
+              // Set interaction mode to click
+              interactionMode = 'click';
+              updateInteractionModeIndicator();
+              
+              // Clear any existing selection for single slot mode
+              if (selectedSlots.size > 0) {
+                clearSelection();
+              }
+              
               if (selectedSlots.has(i)) {
                 // User clicked on already selected slot - deselect it
                 removeSlotFromSelection(eq, i);
@@ -914,15 +966,13 @@
                 // User clicked on unselected slot - select it
                 addSlotToSelection(eq, i);
                 
-                // For single slot selections, open modal with proper delay
-                if (selectedSlots.size === 1) {
-                  console.log('Single slot selected, opening modal with delay');
-                  setTimeout(() => {
-                    if (selectedSlots.size === 1 && currentEquipment) {
-                      openModalWithSelectedSlots(currentEquipment);
-                    }
-                  }, 500); // Use same delay as main logic
-                }
+                // For single slot selections, open modal immediately
+                console.log('Single slot selected via click, opening modal');
+                setTimeout(() => {
+                  if (selectedSlots.size === 1 && currentEquipment) {
+                    openModalWithSelectedSlots(currentEquipment);
+                  }
+                }, 100); // Quick modal opening for single slot
               }
             }
             
@@ -1028,7 +1078,7 @@
     }
     
     isSelecting = true;
-    isDragging = true;
+    isDragging = false; // Will be set to true if user actually drags
     currentEquipment = eq;
     userActionInProgress = true;
     lastSlotInteractionTime = Date.now();
@@ -1107,8 +1157,9 @@
         enforceSelectionLimit();
       }
       
-      // Intelligent modal opening with proper delays for user experience
-      if (selectedSlots.size > 0 && currentEquipment && 
+      // Only open modal for drag operations (multiple slot selection)
+      // Single slot selections are handled in the click event
+      if (isDragging && selectedSlots.size > 0 && currentEquipment && 
           el('rsv-modal').getAttribute('aria-hidden') === 'true') {
         
         // Clear any existing timeout
@@ -1116,34 +1167,13 @@
           clearTimeout(modalOpenTimeout);
         }
         
-        // Much faster modal opening for better responsiveness
-        let modalDelay;
-        if (selectedSlots.size === 1) {
-          // Single slot: quick delay to allow for double-click but not too slow
-          modalDelay = 300; // 
-        } else {
-          // Multiple slots: longer delay to allow user to select more slots
-          modalDelay = 100; // Increased delay for multiple slot selection
-        }
-        
-        // Set the modal opening timeout
+        // Open modal for drag operations (multiple slots)
         modalOpenTimeout = setTimeout(() => {
-          // Simplified condition: just check if we still have slots selected
           if (selectedSlots.size > 0 && currentEquipment) {
             openModalWithSelectedSlots(currentEquipment);
             modalOpenTimeout = null;
           }
-        }, modalDelay);
-        
-        // Fallback: ensure modal opens even if timeout fails
-        setTimeout(() => {
-          if (selectedSlots.size > 0 && currentEquipment && 
-              el('rsv-modal').getAttribute('aria-hidden') === 'true' && 
-              !modalOpenTimeout) {
-            console.log('Fallback: forcing modal to open');
-            openModalWithSelectedSlots(currentEquipment);
-          }
-        }, modalDelay + 100); // Slightly longer than the main timeout
+        }, 200); // Moderate delay for drag operations
       }
       
       // Small delay to distinguish between click and drag

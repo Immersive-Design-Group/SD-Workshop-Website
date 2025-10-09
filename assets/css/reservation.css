@@ -3202,6 +3202,63 @@ datalist {
   opacity: 1;
 }
 
+/* =========================
+   Interaction Mode Indicator
+========================= */
+
+.interaction-mode-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.mode-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+}
+
+.mode-icon {
+  font-size: 14px;
+}
+
+.mode-text {
+  font-weight: 500;
+}
+
+/* Highlight active mode */
+.interaction-mode-indicator.drag-mode .mode-info:first-child {
+  opacity: 0.5;
+}
+
+.interaction-mode-indicator.click-mode .mode-info:last-child {
+  opacity: 0.5;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .interaction-mode-indicator {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding: 8px;
+    font-size: 11px;
+  }
+  
+  .mode-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 4px;
+  }
+}
+
 .otp-section {
   text-align: center;
   margin-bottom: 24px;
