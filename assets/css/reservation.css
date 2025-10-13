@@ -2329,6 +2329,7 @@ datalist {
   overflow: hidden;
   box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
   margin-bottom: 30px; /* Increased space at bottom */
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
 
 /* Success View Button */
@@ -2406,7 +2407,7 @@ datalist {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 20px 20px 30px 20px;
+    padding: 20px 20px 100px 20px; /* Increased bottom padding for submit button */
     gap: 20px;
   }
   
@@ -2485,7 +2486,7 @@ datalist {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 18px 18px 30px 18px;
+    padding: 18px 18px 100px 18px; /* Increased bottom padding for submit button */
     gap: 18px;
   }
   
@@ -2572,7 +2573,7 @@ datalist {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 20px 20px 30px 20px;
+    padding: 20px 20px 100px 20px; /* Increased bottom padding for submit button */
     gap: 20px;
   }
   
@@ -2650,6 +2651,17 @@ datalist {
     flex-direction: column;
   }
   
+  /* Make submit button sticky on mobile */
+  .btn-submit {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    margin-top: 16px;
+    margin-bottom: 0;
+    border-radius: 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
   /* Mobile-specific Purpose section styling - compact horizontal */
   .purpose-split-container {
     flex-direction: row !important;
@@ -2712,7 +2724,7 @@ datalist {
   }
   
   .form {
-    padding: 16px 14px 80px 14px; /* Extra bottom padding for submit button */
+    padding: 16px 14px 120px 14px; /* Extra bottom padding for submit button */
     gap: 14px;
     flex: 1;
     overflow-y: auto;
@@ -2877,7 +2889,7 @@ datalist {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 16px 12px 100px 12px; /* Extra bottom padding for submit button */
+    padding: 16px 12px 140px 12px; /* Extra bottom padding for submit button */
     gap: 16px;
   }
   
@@ -3648,6 +3660,17 @@ datalist {
     flex-direction: column;
   }
   
+  /* Make submit button sticky on very small screens */
+  .btn-submit {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    margin-top: 20px;
+    margin-bottom: 0;
+    border-radius: 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
   .modal-header {
     flex-shrink: 0;
     padding: 12px 10px 8px 10px;
@@ -3657,7 +3680,7 @@ datalist {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 12px 10px 120px 10px; /* Extra bottom padding for submit button */
+    padding: 12px 10px 160px 10px; /* Extra bottom padding for submit button */
     gap: 12px;
   }
   
