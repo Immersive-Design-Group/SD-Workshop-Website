@@ -1957,8 +1957,10 @@ datalist {
 }
 
 .modal[aria-hidden="false"]{ 
-  display: grid; 
-  place-items: center; 
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .modal__backdrop{ 
@@ -1981,6 +1983,8 @@ datalist {
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Simple Header */
@@ -2039,6 +2043,9 @@ datalist {
   gap: 24px;
   padding: 32px;
   padding-bottom: 50px; /* Increased space for submit button */
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .form__row{ 
@@ -2373,12 +2380,18 @@ datalist {
 
 /* Medium devices - add scroll functionality */
 @media (max-width: 1024px) and (min-width: 769px) {
+  .modal[aria-hidden="false"] {
+    padding: 15px;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+  }
+  
   .modal__dialog {
     width: 90vw;
     max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-    margin: 20px;
+    max-height: 85vh;
+    margin: 0;
     border-radius: 16px;
     display: flex;
     flex-direction: column;
@@ -2533,12 +2546,19 @@ datalist {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .modal[aria-hidden="false"] {
+    padding: 10px;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   .modal__dialog {
     width: 95vw;
-    margin: 20px;
+    margin: 0;
     border-radius: 16px;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
   }
@@ -2612,12 +2632,22 @@ datalist {
 }
 
 @media (max-width: 480px) {
+  .modal[aria-hidden="false"] {
+    padding: 0;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   .modal__dialog {
     width: 100vw;
     margin: 0;
     border-radius: 0;
     min-height: 100vh;
     max-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
   
   /* Mobile-specific Purpose section styling - compact horizontal */
@@ -2682,8 +2712,11 @@ datalist {
   }
   
   .form {
-    padding: 16px 14px;
+    padding: 16px 14px 80px 14px; /* Extra bottom padding for submit button */
     gap: 14px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   /* More compact form elements on mobile */
@@ -2818,17 +2851,33 @@ datalist {
 }
 
 @media (max-width: 360px) {
+  .modal[aria-hidden="false"] {
+    padding: 0;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   .modal__dialog {
     width: 100vw;
     margin: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
   
   .modal-header {
+    flex-shrink: 0;
     padding: 16px 12px 12px 12px;
   }
   
   .form {
-    padding: 16px 12px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 12px 100px 12px; /* Extra bottom padding for submit button */
     gap: 16px;
   }
   
@@ -2858,6 +2907,7 @@ datalist {
   .btn-submit {
     padding: 14px 12px;
     font-size: 15px;
+    margin-top: 16px;
   }
 }
 
@@ -3580,3 +3630,79 @@ datalist {
 }
 
 /* Very small screen optimizations */
+@media (max-width: 320px) {
+  .modal[aria-hidden="false"] {
+    padding: 0;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modal__dialog {
+    width: 100vw;
+    margin: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modal-header {
+    flex-shrink: 0;
+    padding: 12px 10px 8px 10px;
+  }
+  
+  .form {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 10px 120px 10px; /* Extra bottom padding for submit button */
+    gap: 12px;
+  }
+  
+  .form__label {
+    font-size: 13px;
+  }
+  
+  .modal__title {
+    font-size: 18px;
+  }
+  
+  .modal__subtitle {
+    font-size: 14px;
+  }
+  
+  .form__input,
+  .form__textarea {
+    padding: 8px 10px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+  
+  .time-pill {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+  
+  .btn-submit {
+    padding: 12px 10px;
+    font-size: 14px;
+    margin-top: 20px;
+  }
+  
+  .email-split-container,
+  .purpose-split-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .email-username,
+  .email-domain,
+  .purpose-category,
+  .purpose-details {
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+  }
+}
