@@ -24,7 +24,7 @@ equipment:
     name: "3D PRINTER 2"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
-    status: "working"
+    status: "maintenance"
   - id: "eq3"
     name: "3D PRINTER 3"
     model: "X1E"
