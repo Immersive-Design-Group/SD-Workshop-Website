@@ -617,22 +617,40 @@ a {
 }
 
 .space-content p{
-  font-size:1rem;
-  line-height:1.8;
-  margin:.5rem 0;
+  font-size: clamp(1.1rem, 2vw, 1.2rem);
+  line-height: 1.4;
+  margin: 0 0 1.5rem;
+  color: #7c8794;
 }
 
-.space-content p.en{ color:#5f6b7a; }
+.space-content p.en{ 
+  color: #97a2af;
+}
 
 /* --------- Responsive --------- */
 @media (max-width: 1200px){
   .space-item{ --num-w: 6rem; }
 }
 
+@media (max-width: 1024px) {
+  .space-content p {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    line-height: 1.5;
+  }
+}
+
 @media (max-width: 900px){
   .space-item{ --num-w: 4.5rem; }
-  .space-number{ font-size: clamp(5rem, 18vw, 8rem); }
 }
+
+@media (max-width: 640px) {
+  .space-content p {
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    line-height: 1.4;
+  }
+}
+  .space-number{ font-size: clamp(5rem, 18vw, 8rem); }
+
 
 @media (max-width: 768px){
   .space-item{
