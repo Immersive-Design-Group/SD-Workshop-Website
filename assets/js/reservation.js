@@ -348,19 +348,8 @@
       
       if (username && domain) {
         combinedInput.value = username + domain;
-        
-        // Show preview of full email
-        const previewText = document.querySelector('.email-preview-text');
-        if (previewText) {
-          previewText.textContent = combinedInput.value;
-          document.querySelector('.email-preview').style.display = 'block';
-        }
       } else {
         combinedInput.value = '';
-        const preview = document.querySelector('.email-preview');
-        if (preview) {
-          preview.style.display = 'none';
-        }
       }
       
       // Validate the combined email
