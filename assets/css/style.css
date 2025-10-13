@@ -221,13 +221,13 @@ a {
   word-break: keep-all; /* keep Chinese readable */
 }
 .en-subtitle {
-  font-size: clamp(1.1rem, 2.2vw, 2rem);
+  font-size: clamp(1.4rem, 3vw, 3rem);
   color: #7f8a9b;
   margin-bottom: 1.25rem;
   font-family: 'Roboto', sans-serif;
 }
 .meta {
-  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-size: clamp(1.1rem, 2vw, 1.8rem);
   color: #9aa3b0;
   line-height: 1.7;
   margin-top: 0.5rem;
@@ -406,72 +406,153 @@ a {
 }
 
 /* ---- About block ---- */
-.about-wrap {
-  background: #f6f7f9; /* light gray band like screenshot */
-  margin-top: 0;
-}
-.about-inner {
-  display: flex;
-  align-items: center;
-  gap: 4rem;
-  padding: 2.5rem var(--space-x); /* matches page side gutters */
-  max-width: 1400px;
-  margin: 0 auto;
+.about-section {
+  padding: 4rem 5%;
+  background: #fff;
 }
 
-/* left side kept empty for composition */
-.about-spacer {
-  flex: 1 1 50%;
-  min-height: 280px; /* ensures tall band on large screens */
-}
-
-/* right column text */
-.about-text {
-  flex: 1 1 50%;
-  max-width: 680px;
-  margin-left: auto; /* hugs the right edge */
-}
-.about-title {
+.about-ghost {
   font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   font-size: 3.5rem;
   font-weight: 400;
   color: #9ca3af; /* Same as TA Schedule */
+  margin: 0 0 2rem;
   line-height: 1;
-  margin-bottom: 2rem;
   text-align: left;
+}
+
+.about-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.about-image {
+  flex: 0 0 300px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: 0;
+  margin-right: 0;
+}
+
+.about-photo {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.about-photo:hover {
+  transform: scale(1.02);
+}
+
+.about-text {
+  flex: 1;
+  min-width: 0; /* allows text to shrink */
+  padding-left: 0;
+  max-width: none;
+  width: 100%;
 }
 .about-cn {
   font-family: 'Source Han Sans CN', sans-serif;
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
   color: #7c8794;
-  line-height: 2;
+  line-height: 1.8;
   margin: 0 0 1.5rem;
+  max-width: 100%;
 }
 .about-en {
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
   color: #97a2af;
-  line-height: 2;
+  line-height: 1.8;
+  max-width: 100%;
+}
+
+/* Large screens optimization */
+@media (min-width: 1400px) {
+  .about-layout {
+    max-width: 100%;
+    gap: 3rem;
+    align-items: flex-start;
+    padding: 0;
+    margin: 0;
+  }
+  .about-image {
+    flex: 0 0 350px;
+    margin-top: 0;
+    align-self: flex-start;
+    justify-content: flex-start;
+    margin-right: 0;
+  }
+  .about-photo {
+    max-width: 350px;
+  }
+  .about-text {
+    flex: 1;
+    padding-left: 0;
+    padding-top: 0;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* Extra large screens - ensure text fills all available space */
+@media (min-width: 1600px) {
+  .about-layout {
+    max-width: 100%;
+    gap: 4rem;
+    padding: 0;
+    margin: 0;
+  }
+  .about-image {
+    flex: 0 0 400px;
+    justify-content: flex-start;
+    margin-right: 0;
+  }
+  .about-photo {
+    max-width: 400px;
+  }
+  .about-text {
+    flex: 1;
+    padding-left: 0;
+    max-width: none;
+    width: 100%;
+  }
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .about-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2rem;
-    padding: 4rem var(--space-x);
+  .about-section {
+    padding: 3rem 5%;
   }
-  .about-spacer {
-    display: none;
-  } /* remove empty left area on tablet/phone */
-  .about-text {
-    max-width: 720px;
-    margin: 0;
+  .about-layout {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .about-image {
+    flex: none;
+    width: 100%;
+    max-width: 400px;
+  }
+  .about-photo {
+    max-width: 100%;
   }
 }
 @media (max-width: 640px) {
-  .about-inner {
-    padding: 3rem var(--space-x);
+  .about-section {
+    padding: 2rem 5%;
+  }
+  .about-layout {
+    gap: 1.5rem;
+  }
+  .about-image {
+    max-width: 300px;
   }
   .about-cn,
   .about-en {
@@ -867,6 +948,19 @@ a {
 .highlight-blue {
   color: #190fd6;
   font-weight: 500;
+}
+
+/* Ensure links within highlight-blue spans maintain consistent color */
+.highlight-blue a {
+  color: #190fd6 !important;
+  text-decoration: none;
+}
+
+.highlight-blue a:hover,
+.highlight-blue a:visited,
+.highlight-blue a:link {
+  color: #190fd6 !important;
+  text-decoration: none;
 }
 
 .step-3-divider {

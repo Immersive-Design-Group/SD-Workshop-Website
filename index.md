@@ -11,8 +11,8 @@ title: 首页 HOME
     </h1>
     <h2 class="en-subtitle">SD's Workshop Space</h2>
     <p class="meta">
-      Space hour： Mon-Fri 9:00-22:00<br/>
-      Office hour： Mon-Fri 9:00-17:30
+      Location: C1 Building, 11 Floor<br>
+      Open hour : Weekday  9:00 ~ 21:00
     </p>
     <div class="status-indicator" id="workshop-status">
       <span class="status-text" id="status-text">Loading...</span>
@@ -30,22 +30,21 @@ title: 首页 HOME
 
 </section>
 <!-- About -->
-<section class="about-wrap">
-  <div class="about-inner">
-    <div class="about-spacer" aria-hidden="true"></div>
-
+<section class="about-section">
+  <h2 class="about-ghost">About</h2>
+  
+  <div class="about-layout">
+    <div class="about-image">
+      <img src="{{ '/assets/images/' | relative_url }}" alt="" class="about-photo">
+    </div>
+    
     <div class="about-text">
-      <h2 class="about-title">About</h2>
-
       <p class="about-cn">
-        创新创意设计学院工坊空间是一个可供设计学院所有学生使用的协作式原型制作空间。学生通过各种数字化及传统设备来实现他们的创意，
-        这些设备包括 3D 打印机、激光切割机、机床、电子零件等。
+        创新创意设计学院工坊空间，是供全院学生使用的协作式原型制作空间。学生可借助 3D 打印机、激光切割机、机床、电子零件等数字化及传统设备实现创意。工坊实行分层管理制度，按设备风险等级差异化管理；另提供近百种媒体设备，师生可登记借用，支持教学科研，详情见 <span class="highlight-blue"><a href="https://docs.qq.com/doc/DWnJpTmZpbHJtbnNa" target="_blank" rel="noopener noreferrer">《工坊管理办法》</a></span>。
       </p>
 
       <p class="about-en">
-        Workshop space is a collaborative prototyping space available to all students of Design school.
-        We help students to implement their ideas through various digital and conventional devices such as
-        3D printers, laser cutters, machine tools, electronic parts and more.
+        The Workshop Space is a prototyping space for all students, who can turn ideas into reality using digital/traditional equipment (e.g., 3D printers, laser cutters, machine tools). A pilot tiered management system is implemented, with differentiated measures based on equipment risk levels. Nearly 100 types of media equipment are also available for faculty/students to borrow (upon registration) to support teaching and research. See <span class="highlight-blue"><a href="https://docs.qq.com/doc/DWnJpTmZpbHJtbnNa" target="_blank" rel="noopener noreferrer">Workshop Management Measures</a></span> for details.
       </p>
     </div>
   </div>
