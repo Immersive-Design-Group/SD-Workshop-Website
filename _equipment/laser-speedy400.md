@@ -1,5 +1,5 @@
 ---
-title: Laser Cutting Machine
+title: Speedy 400
 title_cn: 激光切割机
 model: Trotec Speedy 400
 type: Laser Cutter

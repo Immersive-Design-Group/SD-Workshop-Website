@@ -24,12 +24,13 @@ equipment:
     name: "3D PRINTER 2"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
-    status: "maintenance"
+    status: "working"
   - id: "eq3"
     name: "3D PRINTER 3"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
     status: "working" 
+  - id: "eq4"
     name: "3D PRINTER 4"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
@@ -49,8 +50,4 @@ equipment:
     model: 
     image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
     status: "working"
-  - id: "eq8"
-    name: "3D Scanner"
-    model: 
-    image: "/assets/images/Equipments/3D-Scanner/3d-scanner.png"
-    status: "working"
+ 

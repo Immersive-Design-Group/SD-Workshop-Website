@@ -802,7 +802,8 @@
             }
           }
           
-          cell.className = 'slot booked';
+          // Apply both booked and past classes if the slot is in the past
+          cell.className = isPastSlot ? 'slot booked past' : 'slot booked';
           
           // Only show booking info on the first slot of each booking
           if (originalBooking) {

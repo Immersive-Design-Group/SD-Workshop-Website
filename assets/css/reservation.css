@@ -621,12 +621,12 @@
 }
 .timebar .time-label {
   min-width: var(--rsv-slot-w);
-  text-align: center;
+  text-align: left;
   font-size: 16px;
   color: #333;
   font-weight: 700;
   white-space: nowrap;
-  /* Center the time label over its corresponding slot */
+  /* Position the time label at the left edge of its corresponding slot */
   position: relative;
   transform: none;
   /* Force remove all borders and styling */
@@ -691,7 +691,7 @@ body .reservation-container .slots-viewport .timebar .time-label {
   all: unset !important;
   display: inline-block !important;
   min-width: var(--rsv-slot-w) !important;
-  text-align: center !important;
+  text-align: left !important;
   font-size: 16px !important; /* Increased from 14px for better visibility */
   color: #333 !important;
   font-weight: 700 !important;
@@ -1029,7 +1029,7 @@ body .reservation-container #rsv-rows .equip-row {
 #rsv-rows .slot{
   width: var(--rsv-slot-w);
   height: var(--rsv-slot-h);
-  border: 1px solid #e6ebf1;
+  border: 2px solid #d1d5db;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,.04);
@@ -1075,6 +1075,37 @@ body .reservation-container #rsv-rows .equip-row {
   position: relative;
   overflow: hidden;
   border-radius: 12px;
+}
+
+/* Past bookings styling - grey color for old bookings */
+#rsv-rows .slot.booked.past {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  opacity: 0.8;
+}
+
+#rsv-rows .slot.booked.past .booking-info {
+  opacity: 0.7;
+}
+
+#rsv-rows .slot.booked.past .user-avatar {
+  background: #d1d5db;
+}
+
+#rsv-rows .slot.booked.past .user-avatar-initial {
+  color: #6b7280;
+}
+
+#rsv-rows .slot.booked.past .booking-time,
+#rsv-rows .slot.booked.past .user-name,
+#rsv-rows .slot.booked.past .project-name {
+  color: #6b7280;
+}
+
+/* Remove the diagonal striped pattern from past bookings */
+#rsv-rows .slot.booked.past::before {
+  display: none;
 }
 
 
@@ -1221,8 +1252,8 @@ datalist {
 }
 
 .user-avatar {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   background: #3b82f6;
   color: white;
   border-radius: 50%;
@@ -1232,6 +1263,7 @@ datalist {
   font-size: 10px;
   font-weight: 700;
   flex-shrink: 0;
+  margin-left: -4px;
 }
 
 .user-avatar-initial {
@@ -1240,7 +1272,7 @@ datalist {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
 }
 
@@ -1252,10 +1284,13 @@ datalist {
 }
 
 .booking-time {
-  font-size: 10px;
+  font-size: 8px;
   color: #6b7280;
   font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
+  font-family: 'Noto Sans', 'Roboto', sans-serif;
+  margin-left: -1px;
 }
 
 .user-name {
@@ -1264,6 +1299,8 @@ datalist {
   font-weight: 600;
   line-height: 1;
   text-align: left;
+  font-family: 'Source Han Sans CN', 'Noto Sans', 'Roboto', sans-serif;
+  margin-left: -1px;
 }
 
 .user-name-container {
@@ -1279,8 +1316,6 @@ datalist {
   flex-direction: column;
   gap: 4px;
 }
-
-
 
 .project-name {
   font-size: 11px;
@@ -1359,6 +1394,7 @@ datalist {
 /* Hover effects for available slots */
 #rsv-rows .slot.available:hover {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #3b82f6;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
   cursor: pointer;
@@ -1396,10 +1432,17 @@ datalist {
     font-size: 8px;
   }
   
-  .booking-time,
+  .booking-time {
+    font-size: 7px;
+    text-align: left;
+    white-space: nowrap;
+    font-family: 'Noto Sans', 'Roboto', sans-serif;
+  }
+  
   .user-name {
     font-size: 9px;
     text-align: left;
+    font-family: 'Source Han Sans CN', 'Noto Sans', 'Roboto', sans-serif;
   }
   
   .user-name-container {
@@ -1751,6 +1794,7 @@ datalist {
 /* Hover effects for available slots */
 #rsv-rows .slot.available:hover {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #3b82f6;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
   cursor: pointer;
@@ -1788,10 +1832,17 @@ datalist {
     font-size: 8px;
   }
   
-  .booking-time,
+  .booking-time {
+    font-size: 7px;
+    text-align: left;
+    white-space: nowrap;
+    font-family: 'Noto Sans', 'Roboto', sans-serif;
+  }
+  
   .user-name {
     font-size: 9px;
     text-align: left;
+    font-family: 'Source Han Sans CN', 'Noto Sans', 'Roboto', sans-serif;
   }
   
   .user-name-container {

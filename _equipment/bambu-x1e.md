@@ -1,5 +1,5 @@
 ---
-title: BambuLab X1E
+title: BambuLab P1S/X1E
 title_cn: 3D打印机
 type: 3D Printer
 type_cn: 3D打印机
