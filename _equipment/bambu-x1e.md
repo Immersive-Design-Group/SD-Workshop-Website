@@ -30,40 +30,40 @@ process:
   title_cn: "操作指南"
   arrow: "assets/images/Equipments/Soldering Station/arrow.png"       # arrow image
   steps:
-    - title_cn: "工具准备"
+    - title_cn: "模型准备"
       title_en: "Tools Preparation"
       pairs:
-        - img: "/assets/imagesEquipments/3D-Printer-X1E/3D-Printer1.png"
-          cn: "电烙铁、焊丝、助焊剂（松香）、铜擦洗垫、吸锡器、架子"
-          en: "Soldering iron, solder wire, flux (rosin), copper scrub pad, desoldering pump, clamps."
+        - img: "assets/images/Equipments/3D-Printer-X1E/3D-Printer1.png"
+          cn: "使用工坊或自有电脑进行切片,预估打印时间,预约可使用的打印机。"
+          en: "Use the workshop's or your own laptop to slice the model, estimate the printing time, and reserve an available 3dprinter."
     
-    - title_cn: "预热"
-      title_en: "Preheating"
+    - title_cn: "检查打印机状态"
+      title_en: "Check 3d printer Status"
       pairs:
-        - img: "/assets/imagesEquipments/3D-Printer-X1E/3D-Printer2.png"
-          cn: "打开电源并预热焊铁到适当的温度（建议约 350°C/662°F）。"
-          en: "Turn on the power and preheat the soldering iron to appropriate temperature (recommended around 350°C/662°F)."
+        - img: "assets/images/Equipments/3D-Printer-X1E/3D-Printer2.png"
+          cn: "开机,检查打印机喷嘴是否有明显堵塞、打印板调平是否卡顿或报错、温控系统是否报错等。如有以上情况请及时反馈并更换打印机。"
+          en: "Turn on the printer and check whether the nozzle is visibly clogged, whether the print bed leveling encounters resistance or errors, and whether the temperature control system reports any errors. If any of the above issues occur, please report them promptly and switch to another printer."
     
-    - title_cn: "清洁焊接头"
-      title_en: "Cleaning the Tip"
+    - title_cn: "导入模型"
+      title_en: "Import"
       pairs:
-        - img: "/assets/imagesEquipments/3D-Printer-X1E/3D-Printer3.png"
-          cn: "使用铜擦洗垫去除焊铁头上的氧化层。"
-          en: "Use a copper scrub pad  to remove oxidation from the soldering iron tip."
+        - img: "assets/images/Equipments/3D-Printer-X1E/3D-Printer3.png"
+          cn: "将预约的打印机断电,从打印机卡槽中退出SD卡,将模型导入SD卡中,并放回SD卡至打印机后开机。"
+          en: "Power off the reserved printer, remove the SD card from the slot, copy the model file to the SD card, reinsert it into the printer, and then power the printer back on."
     
-    - title_cn: "焊接"
-      title_en: "Soldering Operation"
+    - title_cn: "装载耗材"
+      title_en: "Load Filament"
       pairs:
-        - img: "/aassets/imagesEquipments/3D-Printer-X1E/3D-Printer4.png"
-          cn: "使用夹子固定组件或将其放置在耐热焊接站上（不要直接放在桌面，橡胶或亚克力表面上）。"
-          en: "SSecure components using clamps or place them on a heat-resistant soldering workstation (never directly on desktops, rubber, or acrylic surfaces)."
+        - img: "assets/images/Equipments/3D-Printer-X1E/3D-Printer4.png"
+          cn: "按照切片时选择的料,将料送进软管,并将料盘悬挂在打印机背面的料盘架上,在打印机面板上选择Feeding-Load装载。如使用AMS则将料盘放置在AMS架上并将料插入料盘前方的料嘴里(AMS检测到料后会自动整理料),并在AMS面板上选择对应的料,点击进料"
+          en: "Load the filament selected during slicing into the feeding tube and place the spool onto the filament holder at the back of the printer. On the printer panel, choose Feeding → Load to load the filament. If using AMS, place the spool onto the AMS rack, insert the filament into the inlet at the front of the AMS (the AMS will automatically manage the filament once detected), select the corresponding filament on the AMS panel, and click Load."
     
-    - title_cn: "冷却"
-      title_en: "Cooling"
+    - title_cn: "开始打印"
+      title_en: "Start Printing"
       pairs:
-        - img: "/assets/imagesEquipments/3D-Printer-X1E/3D-Printer5.png"
-          cn: "自然冷却或使用风扇加速冷却。使用后，一定要将烙铁放回其支架上，不要将烙铁放在无人看管的表面上。"
-          en: "Let it cool naturally or use a fan to speed up cooling. After use, always put the soldering iron back on its stand. Never leave it on an unattended surface."
+        - img: "assets/images/Equipments/3D-Printer-X1E/3D-Printer5.png"
+          cn: "确认料已正确装载、打印板放置方向正确、表面平整后,选择文件开始打印。<span class='red-brace'>在打印机成功打印前3-5层后方可离开。</span>"
+          en: "After confirming that the filament is properly loaded, the build plate is placed in the correct orientation, and the surface is flat, select the file and start printing. <span class='red-brace'>Do not leave until the printer has successfully printed the first 3-5 layers.</span>"
 
 safety:
   title_en: "Safety Note"
