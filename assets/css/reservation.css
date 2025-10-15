@@ -2125,6 +2125,13 @@ datalist {
   font-family: inherit;
 }
 
+/* Make Name and SID fields taller (increase height) */
+.form__row:has(input[name="name"]) .form__input,
+.form__row:has(input[name="student_number"]) .form__input {
+  padding: 18px 18px;
+  min-height: 30px;
+}
+
 .form__input:focus{ 
   outline: none;
   border-color: #3b82f6;

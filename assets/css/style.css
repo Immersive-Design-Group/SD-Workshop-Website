@@ -2335,6 +2335,8 @@ a {
   grid-template-rows: 1fr auto !important; /* image fills first row, meta sits below */
   height: 100% !important;
   overflow: hidden; /* fine to keep */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
 }
 .equip-card:hover{ transform:translateY(-3px); box-shadow:0 16px 32px rgba(0,0,0,.10); }
 

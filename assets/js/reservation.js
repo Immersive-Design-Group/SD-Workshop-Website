@@ -733,7 +733,7 @@
       left.innerHTML = `
         <div class="equip-card">
           <div class="equip-thumb">
-            ${imgSrc ? `<img src="${imgSrc}" alt="${eq.name}">` : ''}
+            ${imgSrc ? `<a href="${eq.link || '#'}" target="_blank" rel="noopener noreferrer"><img src="${imgSrc}" alt="${eq.name}"></a>` : ''}
             ${statusBadge}
           </div>
         </div>
