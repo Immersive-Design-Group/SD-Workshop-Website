@@ -1,6 +1,8 @@
 ---
 title: Speedy 400
 title_cn: 激光切割机
+page_title: Laser Cutting Machine
+page_title_cn: 激光切割机
 model: Trotec Speedy 400
 type: Laser Cutter
 type_cn: 激光切割机
@@ -33,82 +35,89 @@ process:
   title_cn: "操作指南"
   arrow: "assets/images/Equipments/Soldering Station/arrow.png"       # arrow image
   steps:
+    - title_cn: "基础介绍 Basic introduction"
+      title_en: "Basic Introduction"
+      pairs:
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting1.png"
+          cn: "工坊激光切割区域主要包含激光切割机、抽风除尘机,还有配备专用软件的电脑。"
+          en: "The laser cutting area in the workshop mainly consists of a laser cutting machine, an exhaust and dust removal machine, and a computer equipped with special software."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting1-1.png"
+          cn: "切割机操作面板集成了紧急停止按钮、开关、任务控制屏幕,以及用于控制加工台面和激光头方向的按键。"
+          en: "The operation panel of the cutting machine integrates an emergency stop button, a switch, a task control screen, as well as buttons for controlling the direction of the processing table and the laser head."
+
+    
     - title_cn: "开机与系统初始化"
       title_en: "Power On & System Initialization"
       pairs:
-        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting1.png"
-          cn: "将钥匙插入开关，轻轻旋转至<span class='red-brace'>ON</span>位置，然后松开。机器屏幕和指示灯应亮起,机器将自动进行初始化自检。您将看到X轴和Y轴移动回机械原点（通常位于左后方），Z轴可能会上下移动。自检成功后通常会发出一声<span class='red-brace'>滴</span>的提示音。"
-          en: "Insert the key into the switch, gently turn it to the <span class='red-brace'>ON</span> position , then release. The machine screen and indicators should light up.The machine will automatically perform <span class='red-brace'>an initialization self-test</span>. You will see the X and Y axes move to the home position (usually the rear-left corner), and the Z axis may move up and down. A successful self-test is usually indicated by a beep sound."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting2.png"
+          cn: "将钥匙插入开关，轻轻旋转至<span class='red-brace'>ON</span>位置，然后松开。机器屏幕和指示灯应亮起，机器将自动进行初始化自检。您将看到X轴和Y轴移动回机械原点（通常位于左后方），Z轴可能会上下移动，整个过程大约需要1分钟。自检成功后通常会发出一声<span class='red-brace'>滴</span>的提示音。如果自检失败，请首先检查设备舱门是否完全关闭且无遮挡，然后确认钥匙是否已正确旋转。如问题持续，请报告老师。"
+          en: "Insert the key into the switch, gently turn it to the <span class='red-brace'>ON</span> position, then release. The machine screen and indicators should light up, and the machine will automatically perform an initialization self-test. You will see the X and Y axes move to the home position (usually the rear-left corner), and the Z axis may move up and down. The entire process takes approximately 1 minute. A successful self-test is usually indicated by a beep sound. If the self-test fails, first check that all equipment doors are fully closed and unobstructed, then confirm the key is properly turned. If the problem persists, report to the instructor."
     
     - title_cn: "准备平台与材料"
       title_en: "Prepare the Bed & Material"
       pairs:
-        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting2.png"
-          cn_lines:
-            - "打开机器上盖"
-            - "将材料平整地放入工作区域。使用卡尺精确测量材料厚度"
-          en_lines:
-            - "Open the top lid of the machine."
-            - "Place the material flat into the work area. Use calipers to accurately measure the material thickness."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting3.png"
+          cn: "机器自检完成后，打开机器上盖。目的是确定材料的面积和厚度，以便后续的排版和参数设置。最后，将材料平整地放入工作区域，确保材料不会移动。"
+          en: "After the machine's self-test is completed, open the upper cover of the machine. The purpose is to determine the area and thickness of the material for subsequent layout and parameter setting. Finally, place the material flat in the working area, ensuring it does not shift."
     
     - title_cn: "定位与聚焦激光头"
       title_en: "Position and Focus the Laser Head"
       pairs:
-        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting3.png"
-          cn_lines:
-            - "使用控制面板上的方向键将激光头移动到所需起始位置，通常是材料的左上角。"
-            - "方法A（手动聚焦）：将聚焦工具挂在激光喷嘴下方，缓慢提升Z轴，直到工具自由落下，表示聚焦已设置。"
-            - "方法B（自动聚焦）：按下控制面板上的自动聚焦或Z-自动按钮，激光头会自动下降，用传感器探测材料表面，并设置正确的聚焦。"
-            - "<span class='red-brace'>至关重要：聚焦时一定确保聚焦点在材料上，否则激光头容易损坏</span>"
-          en_lines:
-            - "Use the arrow keys on the control panel to move the laser head to the desired starting position, typically the top-left corner of the material."
-            - "Method A (Manual Focus): Hang a focus tool under the laser nozzle and slowly raise the Z-axis until the tool falls off freely, indicating the focus is set."
-            - "Method B (Auto Focus): Press the 'Auto Focus' or 'Z-Auto' button on the control panel, which causes the laser head to automatically descend, probe the material surface with a sensor, and set the correct focus."
-            - "<span class='red-brace'>Critical: Ensure the focal point is on the material during focusing, otherwise the laser head can be easily damaged.</span>"
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting4.png"
+          cn: "定位：使用控制面板上的<span class='red-brace'>激光头方向控制键</span>，将激光头移动到预期的雕刻/切割起始点（通常为材料左上角），确保激光头正对材料加工区域上方。"
+          en: "Position: Use the <span class='red-brace'>laser head control</span> to move the laser head to the desired engraving/cutting start point (usually the top-left corner of the material). Ensure the laser head is directly above the material's processing area."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting4-1.png"
+          cn: "聚焦：确定激光头定位后，开始聚焦调整手动聚焦：将聚焦尺（配件盒内）挂在激光头侧面。缓慢升高加工台面（Z轴），直到聚焦尺刚好自由落下。此时焦距已调准。"
+          en: "Focus: After positioning the laser head, begin focus adjustment. Manual Focus: Hang the focus ruler (in the accessory box) on the laser head side. Slowly raise the worktable (Z-axis) until the focus ruler drops freely. The focus is now set."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting4-2.png"
+          cn: "自动聚焦：双手同时按下<span class='red-brace'>加工台面控制按钮</span>，激光头会自动下降，用传感器探测材料表面并设置正确焦距。<br><span class='red-brace'>至关重要：聚焦时一定确保聚焦点在材料上，否则激光头容易损坏</span>"
+          en: "Auto Focus: Press the <span class='red-brace'>worktable control buttons</span> with both hands simultaneously; the laser head will lower automatically, detect the material surface with sensors, and set the correct focus.<br> <span class='red-brace'>Critical: When focusing, ensure the focal point is on the material, otherwise the laser head can be easily damaged.</span>"
     
     - title_cn: "软件设置与文件传输"
       title_en: "Software Setup & File Transfer"
       pairs:
-        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting4.png"
-          cn_lines:
-            - "在连接的电脑上，浏览器操作页面打开或导入你的设计文件（PDF、SVG、DXF等）。"
-            - "点击适合设计或适合页面按钮，并设置1-2mm的边距。"
-            - "<span class='red-brace'>至关重要：在软件中将激光头的当前坐标设置为原点。</span>"
-            - "从材料库中选择最接近的材料预设，然后根据你的测试和材料厚度，选择功率、速度和DPI。"
-          en_lines:
-            - "On the connected computer, the browser interface to open or import your design file (PDF, SVG, DXF, etc.)."
-            - "Click the 'Fit to Design' or 'Fit to Page' button and set a 1-2mm margin."
-            - "<span class='red-brace'>Critical: In the software, set the current position of the laser head as the origin.</span>"
-            - "Select the closest material preset from the library, then choose the Power, Speed, and DPI based on your test and material thickness."
-        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting4-2.png"
-          cn: "最后点击<span class='red-brace'>发送</span>将任务发送到机器。"
-          en: "Finally, click '<span class='red-brace'>Send</span>' to send the job to the machine."
-    
-    - title_cn: "开始工作与监控"
-      title_en: "Start the Job & Supervision"
-      pairs:
         - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting5.png"
-          cn_lines:
-            - "首先，打开抽风/除尘电机。"
-            - "在机器控制面板上，按下<span class='red-brace'>开始</span>按钮。"
-            - "操作员必须全程值守，密切观察激光头出光情况和材料是否有异常。"
-          en_lines:
-            - "First, turn ON the fume exhaust/extraction system."
-            - "On the machine control panel, press the '<span class='red-brace'>Start</span>' button."
-            - "The operator must remain present and monitor the entire process, watching the laser beam and material for any abnormalities."
+          cn: "文件导入：打开浏览器收藏的激光切割软件网址，输入账号密码登录。在操作页面打开或导入你的设计文件（PDF、SVG、DXF等）。"
+          en: "File Import: Open the bookmarked laser cutting software website in your browser, enter your account credentials to log in. On the operation page, open or import your design file (PDF, SVG, DXF, etc.)."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting5-1.png"
+          cn: "图形确认：确认图形颜色对应的加工方式，如红色线用于切割、黑色面型用于雕刻，避免切割线与雕刻线混淆。仔细检查设计稿，剔除重复线条，防止加工出错。点击<span class='red-brace'>适合设计</span>按钮，并设置1-2mm边距，避免留白过大。<br>建立任务：点击<span class='red-brace'>Create job</span>按钮。"
+          en: "Graphic Confirmation: Confirm graphic colors for processing (red=cutting, black=engraving) to avoid line confusion. Check the design draft, remove duplicate lines to prevent errors. Click <span class='red-brace'>Fit Design</span> and set 1-2mm margin to avoid excess blank space.<br>Job Creation: Click the <span class='red-brace'>Create job</span> button."
+
+    
+    - title_cn: "设置切割细节"
+      title_en: "Set Cutting Details"
+      pairs:
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting6.png"
+          cn: "设置加工原点：将任务图形左上角对齐至激光头所在位置"
+          en: "Set Processing Origin: Align the top-left corner of the task graphic with the laser head's current position."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting6-1.png"
+          cn: "功率设置：结合实际材料厚度、特性和效果目标调整参数<br>工坊木板材料推荐参数<br>雕刻参数：功率50%-70%、速度50-100<br>切割参数：功率50%-70%、速度0.5-2（未切透可分2次切割）"
+          en: "Power Settings: Adjust parameters based on the actual material thickness, properties, and desired effect.<br>Recommended parameters for workshop wood materials:<br>Engraving: Power 50%-70%, Speed 50-100<br>Cutting: Power 50%-70%, Speed 0.5-2 (perform 2 passes if not fully cut through)"
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting6-2.png"
+          cn: "点击<span class='red-brace'>发送至切割机</span>将任务发送到机器。"
+          en: "Finally, click <span class='red-brace'>Push to Laser</span> to send the job to the machine."
+
+
+
+    - title_cn: "开始切割"
+      title_en: "Start the Job"
+      pairs:
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting7.png"
+          cn: "抽风：将风管伸出窗外，打开抽风机的电源，按下<span class='red-brace'>P</span>键启动抽风功能。"
+          en: "Ventilation: Extend the air duct out of the window, turn on the power of exhaust machine, and press the <span class='red-brace'>P</span> key to start the ventilation function."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting7-1.png"
+          cn: "开始切割：关闭机器上盖，按下机器控制面板上的<span class='red-brace'>开始</span>按钮，设备将开始加工操作。<br>全程监控：操作员必须全程在场，定期检查加工状态，不得长时间直视激光，避免眼部损伤。"
+          en: "Start Cutting: Close the machine's top cover, press the <span class='red-brace'>Start</span> button on the machine's control panel, and the equipment will begin the processing operation.<br>Full Monitoring: The operator must remain on-site throughout the process, check the processing status regularly, and must not stare at the laser for an extended period to avoid eye damage."
 
     - title_cn: "完成工作与关机"
       title_en: "Job Completion & Shutdown"
       pairs:
-        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting6.png"
-          cn_lines:
-            - "切割完成后，让抽风机继续运行1-2分钟，以确保所有有害烟雾被彻底排出。"
-            - "关闭抽风机。"
-            - "打开机盖，小心地取走成品和废料。"
-          en_lines:
-            - "After cutting is complete, let the exhaust system run for an additional 1-2 minutes to ensure all harmful fumes are completely extracted."
-            - "Turn OFF the exhaust system."
-            - "Open the lid and carefully remove the finished product and waste material."
+        - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting8.png"
+          cn: "切割完成后，让抽风机继续运行1-2分钟，以确保所有有害烟雾被彻底排出。关闭抽风机。打开机盖，小心地取走成品和废料，将可用的剩余材料妥善保存。用钥匙关闭机器，并将钥匙归还给工坊管理员。"
+          en: "After cutting is complete, let the exhaust system run for an additional 1-2 minutes to ensure all harmful fumes are completely extracted. Turn OFF the exhaust system. Open the lid and carefully remove the finished product and waste material, storing any usable leftover materials properly. Turn off the machine with the key and return it to the workshop administrator."
+
+
+
 
 safety:
   title_en: "Safety Note"

@@ -16,9 +16,9 @@
   <section class="eqtop">
   <div class="eqtop-wrap">
     <!-- Ghost EN title + bold CN title -->
-    <h1 class="eqtop-ghost">{{ page.title }}</h1>
-    {% if page.title_cn %}
-      <h2 class="eqtop-cn">{{ page.title_cn }}</h2>
+    <h1 class="eqtop-ghost">{{ page.page_title | default: page.title }}</h1>
+    {% if page.page_title_cn or page.title_cn %}
+      <h2 class="eqtop-cn">{{ page.page_title_cn | default: page.title_cn }}</h2>
     {% endif %}
 
     <!-- thin divider under the CN title (spans full content width) -->

@@ -24,6 +24,9 @@ body {
   color: #1a2238;
   line-height: 1.5;
   background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 a {
   text-decoration: none;
@@ -124,6 +127,7 @@ a {
 .page-content {
   padding-top: var(--header-h);
   background: #fff;
+  flex: 1;
 }
 
 /* --- Hamburger button --- */

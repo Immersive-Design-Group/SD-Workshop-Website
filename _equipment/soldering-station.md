@@ -2,6 +2,8 @@
 layout: equipment
 title: Soldering Station
 title_cn: 焊接台
+page_title: Soldering Station
+page_title_cn: 焊接台
 slug: soldering-station
 category: Digital Fabrication
 room: 1114

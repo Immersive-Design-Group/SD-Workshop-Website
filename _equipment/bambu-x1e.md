@@ -1,6 +1,8 @@
 ---
 title: BambuLab P1S/X1E
 title_cn: 3D打印机
+page_title: 3D Printer
+page_title_cn: 3D打印机 P1S/X1E
 type: 3D Printer
 type_cn: 3D打印机
 category: Digital Fabrication

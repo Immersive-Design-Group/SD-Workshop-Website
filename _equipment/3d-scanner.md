@@ -1,6 +1,8 @@
 ---
 title: 3D Scanner
 title_cn: 3D扫描仪
+page_title: 3D Scanner
+page_title_cn: 3D扫描仪
 type: 3D Scanner
 type_cn: 3D 扫描仪
 category: Digital Fabrication
