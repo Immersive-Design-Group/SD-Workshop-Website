@@ -2347,26 +2347,27 @@ a {
   aspect-ratio: 4/3;
   min-height: 0 !important;
   overflow:hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff; /* Pure white background */
 }
 .equip-media img{
   width:100%; 
   height:100%; 
-  object-fit:cover;
+  object-fit:contain;  
   object-position: center; 
   display:block;
   transform:scale(1.001); 
   transition:transform .6s ease;
+  background: #fff; /* Pure white background */
 }
 .equip-card:hover .equip-media img{ transform:scale(1.04); }
 
-/* Number badge
+/* Number badge - hidden */
 .equip-number{
-  position:absolute; top:.5rem; left:.5rem;
-  width:28px; height:28px; border-radius:999px;
-  background:#000; color:#fff;
-  display:grid; place-items:center; font-weight:800; font-size:.9rem;
-  box-shadow:0 2px 0 rgba(0,0,0,.2);
-} */
+  display: none; /* Hide the numbered circles */
+}
 
 /* Meta text */
 .equip-meta{
@@ -2547,14 +2548,15 @@ a {
   background-repeat: no-repeat !important;
 }
 
-/* IMG should fill the box, no distortion */
+/* IMG should fit the box without cropping */
 .equip-media img{
   width: 100% !important;
   height: 100% !important;
   display: block !important;
-  object-fit: cover !important;     /* fill without stretching */
+  object-fit: contain !important;     /* Changed from cover to contain to prevent cropping */
   object-position: center !important;
-  transform: none !important;       /* optional: remove tiny scale if it bothers crop */
+  transform: none !important;
+  background: #fff !important; /* Pure white background */
 }
 
 /* Keep the light blue tint on the room tile */
@@ -2575,6 +2577,22 @@ a {
   .equip-row{
     grid-template-columns: 1fr !important;
     grid-auto-rows: 280px !important;
+  }
+  
+  /* Adjust aspect ratio for mobile to better accommodate tall devices */
+  .equip-media{
+    aspect-ratio: 3/2; /* Slightly wider for mobile */
+  }
+}
+
+/* Small mobile devices - even more responsive */
+@media (max-width: 480px){
+  .equip-media{
+    aspect-ratio: 4/3; /* Standard aspect ratio for small screens */
+  }
+  
+  .equip-card{
+    min-height: 200px; /* Ensure minimum height for readability */
   }
 }
 
