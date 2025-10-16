@@ -2331,18 +2331,17 @@ a {
 
 /* ---------- Equip cards ---------- */
 .equip-card{
-  display: grid !important;
-  grid-template-rows: 1fr auto !important; /* image fills first row, meta sits below */
+  display: flex !important;
+  flex-direction: column !important; /* stack image and text vertically */
   height: 100% !important;
   overflow: hidden; /* fine to keep */
-  border: 1px solid #e5e7eb;
+  border: none;
   border-radius: 8px;
 }
 .equip-card:hover{ transform:translateY(-3px); box-shadow:0 16px 32px rgba(0,0,0,.10); }
 
 .equip-media{
   position:relative;
-  height:100%;
   width: 100%;
   aspect-ratio: 4/3;
   min-height: 0 !important;
@@ -2351,6 +2350,7 @@ a {
   align-items: center;
   justify-content: center;
   background: #fff; /* Pure white background */
+  flex-shrink: 0; /* prevent image from shrinking */
 }
 .equip-media img{
   width:100%; 
@@ -2538,11 +2538,9 @@ a {
 .equip-media,
 .equip-roomcard-media{
   width: 100% !important;
-  height: 100% !important;
   overflow: hidden !important;
-
-  aspect-ratio: auto !important;
-
+  aspect-ratio: 4/3 !important;
+  flex-shrink: 0 !important;
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
@@ -2553,7 +2551,7 @@ a {
   width: 100% !important;
   height: 100% !important;
   display: block !important;
-  object-fit: contain !important;     /* Changed from cover to contain to prevent cropping */
+  object-fit: contain !important;     
   object-position: center !important;
   transform: none !important;
   background: #fff !important; /* Pure white background */
@@ -2576,12 +2574,17 @@ a {
 @media (max-width: 900px){
   .equip-row{
     grid-template-columns: 1fr !important;
-    grid-auto-rows: 280px !important;
+    grid-auto-rows: auto !important; /* Let content determine height */
   }
   
   /* Adjust aspect ratio for mobile to better accommodate tall devices */
   .equip-media{
     aspect-ratio: 3/2; /* Slightly wider for mobile */
+  }
+  
+  /* Reduce padding on mobile for tighter spacing */
+  .equip-meta{
+    padding: 0.5rem 0.5rem 0.8rem !important;
   }
 }
 

@@ -908,9 +908,32 @@ body .reservation-container #rsv-rows .equip-row {
 }
 
 /* name & model sit outside the card, tighter spacing */
-#rsv-rows .equip-meta-below{ text-align:center; margin-top: 6px; }
+#rsv-rows .equip-meta-below{ text-align:center; margin-top: 0; }
 #rsv-rows .equip-name{ font-weight: 600; font-size: 14px; line-height: 1.1; }
 #rsv-rows .equip-model{ font-weight: 600; font-size: 14px; }
+
+/* Mobile-specific: ensure no gap between image and text */
+@media (max-width: 768px) {
+  #rsv-rows .equip-meta-below{ 
+    margin-top: 0 !important; 
+    padding-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  #rsv-rows .equip-left {
+    gap: 0 !important;
+    row-gap: 0 !important;
+    column-gap: 0 !important;
+  }
+  #rsv-rows .equip-card {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  #rsv-rows .equip-thumb {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
 
 /* Equipment status badges - now as overlays on the image */
 .equip-status {

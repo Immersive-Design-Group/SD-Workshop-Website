@@ -736,10 +736,10 @@
             ${imgSrc ? `<a href="${eq.link || '#'}" target="_blank" rel="noopener noreferrer"><img src="${imgSrc}" alt="${eq.name}"></a>` : ''}
             ${statusBadge}
           </div>
-        </div>
-        <div class="equip-meta-below">
-          <div class="equip-name">${eq.name || ''}</div>
-          <div class="equip-model">${eq.model || ''}</div>
+          <div class="equip-meta-below">
+            <div class="equip-name">${eq.name || ''}</div>
+            <div class="equip-model">${eq.model || ''}</div>
+          </div>
         </div>
       `;
 
