@@ -705,6 +705,14 @@ function deleteBooking(p) {
       return out({ ok: false, error: 'Booking not found.' });
     }
 
+    // Check if the booking is in the past
+    const bookingDateTime = new Date(`${booking.date} ${booking.start}`);
+    const now = new Date();
+    
+    if (bookingDateTime < now) {
+      return out({ ok: false, error: 'Past bookings cannot be deleted.' });
+    }
+
     // Mark booking as cancelled
     sh.getRange(bookingRow + 1, col['Status'] + 1).setValue('CANCELLED');
     sh.getRange(bookingRow + 1, col['Cancelled Date'] + 1).setValue(new Date());

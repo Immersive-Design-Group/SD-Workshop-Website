@@ -449,13 +449,26 @@ async function handleDeleteBooking(body, headers) {
   const pool = getPool();
 
   try {
-    const [rows] = await pool.execute(
-      `SELECT \`id\` FROM \`bookings\`
+    // First check if the booking exists and get its details
+    const [bookingRows] = await pool.execute(
+      `SELECT \`id\`, \`date\`, \`start_time\`, \`email\`, \`otp\`, \`otp_expiry\`, \`status\`
+       FROM \`bookings\`
        WHERE \`id\` = ? AND \`email\` = ? AND \`otp\` = ? AND \`otp_expiry\` > NOW() AND \`status\` = 'CONFIRMED'`,
       [id, email, otp]
     );
-    if (rows.length === 0) {
+    
+    if (bookingRows.length === 0) {
       return err(headers, 'Invalid or expired OTP', 400);
+    }
+
+    const booking = bookingRows[0];
+    
+    // Check if the booking is in the past
+    const bookingDateTime = new Date(`${booking.date} ${booking.start_time}`);
+    const now = new Date();
+    
+    if (bookingDateTime < now) {
+      return err(headers, 'Past bookings cannot be deleted', 400);
     }
 
     await pool.execute(

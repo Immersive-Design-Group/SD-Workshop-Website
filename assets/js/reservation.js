@@ -330,6 +330,10 @@
     updateSelectionCounter();
     window.addEventListener('mouseup', endSelectionGlobally, true);
     window.addEventListener('blur', endSelectionGlobally, true);
+    
+    // Add global touch event listeners for mobile devices
+    window.addEventListener('touchend', endSelectionGlobally, true);
+    window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
   }
 
   function setupEmailValidation() {
@@ -993,6 +997,121 @@
             userActionInProgress = false;
             lastSlotInteractionTime = Date.now();
           });
+
+          // Add touch event handlers for mobile devices
+          cell.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            
+            // Prevent selection if equipment is broken
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+              return;
+            }
+            
+            // Record touch start time and position for interaction mode detection
+            mouseDownTime = Date.now();
+            mouseDownPosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            
+            console.log('Touch start on slot', i, 'for equipment', eq.name);
+            
+            // Start selection process
+            startSelection(e, eq, i);
+          }, { passive: false });
+
+          cell.addEventListener('touchmove', (e) => {
+            if (!isSelecting) return;
+      
+      e.preventDefault();
+            
+            // Check if this is actually a drag operation
+            const timeSinceTouchStart = Date.now() - mouseDownTime;
+            const touchMovement = Math.sqrt(
+              Math.pow(e.touches[0].clientX - mouseDownPosition.x, 2) + 
+              Math.pow(e.touches[0].clientY - mouseDownPosition.y, 2)
+            );
+            
+            // If enough time has passed or touch has moved significantly, treat as drag
+            // Use more sensitive thresholds for mobile devices
+            if (timeSinceTouchStart > 50 || touchMovement > 3) {
+              isDragging = true;
+              interactionMode = 'drag';
+              updateInteractionModeIndicator();
+            }
+            
+            if (isDragging) {
+              // Prevent selection if equipment is broken
+              if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+                return;
+              }
+              
+              // Clear any pending modal opening during drag
+              if (modalOpenTimeout) {
+                clearTimeout(modalOpenTimeout);
+                modalOpenTimeout = null;
+              }
+              
+              updateSelection(e, eq, i);
+              
+              // Update interaction tracking
+              lastSlotInteractionTime = Date.now();
+              userActionInProgress = true;
+      }
+    }, { passive: false });
+
+          cell.addEventListener('touchend', (e) => {
+      e.preventDefault();
+            
+            // Prevent selection if equipment is broken
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+              return;
+            }
+            
+            // Clear any pending modal opening for this touch
+            if (modalOpenTimeout) {
+              clearTimeout(modalOpenTimeout);
+              modalOpenTimeout = null;
+            }
+            
+            // Check if this was a tap (not a drag) based on time and movement
+            const tapDuration = Date.now() - mouseDownTime;
+            const touchMovement = Math.sqrt(
+              Math.pow(e.changedTouches[0].clientX - mouseDownPosition.x, 2) + 
+              Math.pow(e.changedTouches[0].clientY - mouseDownPosition.y, 2)
+            );
+            
+            // If it was a quick tap with minimal movement, treat as single slot selection
+            // Use more sensitive thresholds for mobile devices
+            if (tapDuration < 300 && touchMovement < 8 && !isDragging) {
+              // Set interaction mode to click
+              interactionMode = 'click';
+              updateInteractionModeIndicator();
+              
+              // Clear any existing selection for single slot mode
+              if (selectedSlots.size > 0) {
+                clearSelection();
+              }
+              
+              if (selectedSlots.has(i)) {
+                // User tapped on already selected slot - deselect it
+                removeSlotFromSelection(eq, i);
+              } else {
+                // User tapped on unselected slot - select it
+                addSlotToSelection(eq, i);
+                
+                // For single slot selections, open modal immediately
+                console.log('Single slot selected via touch, opening modal');
+                setTimeout(() => {
+                  if (selectedSlots.size === 1 && currentEquipment) {
+                    openModalWithSelectedSlots(currentEquipment);
+                  }
+                }, 100); // Quick modal opening for single slot
+              }
+            }
+            
+            // Update interaction tracking
+            lastSlotInteractionTime = Date.now();
+            userActionInProgress = true;
+          }, { passive: false });
         }
         
         // Only append cell if it hasn't been appended yet (for broken equipment)
@@ -1004,262 +1123,15 @@
       viewport.appendChild(strip);
       row.appendChild(viewport);
       
-      // Add horizontal scroll functionality to the row viewport
-      setupRowViewportScroll(viewport);
+      // Horizontal scroll functionality removed - using arrow navigation only
       
       rowsRoot.appendChild(row);
     });
   }
 
-  function setupRowViewportScroll(viewport) {
-    let isDragging = false;
-    let startX = 0;
-    let scrollLeft = 0;
+  // setupRowViewportScroll function removed - drag scrolling disabled
 
-    // Get all viewports for synchronized scrolling
-    const getAllViewports = () => {
-      const headerViewport = document.getElementById('rsv-header-viewport');
-      const rowViewports = Array.from(document.querySelectorAll('#rsv-rows .row-viewport'));
-      return [headerViewport, ...rowViewports].filter(v => v);
-    };
-
-    // Mouse events for row viewports
-    viewport.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      startX = e.pageX - viewport.offsetLeft;
-      scrollLeft = viewport.scrollLeft;
-      
-      // Set cursor for all viewports
-      getAllViewports().forEach(v => {
-        v.style.cursor = 'grabbing';
-        v.style.userSelect = 'none';
-      });
-      
-      e.preventDefault();
-    });
-
-    viewport.addEventListener('mouseleave', () => {
-      isDragging = false;
-      getAllViewports().forEach(v => {
-        v.style.cursor = 'grab';
-        v.style.userSelect = '';
-      });
-    });
-
-    viewport.addEventListener('mouseup', () => {
-      isDragging = false;
-      getAllViewports().forEach(v => {
-        v.style.cursor = 'grab';
-        v.style.userSelect = '';
-      });
-    });
-
-    viewport.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const x = e.pageX - viewport.offsetLeft;
-      const walk = (x - startX) * 2;
-      const newScrollLeft = scrollLeft - walk;
-      
-      // Scroll all viewports together
-      getAllViewports().forEach(v => {
-        v.scrollLeft = newScrollLeft;
-      });
-    });
-
-    // Touch events for row viewports
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    viewport.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    viewport.addEventListener('touchmove', (e) => {
-      if (!e.touches[0]) return;
-      
-      const touchX = e.touches[0].clientX;
-      const touchY = e.touches[0].clientY;
-      const deltaX = touchStartX - touchX;
-      const deltaY = touchStartY - touchY;
-      
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Scroll all viewports together
-        getAllViewports().forEach(v => {
-          v.scrollLeft += deltaX;
-        });
-        touchStartX = touchX;
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    // Add grab cursor style
-    viewport.style.cursor = 'grab';
-    viewport.style.userSelect = 'none';
-  }
-
-  function setupHorizontalScroll() {
-    let isDragging = false;
-    let startX = 0;
-    let scrollLeft = 0;
-    let velocity = 0;
-    let lastTime = 0;
-    let lastX = 0;
-    let animationId = null;
-
-    // Get all viewports for synchronized scrolling
-    const getAllViewports = () => {
-      const headerViewport = document.getElementById('rsv-header-viewport');
-      const rowViewports = Array.from(document.querySelectorAll('#rsv-rows .row-viewport'));
-      return [headerViewport, ...rowViewports].filter(v => v);
-    };
-
-    // Mouse events
-    headerViewport.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      startX = e.pageX - headerViewport.offsetLeft;
-      scrollLeft = headerViewport.scrollLeft;
-      
-      // Set cursor for all viewports
-      getAllViewports().forEach(v => {
-        v.style.cursor = 'grabbing';
-        v.style.userSelect = 'none';
-      });
-      
-      e.preventDefault();
-    });
-
-    headerViewport.addEventListener('mouseleave', () => {
-      isDragging = false;
-      getAllViewports().forEach(v => {
-        v.style.cursor = 'grab';
-        v.style.userSelect = '';
-      });
-    });
-
-    headerViewport.addEventListener('mouseup', () => {
-      isDragging = false;
-      getAllViewports().forEach(v => {
-        v.style.cursor = 'grab';
-        v.style.userSelect = '';
-      });
-    });
-
-    headerViewport.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const x = e.pageX - headerViewport.offsetLeft;
-      const walk = (x - startX) * 2; // Multiply for faster scrolling
-      const newScrollLeft = scrollLeft - walk;
-      
-      // Scroll all viewports together
-      getAllViewports().forEach(v => {
-        v.scrollLeft = newScrollLeft;
-      });
-    });
-
-    // Touch events
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let isScrolling = false;
-
-    headerViewport.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      isScrolling = false;
-    }, { passive: true });
-
-    headerViewport.addEventListener('touchmove', (e) => {
-      if (!e.touches[0]) return;
-      
-      const touchX = e.touches[0].clientX;
-      const touchY = e.touches[0].clientY;
-      const deltaX = touchStartX - touchX;
-      const deltaY = touchStartY - touchY;
-      
-      // Determine if this is a horizontal scroll
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        isScrolling = true;
-        
-        // Scroll all viewports together
-        getAllViewports().forEach(v => {
-          v.scrollLeft += deltaX;
-        });
-        
-        touchStartX = touchX;
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    headerViewport.addEventListener('touchend', () => {
-      isScrolling = false;
-    }, { passive: true });
-
-    // Add grab cursor style
-    headerViewport.style.cursor = 'grab';
-    headerViewport.style.userSelect = 'none';
-
-    // Add momentum scrolling
-    function momentumScroll() {
-      if (Math.abs(velocity) < 0.1) {
-        velocity = 0;
-        return;
-      }
-      
-      headerViewport.scrollLeft += velocity;
-      velocity *= 0.95; // Friction
-      
-      animationId = requestAnimationFrame(momentumScroll);
-    }
-
-    // Track velocity for momentum
-    let lastScrollTime = 0;
-    let lastScrollLeft = 0;
-
-    headerViewport.addEventListener('scroll', () => {
-      const now = Date.now();
-      const currentScrollLeft = headerViewport.scrollLeft;
-      
-      if (lastScrollTime > 0) {
-        const deltaTime = now - lastScrollTime;
-        const deltaScroll = currentScrollLeft - lastScrollLeft;
-        velocity = deltaScroll / deltaTime;
-      }
-      
-      lastScrollTime = now;
-      lastScrollLeft = currentScrollLeft;
-    });
-
-    // Add momentum on touch end
-    headerViewport.addEventListener('touchend', () => {
-      if (Math.abs(velocity) > 0.5) {
-        if (animationId) {
-          cancelAnimationFrame(animationId);
-        }
-        momentumScroll();
-      }
-    });
-
-    // Add wheel support for horizontal scrolling
-    headerViewport.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        // Horizontal wheel scroll - scroll all viewports
-        const deltaX = e.deltaX;
-        getAllViewports().forEach(v => {
-          v.scrollLeft += deltaX;
-        });
-        e.preventDefault();
-      } else if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        // Convert vertical wheel to horizontal scroll - scroll all viewports
-        const deltaY = e.deltaY;
-        getAllViewports().forEach(v => {
-          v.scrollLeft += deltaY;
-        });
-        e.preventDefault();
-      }
-    }, { passive: false });
-  }
+  // setupHorizontalScroll function removed - drag scrolling disabled
 
   function setupSync() {
     const vpRows = () => Array.from(document.querySelectorAll('#rsv-rows .row-viewport'));
@@ -1293,8 +1165,7 @@
       headerViewport.scrollBy({ left: step, behavior: 'smooth' });
     });
 
-    // Add horizontal scroll functionality with mouse drag and touch support
-    setupHorizontalScroll();
+    // Horizontal drag scroll functionality removed - using arrow navigation only
   }
 
   /* ===== Multi-Slot Selection Functions ===== */
@@ -1393,8 +1264,67 @@
     // Modal will open in endSelectionGlobally() after drag completes
   }
 
+  function handleGlobalTouchMove(e) {
+    if (!isSelecting || !currentEquipment) return;
+    
+    e.preventDefault();
+    
+    // Find the slot element under the touch point
+    const touch = e.touches[0];
+    const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    if (elementUnderTouch && elementUnderTouch.classList.contains('slot')) {
+      console.log('Global touch move over slot:', elementUnderTouch.dataset.slotIndex);
+      // Find the slot index from the element
+      const slotIndex = parseInt(elementUnderTouch.dataset.slotIndex);
+      if (!isNaN(slotIndex)) {
+        // Check if this is actually a drag operation
+        const timeSinceTouchStart = Date.now() - mouseDownTime;
+        const touchMovement = Math.sqrt(
+          Math.pow(touch.clientX - mouseDownPosition.x, 2) + 
+          Math.pow(touch.clientY - mouseDownPosition.y, 2)
+        );
+        
+        // If enough time has passed or touch has moved significantly, treat as drag
+        // Use more sensitive thresholds for mobile devices
+        if (timeSinceTouchStart > 50 || touchMovement > 3) {
+          isDragging = true;
+          interactionMode = 'drag';
+          updateInteractionModeIndicator();
+          console.log('Touch drag detected, isDragging set to true');
+        }
+        
+        if (isDragging) {
+          console.log('Global touch move - isDragging is true, updating selection for slot', slotIndex);
+          
+          // Prevent selection if equipment is broken
+          if (currentEquipment.status === 'broken' || currentEquipment.status === 'maintenance' || currentEquipment.status === 'out_of_service') {
+            return;
+          }
+          
+          // Clear any pending modal opening during drag
+          if (modalOpenTimeout) {
+            clearTimeout(modalOpenTimeout);
+            modalOpenTimeout = null;
+          }
+          
+          updateSelection(e, currentEquipment, slotIndex);
+          
+          // Update interaction tracking
+          lastSlotInteractionTime = Date.now();
+          userActionInProgress = true;
+        }
+      }
+    }
+  }
+
   function endSelectionGlobally() {
     if (isSelecting) {
+      // Store drag state before resetting it
+      const wasDragging = isDragging;
+      
+      console.log('endSelectionGlobally called - wasDragging:', wasDragging, 'selectedSlots.size:', selectedSlots.size);
+      
       isSelecting = false;
       document.body.style.userSelect = '';
       userActionInProgress = false;
@@ -1404,9 +1334,9 @@
         enforceSelectionLimit();
       }
       
-      // Only open modal for drag operations (multiple slot selection)
+      // Open modal for multiple slot selections (either drag or touch)
       // Single slot selections are handled in the click event
-      if (isDragging && selectedSlots.size > 0 && currentEquipment && 
+      if (selectedSlots.size > 1 && currentEquipment && 
           el('rsv-modal').getAttribute('aria-hidden') === 'true') {
         
         // Clear any existing timeout
@@ -1414,13 +1344,14 @@
           clearTimeout(modalOpenTimeout);
         }
         
-        // Open modal for drag operations (multiple slots)
+        // Open modal for multiple slot selections
         modalOpenTimeout = setTimeout(() => {
-          if (selectedSlots.size > 0 && currentEquipment) {
+          if (selectedSlots.size > 1 && currentEquipment) {
+            console.log('Opening modal for multiple slot selection with', selectedSlots.size, 'slots');
             openModalWithSelectedSlots(currentEquipment);
             modalOpenTimeout = null;
           }
-        }, 200); // Moderate delay for drag operations
+        }, 200); // Moderate delay for multiple slot operations
       }
       
       // Small delay to distinguish between click and drag
@@ -1807,9 +1738,78 @@
   }
 
   function showOTPVerification() {
+    console.log('showOTPVerification called with currentBooking:', currentBooking);
+    console.log('selectedDate:', selectedDate);
+    console.log('timeline:', timeline);
+    
+    // Check if the booking is in the past
+    if (currentBooking && isBookingInPast(currentBooking)) {
+      console.log('Booking is in the past, showing message instead of OTP');
+      showPastBookingMessage();
+      return;
+    }
+    
+    console.log('Booking is not in the past, showing OTP verification');
     el('booking-details-view').style.display = 'none';
     el('otp-verification-view').style.display = 'block';
     el('otp-input-section').style.display = 'none';
+  }
+
+  function isBookingInPast(booking) {
+    console.log('isBookingInPast called with:', booking);
+    console.log('selectedDate:', selectedDate);
+    console.log('booking.startSlot:', booking?.startSlot);
+    
+    if (!booking || !booking.startSlot || selectedDate === null) {
+      console.log('Missing required data, returning false');
+      return false;
+    }
+    
+    // Get the start time from the timeline using the startSlot index
+    const startTime = timeline[booking.startSlot];
+    console.log('startTime from timeline:', startTime);
+    
+    if (!startTime) {
+      console.log('No startTime found, returning false');
+      return false;
+    }
+    
+    // Parse the booking date and time
+    const bookingDateTime = new Date(`${fmtISO(selectedDate)} ${startTime}`);
+    const now = new Date();
+    
+    console.log('bookingDateTime:', bookingDateTime);
+    console.log('now:', now);
+    console.log('isPast:', bookingDateTime < now);
+    
+    return bookingDateTime < now;
+  }
+
+  function showPastBookingMessage() {
+    // Hide the booking details view
+    el('booking-details-view').style.display = 'none';
+    
+    // Create and show the past booking message
+    const pastBookingView = document.createElement('div');
+    pastBookingView.id = 'past-booking-view';
+    pastBookingView.innerHTML = `
+      <div class="past-booking-message">
+        <div class="message-icon">⚠️</div>
+        <h3>Past bookings cannot be deleted</h3>
+        <p>This booking is in the past and cannot be cancelled or modified.</p>
+        <button id="close-past-booking-btn" class="btn-primary">OK</button>
+      </div>
+    `;
+    
+    // Insert the message view into the modal body
+    const modalBody = document.querySelector('#booking-management-modal .modal-body');
+    modalBody.appendChild(pastBookingView);
+    
+    // Add event listener for the close button
+    document.getElementById('close-past-booking-btn').addEventListener('click', () => {
+      pastBookingView.remove();
+      el('booking-details-view').style.display = 'block';
+    });
   }
 
   async function sendOTP() {

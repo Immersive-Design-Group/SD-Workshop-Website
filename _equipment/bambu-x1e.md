@@ -82,7 +82,7 @@ safety:
       en: "During printing, avoid touching the nozzle or platform with your hands (to prevent high-temperature burns). If adjustments are needed, the equipment must be paused first."
     - cn: "更多信息请见:"
       en: "For more information, please see:"
-    - cn: '<a href="https://wiki.bambulab.com/zh/p1" target="_blank">https://wiki.bambulab.com/zh/p1</a>'
-    - cn: '<a href="https://wiki.bambulab.com/zh/x1" target="_blank">https://wiki.bambulab.com/zh/x1</a>'
+    - cn: '<a href="https://wiki.bambulab.com/zh/p1" target="_blank">3D Printer P1S</a>'
+    - cn: '<a href="https://wiki.bambulab.com/zh/x1" target="_blank">3D Printer X1E</a>'
 
 ---
