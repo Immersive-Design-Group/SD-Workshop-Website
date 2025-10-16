@@ -903,7 +903,7 @@ body .reservation-container #rsv-rows .equip-row {
 }
 
 /* name & model sit outside the card, tighter spacing */
-#rsv-rows .equip-meta-below{ text-align:center; margin-top: 0; }
+#rsv-rows .equip-meta-below{ text-align:center; margin-top: 6px; }
 #rsv-rows .equip-name{ font-weight: 600; font-size: 14px; line-height: 1.1; }
 #rsv-rows .equip-model{ font-weight: 600; font-size: 14px; }
 
