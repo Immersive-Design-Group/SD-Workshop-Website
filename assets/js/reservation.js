@@ -2161,22 +2161,37 @@
         };
       }
       
-      // Check if training covers the requested equipment
-      if (equipment && student.equipmenttype !== 'All Equipment') {
-        // Normalize equipment names for comparison
-        const normalizedRequested = equipment.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const normalizedTrained = student.equipmenttype.toLowerCase().replace(/[^a-z0-9]/g, '');
+      // Check for basic safety training (required for all equipment)
+      const hasBasicSafety = student.equipmenttype && 
+        (student.equipmenttype.toLowerCase().includes('all') || 
+         student.equipmenttype.toLowerCase().includes('safety') ||
+         student.equipmenttype.toLowerCase().includes('basic'));
+      
+      if (!hasBasicSafety) {
+        return { 
+          ok: false, 
+          error: 'Basic safety training not completed. Please complete the workshop safety test before booking any equipment.',
+          trainingStatus: 'basic_safety_missing'
+        };
+      }
+      
+      // Check for equipment-specific training (required for 3D printer and laser cutter)
+      const equipmentLower = equipment ? equipment.toLowerCase() : '';
+      const is3DPrinter = equipmentLower.includes('3d') || equipmentLower.includes('printer') || equipmentLower.includes('bambu');
+      const isLaserCutter = equipmentLower.includes('laser') || equipmentLower.includes('cutter') || equipmentLower.includes('speedy');
+      
+      if (is3DPrinter || isLaserCutter) {
+        const hasEquipmentTraining = student.equipmenttype && 
+          (student.equipmenttype.toLowerCase().includes('all') ||
+           (is3DPrinter && student.equipmenttype.toLowerCase().includes('3d')) ||
+           (isLaserCutter && student.equipmenttype.toLowerCase().includes('laser')));
         
-        // Check if the trained equipment type matches the requested equipment
-        const isMatch = normalizedTrained.includes('all') || 
-                       normalizedRequested.includes(normalizedTrained) ||
-                       normalizedTrained.includes(normalizedRequested);
-        
-        if (!isMatch) {
+        if (!hasEquipmentTraining) {
+          const equipmentType = is3DPrinter ? '3D printer' : 'laser cutter';
           return { 
             ok: false, 
-            error: `Training not completed for ${equipment}. Please complete training for this equipment type.`,
-            trainingStatus: 'equipment_not_covered'
+            error: `${equipmentType} specific training not completed. Please complete the ${equipmentType} operation test before booking this equipment.`,
+            trainingStatus: 'equipment_specific_missing'
           };
         }
       }
