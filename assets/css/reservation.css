@@ -593,6 +593,17 @@
   height:var(--rsv-bar-h); border-radius:12px; background:#f8f9fa;
   border:3px solid #6c757d;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: grab;
+  user-select: none;
+  transition: cursor 0.2s ease;
+}
+
+.slots-viewport:active {
+  cursor: grabbing;
+}
+
+.slots-viewport:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 /* Hide horizontal scrollbars but keep programmatic scrolling */
 .slots-viewport, #rsv-rows .row-viewport { scrollbar-width: none; }
@@ -879,7 +890,7 @@ body .reservation-container #rsv-rows .equip-row {
 
 /* image box = the card */
 :root{
-  --rsv-equip-h: 120px;       /* raise to make the image taller (160–200 works great) */
+  --rsv-equip-h: 100px;       /* balanced height for equipment images */
 }
 #rsv-rows .equip-thumb{
   width: 100%;
@@ -893,7 +904,10 @@ body .reservation-container #rsv-rows .equip-row {
 #rsv-rows .equip-thumb img{
   width: 100%;
   height: 100%;
-  object-fit: cover;          /* fills the box; use `contain` if you prefer no crop */
+  object-fit: contain !important;          /* Keep contain to avoid cropping */
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* name & model sit outside the card, tighter spacing */
@@ -1009,6 +1023,13 @@ body .reservation-container #rsv-rows .equip-row {
   background: transparent;   /* ← no background panel */
   border-radius: 0;          /* ← no rounded container */
   box-shadow: none;
+  cursor: grab;
+  user-select: none;
+  transition: cursor 0.2s ease;
+}
+
+#rsv-rows .row-viewport:active {
+  cursor: grabbing;
 }
 #rsv-rows .row-slots{
   display: flex;
@@ -1963,9 +1984,7 @@ datalist {
 .success-view { text-align:center; padding:18px 8px 8px; }
 
 
-/* Equipment images */
-#rsv-rows .equip-thumb { display:flex; align-items:center; justify-content:center; overflow:hidden; }
-#rsv-rows .equip-thumb img { width:100%; height:100%; object-fit: contain; }
+/* Equipment images - remove duplicate rules that were causing conflicts */
 
 /* Global pink line spanning header + all rows */
 .now-line-global { 

@@ -1003,8 +1003,262 @@
 
       viewport.appendChild(strip);
       row.appendChild(viewport);
+      
+      // Add horizontal scroll functionality to the row viewport
+      setupRowViewportScroll(viewport);
+      
       rowsRoot.appendChild(row);
     });
+  }
+
+  function setupRowViewportScroll(viewport) {
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    // Get all viewports for synchronized scrolling
+    const getAllViewports = () => {
+      const headerViewport = document.getElementById('rsv-header-viewport');
+      const rowViewports = Array.from(document.querySelectorAll('#rsv-rows .row-viewport'));
+      return [headerViewport, ...rowViewports].filter(v => v);
+    };
+
+    // Mouse events for row viewports
+    viewport.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.pageX - viewport.offsetLeft;
+      scrollLeft = viewport.scrollLeft;
+      
+      // Set cursor for all viewports
+      getAllViewports().forEach(v => {
+        v.style.cursor = 'grabbing';
+        v.style.userSelect = 'none';
+      });
+      
+      e.preventDefault();
+    });
+
+    viewport.addEventListener('mouseleave', () => {
+      isDragging = false;
+      getAllViewports().forEach(v => {
+        v.style.cursor = 'grab';
+        v.style.userSelect = '';
+      });
+    });
+
+    viewport.addEventListener('mouseup', () => {
+      isDragging = false;
+      getAllViewports().forEach(v => {
+        v.style.cursor = 'grab';
+        v.style.userSelect = '';
+      });
+    });
+
+    viewport.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - viewport.offsetLeft;
+      const walk = (x - startX) * 2;
+      const newScrollLeft = scrollLeft - walk;
+      
+      // Scroll all viewports together
+      getAllViewports().forEach(v => {
+        v.scrollLeft = newScrollLeft;
+      });
+    });
+
+    // Touch events for row viewports
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    viewport.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    viewport.addEventListener('touchmove', (e) => {
+      if (!e.touches[0]) return;
+      
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const deltaX = touchStartX - touchX;
+      const deltaY = touchStartY - touchY;
+      
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Scroll all viewports together
+        getAllViewports().forEach(v => {
+          v.scrollLeft += deltaX;
+        });
+        touchStartX = touchX;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Add grab cursor style
+    viewport.style.cursor = 'grab';
+    viewport.style.userSelect = 'none';
+  }
+
+  function setupHorizontalScroll() {
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let velocity = 0;
+    let lastTime = 0;
+    let lastX = 0;
+    let animationId = null;
+
+    // Get all viewports for synchronized scrolling
+    const getAllViewports = () => {
+      const headerViewport = document.getElementById('rsv-header-viewport');
+      const rowViewports = Array.from(document.querySelectorAll('#rsv-rows .row-viewport'));
+      return [headerViewport, ...rowViewports].filter(v => v);
+    };
+
+    // Mouse events
+    headerViewport.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.pageX - headerViewport.offsetLeft;
+      scrollLeft = headerViewport.scrollLeft;
+      
+      // Set cursor for all viewports
+      getAllViewports().forEach(v => {
+        v.style.cursor = 'grabbing';
+        v.style.userSelect = 'none';
+      });
+      
+      e.preventDefault();
+    });
+
+    headerViewport.addEventListener('mouseleave', () => {
+      isDragging = false;
+      getAllViewports().forEach(v => {
+        v.style.cursor = 'grab';
+        v.style.userSelect = '';
+      });
+    });
+
+    headerViewport.addEventListener('mouseup', () => {
+      isDragging = false;
+      getAllViewports().forEach(v => {
+        v.style.cursor = 'grab';
+        v.style.userSelect = '';
+      });
+    });
+
+    headerViewport.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - headerViewport.offsetLeft;
+      const walk = (x - startX) * 2; // Multiply for faster scrolling
+      const newScrollLeft = scrollLeft - walk;
+      
+      // Scroll all viewports together
+      getAllViewports().forEach(v => {
+        v.scrollLeft = newScrollLeft;
+      });
+    });
+
+    // Touch events
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isScrolling = false;
+
+    headerViewport.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isScrolling = false;
+    }, { passive: true });
+
+    headerViewport.addEventListener('touchmove', (e) => {
+      if (!e.touches[0]) return;
+      
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const deltaX = touchStartX - touchX;
+      const deltaY = touchStartY - touchY;
+      
+      // Determine if this is a horizontal scroll
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        isScrolling = true;
+        
+        // Scroll all viewports together
+        getAllViewports().forEach(v => {
+          v.scrollLeft += deltaX;
+        });
+        
+        touchStartX = touchX;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    headerViewport.addEventListener('touchend', () => {
+      isScrolling = false;
+    }, { passive: true });
+
+    // Add grab cursor style
+    headerViewport.style.cursor = 'grab';
+    headerViewport.style.userSelect = 'none';
+
+    // Add momentum scrolling
+    function momentumScroll() {
+      if (Math.abs(velocity) < 0.1) {
+        velocity = 0;
+        return;
+      }
+      
+      headerViewport.scrollLeft += velocity;
+      velocity *= 0.95; // Friction
+      
+      animationId = requestAnimationFrame(momentumScroll);
+    }
+
+    // Track velocity for momentum
+    let lastScrollTime = 0;
+    let lastScrollLeft = 0;
+
+    headerViewport.addEventListener('scroll', () => {
+      const now = Date.now();
+      const currentScrollLeft = headerViewport.scrollLeft;
+      
+      if (lastScrollTime > 0) {
+        const deltaTime = now - lastScrollTime;
+        const deltaScroll = currentScrollLeft - lastScrollLeft;
+        velocity = deltaScroll / deltaTime;
+      }
+      
+      lastScrollTime = now;
+      lastScrollLeft = currentScrollLeft;
+    });
+
+    // Add momentum on touch end
+    headerViewport.addEventListener('touchend', () => {
+      if (Math.abs(velocity) > 0.5) {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        momentumScroll();
+      }
+    });
+
+    // Add wheel support for horizontal scrolling
+    headerViewport.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        // Horizontal wheel scroll - scroll all viewports
+        const deltaX = e.deltaX;
+        getAllViewports().forEach(v => {
+          v.scrollLeft += deltaX;
+        });
+        e.preventDefault();
+      } else if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        // Convert vertical wheel to horizontal scroll - scroll all viewports
+        const deltaY = e.deltaY;
+        getAllViewports().forEach(v => {
+          v.scrollLeft += deltaY;
+        });
+        e.preventDefault();
+      }
+    }, { passive: false });
   }
 
   function setupSync() {
@@ -1038,6 +1292,9 @@
       const step = getScrollStep();
       headerViewport.scrollBy({ left: step, behavior: 'smooth' });
     });
+
+    // Add horizontal scroll functionality with mouse drag and touch support
+    setupHorizontalScroll();
   }
 
   /* ===== Multi-Slot Selection Functions ===== */
