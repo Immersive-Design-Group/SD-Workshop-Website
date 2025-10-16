@@ -890,7 +890,7 @@ body .reservation-container #rsv-rows .equip-row {
 
 /* image box = the card */
 :root{
-  --rsv-equip-h: 100px;       /* balanced height for equipment images */
+  --rsv-equip-h: 120px;       /* raise to make the image taller (160–200 works great) */
 }
 #rsv-rows .equip-thumb{
   width: 100%;
@@ -904,10 +904,7 @@ body .reservation-container #rsv-rows .equip-row {
 #rsv-rows .equip-thumb img{
   width: 100%;
   height: 100%;
-  object-fit: contain !important;          /* Keep contain to avoid cropping */
-  display: block !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  object-fit: cover;          /* fills the box; use `contain` if you prefer no crop */
 }
 
 /* name & model sit outside the card, tighter spacing */
