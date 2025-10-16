@@ -70,7 +70,7 @@ process:
           cn: "聚焦：确定激光头定位后，开始聚焦调整手动聚焦：将聚焦尺（配件盒内）挂在激光头侧面。缓慢升高加工台面（Z轴），直到聚焦尺刚好自由落下。此时焦距已调准。"
           en: "Focus: After positioning the laser head, begin focus adjustment. Manual Focus: Hang the focus ruler (in the accessory box) on the laser head side. Slowly raise the worktable (Z-axis) until the focus ruler drops freely. The focus is now set."
         - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting4-2.png"
-          cn: "自动聚焦：双手同时按下<span class='red-brace'>加工台面控制按钮</span>，激光头会自动下降，用传感器探测材料表面并设置正确焦距。<br><span class='red-brace'>至关重要：聚焦时一定确保聚焦点在材料上，否则激光头容易损坏</span>"
+          cn: "自动聚焦：双手同时按下<span class='red-brace'>加工台面控制按钮</span>，激光头会自动下降，用传感器探测材料表面并设置正确焦距。若按下按钮后无反应，请稍微移动激光头后再按下按钮。<br><span class='red-brace'>至关重要：聚焦时一定确保聚焦点在材料上，否则激光头容易损坏</span>"
           en: "Auto Focus: Press the <span class='red-brace'>worktable control buttons</span> with both hands simultaneously; the laser head will lower automatically, detect the material surface with sensors, and set the correct focus.<br> <span class='red-brace'>Critical: When focusing, ensure the focal point is on the material, otherwise the laser head can be easily damaged.</span>"
     
     - title_cn: "软件设置与文件传输"
