@@ -2154,6 +2154,21 @@ datalist {
   font-weight: 500;
 }
 
+/* Training error message - position below checkbox */
+#training-error {
+  display: none;
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 8px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+}
+
+#training-error.show {
+  display: block;
+}
+
 .form__error.show {
   display: block;
 }
@@ -2191,7 +2206,7 @@ datalist {
 .email-domain {
   flex: 0 0 200px;
   border-radius: 0 12px 12px 0;
-  border-left: none;
+  border-left: 2px solid #e2e8f0;
 }
 
 .email-username:focus {
@@ -2213,7 +2228,7 @@ datalist {
 .purpose-category {
   flex: 0 0 180px;
   border-radius: 12px 0 0 12px;
-  border-right: none;
+  border-right: 2px solid #e2e8f0;
 }
 
 .purpose-details {
@@ -2324,6 +2339,14 @@ datalist {
   gap: 12px;
   cursor: pointer;
   padding: 8px 0;
+}
+
+/* Training form row - use column layout for error positioning */
+.form__row.form__check {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .checkbox-container input[type="checkbox"] {
