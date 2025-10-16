@@ -44,7 +44,7 @@ title: 首页 HOME
       </p>
 
       <p class="about-en">
-        The Workshop Space is a prototyping space for all students, who can turn ideas into reality using digital/traditional equipment (e.g., 3D printers, laser cutters, machine tools). A pilot tiered management system is implemented, with differentiated measures based on equipment risk levels. Nearly 100 types of media equipment are also available for faculty/students to borrow (upon registration) to support teaching and research. See <span class="highlight-blue"><a href="https://docs.qq.com/doc/DWnJpTmZpbHJtbnNa" target="_blank" rel="noopener noreferrer">Workshop Management Measures</a></span> for details.
+        The Workshop Space is a prototyping space for all students, who can turn ideas into reality using digital/traditional equipment (e.g., 3D printers, laser cutters, machine tools). A pilot tiered management system is implemented, with differentiated measures based on equipment risk levels. Nearly 100 types of media equipment are also available for faculty/students to borrow (upon registration) to support teaching and research. See <span class="highlight-blue"><a href="https://docs.qq.com/doc/DWkRza0JYTXlNSWZr" target="_blank" rel="noopener noreferrer">SD_Workshop Management Measures</a></span> for details.
       </p>
     </div>
   </div>

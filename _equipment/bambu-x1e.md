@@ -24,8 +24,8 @@ purpose: 造型 Modeling
 risk_level: Medium
 risk_level_cn: 中
 risk_color: orange
-requirements_cn: 通过《<span class="test-name">实验室安全</span>》及《<span class="test-name">3D打印机使用</span>》测试后预约使用。
-requirements_en: Reservation and use require passing both '<span class="test-name">Laboratory Safety test</span>' and '<span class="test-name">3D Printer Operation test</span>'.
+requirements_cn: 通过《<span class="test-name"><a href="https://wj.qq.com/s2/24256008/b1f0/" target="_blank" rel="noopener noreferrer">实验室安全</a></span>》及《<span class="test-name"><a href="https://wj.qq.com/s2/24292904/08qh/" target="_blank" rel="noopener noreferrer">3D打印机使用</a></span>》测试后预约使用。
+requirements_en: Reservation and use require passing both '<span class="test-name"><a href="https://wj.qq.com/s2/24345990/8ktr/" target="_blank" rel="noopener noreferrer">Laboratory Safety test</a></span>' and '<span class="test-name"><a href="https://wj.qq.com/s2/24354646/wx6o/" target="_blank" rel="noopener noreferrer">3D Printer Operation test</a></span>'.
 
 process:
   title_en: "Soldering Process Guide"
