@@ -1727,6 +1727,13 @@ a {
 }
 
 /* Responsive styles for team section */
+@media (min-width: 770px) and (max-width: 1600px) {
+  .team-members {
+    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
   .team-ghost {
     font-size: 2.5rem;
@@ -1787,7 +1794,7 @@ a {
   
   .team-section {
     padding: 1.5rem 5% 2rem;
-  }
+  }image.png
   
   .team-row {
     margin-bottom: 1.25rem;

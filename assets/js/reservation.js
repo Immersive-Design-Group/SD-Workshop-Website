@@ -3077,7 +3077,7 @@
             </div>
           </div>
           <div class="booking-actions">
-            <button id="change-appointment-btn" class="btn-secondary">CHANGE APPOINTMENT</button>
+            <button id="change-appointment-btn" class="btn-secondary">DELETE APPOINTMENT</button>
             <button id="admin-delete-btn" class="btn-secondary" style="margin-left: 10px;">ADMIN DELETE</button>
           </div>
         </div>
