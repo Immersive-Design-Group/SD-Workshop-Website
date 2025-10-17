@@ -2606,8 +2606,7 @@
       
       // Find student in training records
       const student = trainingData.find(record => 
-        record.sid === sid && 
-        record.name.toLowerCase().trim() === name.toLowerCase().trim()
+        record.sid === sid
       );
       
       if (!student) {
