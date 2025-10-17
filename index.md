@@ -104,8 +104,8 @@ title: 首页 HOME
         <div class="step-3-section working-day">
           <div class="section-label">工作日<br>Working day</div>
           <h4 class="section-title">线上预约<br>ONLINE BOOKING</h4>
-          <p class="section-description-cn">最早可以提<span class="highlight-blue">前三天</span>预约设备,预约成功后,系统会发送邮件通知。若计划有变,请依照邮件指引在网站端及时取消预约,以免影响他人使用。</p>
-          <p class="section-description-en">Equipment reservations can be made up to <span class="highlight-blue">three days</span> in advance. You'll get a confirmation email once reserved. If plans change, cancel on the website quickly as per email guide to not disrupt others' use.</p>
+          <p class="section-description-cn">线上预约设备成功后,系统会发送邮件通知。若计划有变,请依照邮件指引在网站端及时取消预约,以免影响他人使用。</p>
+          <p class="section-description-en">After the online reservation of the equipment is successful, You'll get a confirmation email once reserved. If plans change, cancel on the website quickly as per email guide to not disrupt others' use.</p>
         </div>
         <div class="step-3-divider"></div>
         <div class="step-3-section non-working-day">
