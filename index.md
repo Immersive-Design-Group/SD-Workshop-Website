@@ -83,8 +83,8 @@ title: 首页 HOME
     <div class="how-to-step step-1">
       <div class="step-number">1</div>
       <h3 class="step-title">签署承诺书<br>SIGN PLEDGE</h3>
-      <p class="step-description-cn">所有使用工坊的同学,均需签署<span class="highlight-blue">《工坊安全使用承诺书</span>》,打印后提交至工坊邮箱存档。</p>
-      <p class="step-description-en">All Students must sign <span class="highlight-blue">Workshop Safety Pledge</span> before using the workshop. After signing, scan the document and send it to the workshop email for filing.</p>
+      <p class="step-description-cn">所有使用工坊的同学,均需签署<span class="highlight-blue"><a href="https://www.jianguoyun.com/p/DerDhqoQvrv8DBigo5QGIAA" target="_blank" rel="noopener noreferrer">《工坊安全使用承诺书》</a></span>,打印后提交至工坊邮箱存档。</p>
+      <p class="step-description-en">All Students must sign <span class="highlight-blue"><a href="https://www.jianguoyun.com/p/DerDhqoQvrv8DBigo5QGIAA" target="_blank" rel="noopener noreferrer">Workshop Safety Pledge</a></span> before using the workshop. After signing, scan the document and send it to the workshop email for filing.</p>
     </div>
     <!-- Arrow 1-2 -->
     <div class="step-arrow arrow-1-2">→</div>
@@ -92,9 +92,9 @@ title: 首页 HOME
     <div class="how-to-step step-2">
       <div class="step-number">2</div>
       <h3 class="step-title">完成测试<br>PASS TEST</h3>
-      <p class="step-description-cn"><br>使用工坊进行电路设计的同学,仅需完成<span class="highlight-blue">《工坊使用考核规范》</span>;若需使用3D打印机或激光切割机,则须通过对应设备的测试。<br><span class="highlight-blue">《3D打印机使用规范考核》</span><br><span class="highlight-blue">《激光切割机使用规范考核》</span></p>
-      <p class="step-description-en">To use the workshop, everyone must complete 'Workshop Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue">equipment-specific tests</span> (see the equipment introduction page for test access).<br><span class="highlight-blue">《3D Printer Operation》</span><br><span class="highlight-blue">《Laser Cutter Operation》</span>
-      </p>
+      <p class="step-description-cn"><br>使用工坊进行电路设计的同学,仅需完成<span class="highlight-blue"><a href="https://wj.qq.com/s2/24256008/b1f0/?wj_lang=zhs" target="_blank" rel="noopener noreferrer">《工坊使用考核规范》</a></span>;若需使用3D打印机或激光切割机,则须通过对应设备的测试。<br><span class="highlight-blue"><a href="https://wj.qq.com/s2/24292904/08qh/?wj_lang=zhs" target="_blank" rel="noopener noreferrer">《3D打印机使用规范考核》</a></span><br><span class="highlight-blue"><a href="https://wj.qq.com/s2/24232433/10c6/?wj_lang=zhs" target="_blank" rel="noopener noreferrer">《激光切割机使用规范考核》</a></span></p>
+      <!-- <p class="step-description-en">To use the workshop, everyone must complete 'Workshop Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue"><a href="https://wj.qq.com/s2/24256008/b1f0/?wj_lang=zhs" target="_blank" rel="noopener noreferrer">equipment-specific tests</a></span> (see the equipment introduction page for test access).<br><span class="highlight-blue"><a href="https://wj.qq.com/s2/24354646/wx6o/?wj_lang=zhs" target="_blank" rel="noopener noreferrer">《3D Printer Operation》</a></span><br><span class="highlight-blue"><span class="highlight-blue"><a href="https://wj.qq.com/s2/24354815/u3ud/?wj_lang=zhs" target="_blank" rel="noopener noreferrer">《Laser Cutter Operation》</a></span>
+      </p> -->
     </div>
     <!-- Arrow 2-3 -->
     <div class="step-arrow arrow-2-3">→</div>
