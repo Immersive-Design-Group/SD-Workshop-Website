@@ -35,7 +35,7 @@ title: 首页 HOME
   
   <div class="about-layout">
     <div class="about-image">
-      <img src="{{ '/assets/images/' | relative_url }}" alt="" class="about-photo">
+      <img src="{{ '/assets/images/workshop2.jpg' | relative_url }}" alt="" class="about-photo">
     </div>
     
     <div class="about-text">
