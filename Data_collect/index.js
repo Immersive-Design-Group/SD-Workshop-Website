@@ -177,6 +177,26 @@ exports.handler = async (rawEvent, context) => {
 
   try {
     // 路由
+    // Root path handler
+    if (path === '/' && method === 'GET') {
+      return ok(headersBase, { 
+        message: 'SUSTech SD Workshop API', 
+        version: '1.0.0',
+        endpoints: [
+          'GET /api/ping - Health check',
+          'GET /api/health - Database health',
+          'GET /api/bookings - Get confirmed bookings',
+          'GET /api/all-bookings - Get all bookings (including cancelled)',
+          'GET /api/admin-deleted - Get admin-deleted bookings only',
+          'POST /api/bookings - Create booking',
+          'GET /api/send-otp - Send OTP',
+          'POST /api/delete-booking - Delete booking (admin or user)',
+          'POST /api/debug-admin - Debug admin deletion',
+          'GET /api/test-admin - Admin deletion test info'
+        ]
+      });
+    }
+
     if (path === '/api/ping' && method === 'GET') {
       return ok(headersBase, { ok: true });
     }
@@ -212,6 +232,35 @@ exports.handler = async (rawEvent, context) => {
 
     if (path === '/api/delete-booking' && method === 'POST') {
       return await handleDeleteBooking(body, headersBase);
+    }
+
+    // Test endpoint for admin deletion
+    if (path === '/api/test-admin' && method === 'GET') {
+      return ok(headersBase, { 
+        message: 'Admin deletion test endpoint',
+        adminPassword: 'admin2024',
+        testData: {
+          id: 'test-booking-id',
+          admin: true,
+          password: 'admin2024'
+        },
+        note: 'Use POST /api/delete-booking with the testData structure'
+      });
+    }
+
+    // Check all bookings including cancelled ones
+    if (path === '/api/all-bookings' && method === 'GET') {
+      return await handleAllBookings(event, headersBase);
+    }
+
+    // Check admin-deleted bookings only
+    if (path === '/api/admin-deleted' && method === 'GET') {
+      return await handleAdminDeletedBookings(event, headersBase);
+    }
+
+    // Debug endpoint to test admin deletion
+    if (path === '/api/debug-admin' && method === 'POST') {
+      return await handleDebugAdmin(body, headersBase);
     }
 
     return err(headersBase, 'Not Found', 404, { debug: { path, method } });
@@ -288,6 +337,175 @@ async function handleGetBookings(event, headers) {
   } catch (e) {
     console.error('Get bookings error:', e && e.message);
     return err(headers, 'Query failed', 500, { detail: String(e && e.message) });
+  }
+}
+
+// GET /api/all-bookings?from=YYYY-MM-DD&to=YYYY-MM-DD (includes cancelled bookings)
+async function handleAllBookings(event, headers) {
+  const qs = event.queryStringParameters || {};
+  const from = qs.from;
+  const to = qs.to;
+
+  if (!from || !to) {
+    return err(headers, 'Missing from and to parameters', 400);
+  }
+
+  const pool = getPool();
+  try {
+    console.log(`Querying ALL bookings (including cancelled) from ${from} to ${to}`);
+    const [rows] = await pool.execute(
+      `SELECT
+          \`id\`,
+          \`booking_id\`,
+          \`name\`,
+          \`email\`,
+          \`purpose\`,
+          \`device\`,
+          \`model\`,
+          DATE_FORMAT(\`date\`, '%Y-%m-%d') as \`date\`,
+          \`start_time\`,
+          \`end_time\`,
+          \`total_slots\`,
+          \`total_hours\`,
+          \`status\`,
+          \`created_at\`,
+          \`cancelled_at\`,
+          \`cancellation_reason\`
+       FROM \`bookings\`
+       WHERE DATE(\`date\`) BETWEEN ? AND ?
+       ORDER BY \`date\`, \`start_time\``,
+      [from, to]
+    );
+    console.log(`Found ${rows.length} total bookings (including cancelled):`, rows);
+    return ok(headers, { 
+      message: 'All bookings including cancelled and admin-deleted ones',
+      bookings: rows,
+      summary: {
+        total: rows.length,
+        confirmed: rows.filter(r => r.status === 'CONFIRMED').length,
+        cancelled: rows.filter(r => r.status === 'CANCELLED').length,
+        deletedByAdmin: rows.filter(r => r.status === 'CANCELLED' && r.cancellation_reason === 'Admin deletion').length
+      }
+    }, 200);
+  } catch (e) {
+    console.error('Get all bookings error:', e && e.message);
+    return err(headers, 'Query failed', 500, { detail: String(e && e.message) });
+  }
+}
+
+// GET /api/admin-deleted?from=YYYY-MM-DD&to=YYYY-MM-DD (only admin-deleted bookings)
+async function handleAdminDeletedBookings(event, headers) {
+  const qs = event.queryStringParameters || {};
+  const from = qs.from;
+  const to = qs.to;
+
+  if (!from || !to) {
+    return err(headers, 'Missing from and to parameters', 400);
+  }
+
+  const pool = getPool();
+  try {
+    console.log(`Querying admin-deleted bookings from ${from} to ${to}`);
+    const [rows] = await pool.execute(
+      `SELECT
+          \`id\`,
+          \`booking_id\`,
+          \`name\`,
+          \`email\`,
+          \`purpose\`,
+          \`device\`,
+          \`model\`,
+          DATE_FORMAT(\`date\`, '%Y-%m-%d') as \`date\`,
+          \`start_time\`,
+          \`end_time\`,
+          \`total_slots\`,
+          \`total_hours\`,
+          \`status\`,
+          \`created_at\`,
+          \`cancelled_at\`,
+          \`cancellation_reason\`
+       FROM \`bookings\`
+       WHERE DATE(\`date\`) BETWEEN ? AND ?
+         AND \`status\` = 'CANCELLED'
+         AND \`cancellation_reason\` = 'Admin deletion'
+       ORDER BY \`cancelled_at\` DESC`,
+      [from, to]
+    );
+    console.log(`Found ${rows.length} admin-deleted bookings:`, rows);
+    return ok(headers, { 
+      message: 'Admin-deleted bookings',
+      bookings: rows,
+      count: rows.length
+    }, 200);
+  } catch (e) {
+    console.error('Get admin-deleted bookings error:', e && e.message);
+    return err(headers, 'Query failed', 500, { detail: String(e && e.message) });
+  }
+}
+
+// POST /api/debug-admin - Debug admin deletion
+async function handleDebugAdmin(body, headers) {
+  console.log('Debug admin deletion called with body:', JSON.stringify(body));
+  
+  const { id, password } = body;
+  const ADMIN_PASSWORD = 'admin2024';
+  
+  if (!id || !password) {
+    return err(headers, 'Missing id or password', 400);
+  }
+  
+  if (password !== ADMIN_PASSWORD) {
+    return err(headers, 'Invalid admin password', 400);
+  }
+  
+  const pool = getPool();
+  
+  try {
+    // Check if booking exists
+    const [bookingRows] = await pool.execute(
+      `SELECT \`id\`, \`date\`, \`start_time\`, \`email\`, \`status\`, \`name\`, \`device\`, \`end_time\`
+       FROM \`bookings\`
+       WHERE \`id\` = ?`,
+      [id]
+    );
+    
+    console.log('Debug: Found bookings:', bookingRows.length);
+    
+    if (bookingRows.length === 0) {
+      return ok(headers, { 
+        success: false, 
+        message: 'Booking not found',
+        searchedId: id,
+        totalBookings: 0
+      }, 200);
+    }
+    
+    const booking = bookingRows[0];
+    
+    return ok(headers, { 
+      success: true, 
+      message: 'Booking found',
+      booking: {
+        id: booking.id,
+        name: booking.name,
+        email: booking.email,
+        device: booking.device,
+        date: booking.date,
+        start_time: booking.start_time,
+        end_time: booking.end_time,
+        status: booking.status
+      },
+      debug: {
+        searchedId: id,
+        foundBookings: bookingRows.length,
+        adminPassword: 'admin2024',
+        canDelete: true
+      }
+    }, 200);
+    
+  } catch (e) {
+    console.error('Debug admin error:', e);
+    return err(headers, 'Debug failed', 500, { error: e.message });
   }
 }
 
@@ -438,46 +656,186 @@ async function handleSendOTP(event, headers) {
   }
 }
 
-// POST /api/delete-booking { email, id, otp }
+// POST /api/delete-booking { email, id, otp } OR { id, admin, password }
 async function handleDeleteBooking(body, headers) {
-  const { email, id, otp } = body;
+  console.log('handleDeleteBooking called with body:', JSON.stringify(body));
+  
+  const { email, id, otp, admin, password } = body;
+  const isAdmin = admin === true || admin === 'true';
+  const ADMIN_PASSWORD = 'admin2024'; // Change this to your desired password
 
-  if (!email || !id || !otp) {
-    return err(headers, 'Missing required fields', 400);
+  console.log('Delete booking request:', { 
+    isAdmin, 
+    id, 
+    email: email ? 'provided' : 'not provided',
+    password: password ? 'provided' : 'not provided'
+  });
+
+  // Admin deletion - skip OTP and email validation
+  if (isAdmin) {
+    if (!id || !password) {
+      console.log('Admin deletion failed: Missing required fields', { id, password: !!password });
+      return err(headers, 'Missing required fields for admin deletion', 400);
+    }
+    if (password !== ADMIN_PASSWORD) {
+      console.log('Admin deletion failed: Invalid password', { provided: password, expected: ADMIN_PASSWORD });
+      return err(headers, 'Invalid admin password', 400);
+    }
+    console.log('Admin deletion validation passed');
+  } else {
+    // Regular user deletion - require email, booking ID, and OTP
+    if (!email || !id || !otp) {
+      console.log('User deletion failed: Missing required fields', { email: !!email, id, otp: !!otp });
+      return err(headers, 'Missing required fields', 400);
+    }
   }
 
   const pool = getPool();
 
   try {
-    // First check if the booking exists and get its details
-    const [bookingRows] = await pool.execute(
-      `SELECT \`id\`, \`date\`, \`start_time\`, \`email\`, \`otp\`, \`otp_expiry\`, \`status\`
-       FROM \`bookings\`
-       WHERE \`id\` = ? AND \`email\` = ? AND \`otp\` = ? AND \`otp_expiry\` > NOW() AND \`status\` = 'CONFIRMED'`,
-      [id, email, otp]
-    );
+    let bookingRows;
+    
+    if (isAdmin) {
+      // Admin deletion - find booking by ID only (any status)
+      console.log('Admin deletion: Searching for booking with ID:', id);
+      [bookingRows] = await pool.execute(
+        `SELECT \`id\`, \`date\`, \`start_time\`, \`email\`, \`otp\`, \`otp_expiry\`, \`status\`, \`name\`, \`device\`, \`end_time\`
+         FROM \`bookings\`
+         WHERE \`id\` = ?`,
+        [id]
+      );
+      console.log('Admin deletion: Found bookings:', bookingRows.length);
+    } else {
+      // Regular user deletion - validate email and OTP
+      console.log('User deletion: Searching for booking with ID:', id, 'Email:', email);
+      [bookingRows] = await pool.execute(
+        `SELECT \`id\`, \`date\`, \`start_time\`, \`email\`, \`otp\`, \`otp_expiry\`, \`status\`, \`name\`, \`device\`, \`end_time\`
+         FROM \`bookings\`
+         WHERE \`id\` = ? AND \`email\` = ? AND \`otp\` = ? AND \`otp_expiry\` > NOW() AND \`status\` = 'CONFIRMED'`,
+        [id, email, otp]
+      );
+      console.log('User deletion: Found bookings:', bookingRows.length);
+    }
     
     if (bookingRows.length === 0) {
-      return err(headers, 'Invalid or expired OTP', 400);
+      console.log('No bookings found for deletion');
+      return err(headers, isAdmin ? 'Booking not found' : 'Invalid or expired OTP', 400);
     }
 
     const booking = bookingRows[0];
     
-    // Check if the booking is in the past
-    const bookingDateTime = new Date(`${booking.date} ${booking.start_time}`);
-    const now = new Date();
-    
-    if (bookingDateTime < now) {
-      return err(headers, 'Past bookings cannot be deleted', 400);
+    // Check if the booking is in the past (only for regular users, admin can delete past bookings)
+    if (!isAdmin) {
+      const bookingDateTime = new Date(`${booking.date} ${booking.start_time}`);
+      const now = new Date();
+      
+      if (bookingDateTime < now) {
+        return err(headers, 'Past bookings cannot be deleted', 400);
+      }
     }
 
-    await pool.execute(
-      `UPDATE \`bookings\` SET \`status\` = 'CANCELLED', \`cancelled_at\` = NOW()
-       WHERE \`id\` = ? AND \`email\` = ?`,
-      [id, email]
-    );
+    // Update booking status - keep visible but mark as deleted
+    const cancellationReason = isAdmin ? 'Admin deletion' : 'User requested deletion';
+    
+    if (isAdmin) {
+      // Admin deletion - use existing CANCELLED status
+      console.log('Admin deletion: Updating booking status to CANCELLED');
+      try {
+        const [updateResult] = await pool.execute(
+          `UPDATE \`bookings\` SET \`status\` = 'CANCELLED', \`cancelled_at\` = NOW(), \`cancellation_reason\` = ?
+           WHERE \`id\` = ?`,
+          [cancellationReason, id]
+        );
+        console.log('Admin deletion: Update result:', updateResult);
+      } catch (columnError) {
+        // Fallback if cancellation_reason column doesn't exist
+        console.warn('cancellation_reason column not found, using basic update:', columnError.message);
+        const [updateResult] = await pool.execute(
+          `UPDATE \`bookings\` SET \`status\` = 'CANCELLED', \`cancelled_at\` = NOW()
+           WHERE \`id\` = ?`,
+          [id]
+        );
+        console.log('Admin deletion: Fallback update result:', updateResult);
+      }
+    } else {
+      // Regular user deletion - mark as cancelled
+      try {
+        await pool.execute(
+          `UPDATE \`bookings\` SET \`status\` = 'CANCELLED', \`cancelled_at\` = NOW(), \`cancellation_reason\` = ?
+           WHERE \`id\` = ?`,
+          [cancellationReason, id]
+        );
+      } catch (columnError) {
+        // Fallback if cancellation_reason column doesn't exist
+        console.warn('cancellation_reason column not found, using basic update:', columnError.message);
+        await pool.execute(
+          `UPDATE \`bookings\` SET \`status\` = 'CANCELLED', \`cancelled_at\` = NOW()
+           WHERE \`id\` = ?`,
+          [id]
+        );
+      }
+    }
 
-    return ok(headers, { success: true, message: '预约已取消' }, 200);
+    // Send email notifications
+    if (isAdmin) {
+      // Admin deletion - notify user
+      try {
+        await sendEmail({
+          to: booking.email,
+          subject: 'SD-Workshop Booking Cancelled by Admin',
+          html: `
+            <p>Hi ${booking.name},</p>
+            <p>Your booking for <b>${booking.device}</b> on <b>${booking.date}</b> from <b>${booking.start_time}</b> to <b>${booking.end_time}</b> has been cancelled by an administrator.</p>
+            <p>If you have any questions, please contact us.</p>
+            <p>Regards,<br>SD-Workshop Team</p>
+          `
+        });
+        console.log('Admin deletion notification sent to user');
+      } catch (emailError) {
+        console.warn('Failed to send admin deletion notification:', emailError);
+      }
+    } else {
+      // Regular user deletion - notify user
+      try {
+        await sendEmail({
+          to: email,
+          subject: 'SD-Workshop Booking Deleted',
+          html: `
+            <p>Hi ${booking.name},</p>
+            <p>Your booking for <b>${booking.device}</b> on <b>${booking.date}</b> from <b>${booking.start_time}</b> to <b>${booking.end_time}</b> has been cancelled.</p>
+            <p>Regards,<br>SD-Workshop Team</p>
+          `
+        });
+        console.log('User deletion email sent successfully');
+      } catch (emailError) {
+        console.warn('Failed to send user deletion email:', emailError);
+      }
+    }
+
+    // Notify admin about deletion
+    try {
+      const adminSubject = isAdmin ? 
+        `Admin Deletion – ${booking.device} ${booking.date} ${booking.start_time}-${booking.end_time}` :
+        `Booking Cancelled – ${booking.device} ${booking.date} ${booking.start_time}-${booking.end_time}`;
+      
+      const adminBody = isAdmin ?
+        `<p>Admin deleted booking for <b>${booking.device}</b> on ${booking.date} ${booking.start_time}-${booking.end_time}.<br>User: ${booking.name} (${booking.email})<br>ID: <code>${booking.id}</code></p>` :
+        `<p>${booking.name} (${email}) cancelled booking for <b>${booking.device}</b> on ${booking.date} ${booking.start_time}-${booking.end_time}.<br>ID: <code>${booking.id}</code></p>`;
+      
+      await sendEmail({
+        to: 'khowaja.ashfaqali1996@gmail.com', // Admin email
+        subject: adminSubject,
+        html: adminBody
+      });
+      console.log('Admin notification sent successfully');
+    } catch (adminEmailError) {
+      console.warn('Failed to send admin notification:', adminEmailError);
+    }
+
+    return ok(headers, { 
+      success: true, 
+      message: isAdmin ? 'Booking deleted by admin' : '预约已取消' 
+    }, 200);
   } catch (e) {
     console.error('Delete booking error:', e);
     return err(headers, 'Failed to delete booking', 500);

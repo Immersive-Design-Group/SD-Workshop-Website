@@ -617,16 +617,26 @@ function deleteBooking(p) {
     const email = (p.email || '').trim();
     const bookingId = (p.id || '').trim();
     const otp = (p.otp || '').trim();
+    const isAdmin = p.admin === true || p.admin === 'true';
+    const adminPassword = (p.password || '').trim();
 
-    if (!email || !bookingId || !otp) {
-      return out({ ok: false, error: 'Email, booking ID, and OTP are required for deletion.' });
-    }
+    // Admin deletion - skip OTP and email validation
+    if (isAdmin) {
+      if (adminPassword !== 'admin2024') {
+        return out({ ok: false, error: 'Invalid admin password.' });
+      }
+    } else {
+      // Regular user deletion - require email, booking ID, and OTP
+      if (!email || !bookingId || !otp) {
+        return out({ ok: false, error: 'Email, booking ID, and OTP are required for deletion.' });
+      }
 
-    // Validate email domain
-    const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
-    const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
-    if (!isValidEmail) {
-      return out({ ok: false, error: 'Invalid email domain.' });
+      // Validate email domain for regular users
+      const allowedDomains = ['@mail.sustech.edu.cn', '@sustech.edu.cn'];
+      const isValidEmail = allowedDomains.some(domain => email.endsWith(domain));
+      if (!isValidEmail) {
+        return out({ ok: false, error: 'Invalid email domain.' });
+      }
     }
 
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -640,7 +650,7 @@ function deleteBooking(p) {
     const header = data[0];
     const col = Object.fromEntries(header.map((h, i) => [h, i]));
 
-    // Find the booking and verify email matches
+    // Find the booking and verify credentials
     let bookingRow = -1;
     let booking = null;
     
@@ -652,21 +662,27 @@ function deleteBooking(p) {
       const rowOTPExpiry = row[col['OTP Expiry']];
 
       if (rowId === bookingId) {
-        if (rowEmail !== email) {
-          return out({ ok: false, error: 'Email does not match this booking.' });
-        }
-        
         const status = String(row[col['Status']] || '').trim().toLowerCase();
         if (status === 'cancelled') {
           return out({ ok: false, error: 'This booking has already been cancelled.' });
         }
 
-        if (rowOTP !== otp) {
-          return out({ ok: false, error: 'Invalid OTP.' });
-        }
+        // Admin deletion - skip email and OTP validation
+        if (isAdmin) {
+          // Admin can delete any booking, no further validation needed
+        } else {
+          // Regular user deletion - validate email and OTP
+          if (rowEmail !== email) {
+            return out({ ok: false, error: 'Email does not match this booking.' });
+          }
 
-        if (rowOTPExpiry < new Date()) {
-          return out({ ok: false, error: 'OTP has expired.' });
+          if (rowOTP !== otp) {
+            return out({ ok: false, error: 'Invalid OTP.' });
+          }
+
+          if (rowOTPExpiry < new Date()) {
+            return out({ ok: false, error: 'OTP has expired.' });
+          }
         }
         
         bookingRow = r;
@@ -714,42 +730,80 @@ function deleteBooking(p) {
     }
 
     // Mark booking as cancelled
+    const cancellationReason = isAdmin ? 'Admin deletion' : 'User requested deletion';
     sh.getRange(bookingRow + 1, col['Status'] + 1).setValue('CANCELLED');
     sh.getRange(bookingRow + 1, col['Cancelled Date'] + 1).setValue(new Date());
-    sh.getRange(bookingRow + 1, col['Cancellation Reason'] + 1).setValue('User requested deletion');
+    sh.getRange(bookingRow + 1, col['Cancellation Reason'] + 1).setValue(cancellationReason);
 
-    // Email – user (single, clean)
-    try {
-      MailApp.sendEmail({
-        to: email,
-        subject: 'SD-Workshop Booking Deleted',
-        name: 'SD-Workshop Team',
-        body:
+    // Email notifications
+    if (isAdmin) {
+      // Admin deletion - notify user and admin
+      try {
+        MailApp.sendEmail({
+          to: booking.email,
+          subject: 'SD-Workshop Booking Cancelled by Admin',
+          name: 'SD-Workshop Team',
+          body:
+`Hi ${booking.name},
+
+Your booking for ${booking.device} on ${booking.date} from ${booking.start} to ${booking.end} has been cancelled by an administrator.
+
+If you have any questions, please contact us.
+
+Regards,
+SD-Workshop Team`,
+          htmlBody: `
+            <p>Hi ${booking.name},</p>
+            <p>Your booking for <b>${booking.device}</b> on <b>${booking.date}</b> from <b>${booking.start}</b> to <b>${booking.end}</b> has been cancelled by an administrator.</p>
+            <p>If you have any questions, please contact us.</p>
+            <p>Regards,<br>SD-Workshop Team</p>
+          `
+        });
+        console.log('Admin deletion notification sent to user');
+      } catch (emailError) {
+        console.warn('Failed to send admin deletion notification:', emailError);
+      }
+    } else {
+      // Regular user deletion - notify user
+      try {
+        MailApp.sendEmail({
+          to: email,
+          subject: 'SD-Workshop Booking Deleted',
+          name: 'SD-Workshop Team',
+          body:
 `Hi ${booking.name},
 
 Your booking for ${booking.device} on ${booking.date} from ${booking.start} to ${booking.end} has been cancelled.
 
 Regards,
 SD-Workshop Team`,
-        htmlBody: `
-          <p>Hi ${booking.name},</p>
-          <p>Your booking for <b>${booking.device}</b> on <b>${booking.date}</b> from <b>${booking.start}</b> to <b>${booking.end}</b> has been cancelled.</p>
-          <p>Regards,<br>SD-Workshop Team</p>
-        `
-      });
-      console.log('User deletion email sent successfully');
-    } catch (emailError) {
-      console.warn('Failed to send user deletion email:', emailError);
-      // Continue even if email fails
+          htmlBody: `
+            <p>Hi ${booking.name},</p>
+            <p>Your booking for <b>${booking.device}</b> on <b>${booking.date}</b> from <b>${booking.start}</b> to <b>${booking.end}</b> has been cancelled.</p>
+            <p>Regards,<br>SD-Workshop Team</p>
+          `
+        });
+        console.log('User deletion email sent successfully');
+      } catch (emailError) {
+        console.warn('Failed to send user deletion email:', emailError);
+      }
     }
 
-    // Optional: email admin
+    // Email admin about deletion
     if (ADMIN_EMAIL) {
       try {
+        const adminSubject = isAdmin ? 
+          `Admin Deletion – ${booking.device} ${booking.date} ${booking.start}-${booking.end}` :
+          `Booking Cancelled – ${booking.device} ${booking.date} ${booking.start}-${booking.end}`;
+        
+        const adminBody = isAdmin ?
+          `<p>Admin deleted booking for <b>${booking.device}</b> on ${booking.date} ${booking.start}-${booking.end}.<br>User: ${booking.name} (${booking.email})<br>ID: <code>${booking.id}</code></p>` :
+          `<p>${booking.name} (${email}) cancelled booking for <b>${booking.device}</b> on ${booking.date} ${booking.start}-${booking.end}.<br>ID: <code>${booking.id}</code></p>`;
+        
         MailApp.sendEmail({
           to: ADMIN_EMAIL,
-          subject: `Booking Cancelled – ${booking.device} ${booking.date} ${booking.start}-${booking.end}`,
-          htmlBody: `<p>${booking.name} (${email}) cancelled booking for <b>${booking.device}</b> on ${booking.date} ${booking.start}-${booking.end}.<br>ID: <code>${booking.id}</code></p>`
+          subject: adminSubject,
+          htmlBody: adminBody
         });
         console.log('Admin deletion email sent successfully');
       } catch (adminEmailError) {

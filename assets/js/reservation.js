@@ -1725,11 +1725,32 @@
     el('otp-verification-view').style.display = 'none';
     
     // Show modal
-    el('booking-management-modal').setAttribute('aria-hidden', 'false');
+    const modal = el('booking-management-modal');
+    modal.removeAttribute('inert');
+    modal.setAttribute('aria-hidden', 'false');
+    
+    // Focus the close button for accessibility
+    setTimeout(() => {
+      const closeButton = modal.querySelector('#booking-management-close');
+      if (closeButton) {
+        closeButton.focus();
+      }
+    }, 100);
   }
 
   function closeBookingManagementModal() {
-    el('booking-management-modal').setAttribute('aria-hidden', 'true');
+    const modal = el('booking-management-modal');
+    
+    // Use inert attribute instead of aria-hidden for better accessibility
+    modal.setAttribute('inert', 'true');
+    modal.setAttribute('aria-hidden', 'true');
+    
+    // Remove focus from any focused element inside the modal
+    const focusedElement = modal.querySelector(':focus');
+    if (focusedElement) {
+      focusedElement.blur();
+    }
+    
     currentBooking = null;
     
     // Reset form fields
@@ -1738,30 +1759,93 @@
   }
 
   function showOTPVerification() {
+    console.log('=== SHOW OTP VERIFICATION ===');
     console.log('showOTPVerification called with currentBooking:', currentBooking);
     console.log('selectedDate:', selectedDate);
     console.log('timeline:', timeline);
     
-    // Check if the booking is in the past
-    if (currentBooking && isBookingInPast(currentBooking)) {
-      console.log('Booking is in the past, showing message instead of OTP');
-      showPastBookingMessage();
+    // Validate required data before proceeding
+    if (!currentBooking) {
+      console.error('❌ No currentBooking found');
       return;
     }
     
-    console.log('Booking is not in the past, showing OTP verification');
+    if (!selectedDate) {
+      console.error('❌ No selectedDate found');
+      return;
+    }
+    
+    if (!timeline || timeline.length === 0) {
+      console.error('❌ No timeline found');
+      return;
+    }
+    
+    // Check if the booking is in the past
+    try {
+      const isPast = isBookingInPast(currentBooking);
+      console.log('isBookingInPast result:', isPast);
+      
+      if (isPast) {
+        console.log('✅ Booking is in the past, showing message instead of OTP');
+        showPastBookingMessage();
+        return;
+      }
+    } catch (error) {
+      console.error('❌ Error checking if booking is in past:', error);
+      // Fallback: if we can't determine, assume it's not in the past
+      console.log('⚠️ Fallback: proceeding with OTP verification');
+    }
+    
+    // Additional safety check: if we still don't have the required data, wait a bit and try again
+    if (!selectedDate || !timeline || timeline.length === 0) {
+      console.log('⚠️ Data not ready, waiting 100ms and retrying...');
+      setTimeout(() => {
+        console.log('🔄 Retrying past booking check...');
+        if (currentBooking && isBookingInPast(currentBooking)) {
+          console.log('✅ Booking is in the past (retry), showing message instead of OTP');
+          showPastBookingMessage();
+          return;
+        }
+        console.log('❌ Booking is NOT in the past (retry), showing OTP verification');
+        el('booking-details-view').style.display = 'none';
+        el('otp-verification-view').style.display = 'block';
+        el('otp-input-section').style.display = 'none';
+      }, 100);
+      return;
+    }
+    
+    console.log('❌ Booking is NOT in the past, showing OTP verification');
     el('booking-details-view').style.display = 'none';
     el('otp-verification-view').style.display = 'block';
     el('otp-input-section').style.display = 'none';
+    console.log('=== END SHOW OTP VERIFICATION ===');
   }
 
   function isBookingInPast(booking) {
+    console.log('=== PAST BOOKING CHECK ===');
     console.log('isBookingInPast called with:', booking);
     console.log('selectedDate:', selectedDate);
     console.log('booking.startSlot:', booking?.startSlot);
+    console.log('timeline length:', timeline?.length);
     
-    if (!booking || !booking.startSlot || selectedDate === null) {
-      console.log('Missing required data, returning false');
+    // Enhanced validation
+    if (!booking) {
+      console.log('❌ No booking provided, returning false');
+      return false;
+    }
+    
+    if (!booking.startSlot && booking.startSlot !== 0) {
+      console.log('❌ No startSlot in booking, returning false');
+      return false;
+    }
+    
+    if (!selectedDate) {
+      console.log('❌ No selectedDate, returning false');
+      return false;
+    }
+    
+    if (!timeline || timeline.length === 0) {
+      console.log('❌ No timeline available, returning false');
       return false;
     }
     
@@ -1770,17 +1854,33 @@
     console.log('startTime from timeline:', startTime);
     
     if (!startTime) {
-      console.log('No startTime found, returning false');
+      console.log('❌ No startTime found at index', booking.startSlot, 'returning false');
       return false;
     }
     
     // Parse the booking date and time
-    const bookingDateTime = new Date(`${fmtISO(selectedDate)} ${startTime}`);
+    const dateString = fmtISO(selectedDate);
+    const timeString = startTime;
+    const fullDateTimeString = `${dateString} ${timeString}`;
+    const bookingDateTime = new Date(fullDateTimeString);
     const now = new Date();
     
+    // Check if date parsing was successful
+    if (isNaN(bookingDateTime.getTime())) {
+      console.log('❌ Invalid bookingDateTime created, returning false');
+      return false;
+    }
+    
+    console.log('dateString:', dateString);
+    console.log('timeString:', timeString);
+    console.log('fullDateTimeString:', fullDateTimeString);
     console.log('bookingDateTime:', bookingDateTime);
+    console.log('bookingDateTime.getTime():', bookingDateTime.getTime());
     console.log('now:', now);
-    console.log('isPast:', bookingDateTime < now);
+    console.log('now.getTime():', now.getTime());
+    console.log('bookingDateTime < now:', bookingDateTime < now);
+    console.log('bookingDateTime.getTime() < now.getTime():', bookingDateTime.getTime() < now.getTime());
+    console.log('=== END PAST BOOKING CHECK ===');
     
     return bookingDateTime < now;
   }
@@ -1851,6 +1951,114 @@
     } catch (error) {
       console.error('Error sending OTP:', error);
       showError('Failed to send OTP. Please try again.');
+    }
+  }
+
+  // Admin password for booking deletion
+  const ADMIN_PASSWORD = 'admin2024'; // Change this to your desired password
+  
+  // Clear all cached booking data
+  function clearAllBookingCache() {
+    console.log('Clearing all booking cache...');
+    console.log('Current cache keys:', Object.keys(bookingsByDate));
+    
+    // Clear all cached data
+    Object.keys(bookingsByDate).forEach(dateKey => {
+      console.log('Deleting cache for date:', dateKey);
+      delete bookingsByDate[dateKey];
+    });
+    
+    // Force clear the object
+    Object.keys(bookingsByDate).forEach(key => delete bookingsByDate[key]);
+    
+    console.log('All booking cache cleared. Remaining keys:', Object.keys(bookingsByDate));
+  }
+  
+  // Admin deletion function
+  async function promptAdminDeleteBooking() {
+    const password = prompt('Enter admin password to delete booking:');
+    if (password === ADMIN_PASSWORD) {
+      if (confirm('Are you sure you want to delete this booking as admin?')) {
+        await deleteBookingAsAdmin();
+      }
+    } else if (password !== null) { // Only show error if user didn't cancel
+      showError('Invalid admin password');
+    }
+  }
+  
+  // Admin deletion without OTP verification
+  async function deleteBookingAsAdmin() {
+    if (!currentBooking) {
+      showError('No booking selected.');
+      return;
+    }
+
+    try {
+      const body = JSON.stringify({
+        id: currentBooking.id,
+        admin: true,
+        password: ADMIN_PASSWORD
+      });
+
+      const res = await fetch(`${SCRIPT_URL}/api/delete-booking`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+      
+      const data = await res.json();
+      
+      if (res.status === 200 && data.success) {
+        showSuccess('Booking deleted successfully by admin!');
+        closeBookingManagementModal();
+        
+        // Clear cache and refresh the current view to show updated bookings
+        console.log('Admin deletion successful, refreshing cache...');
+        
+        // Clear all cached booking data to ensure fresh data
+        clearAllBookingCache();
+        
+        // Additional cache clearing - force clear any global cache
+        if (typeof bookingsByDate !== 'undefined') {
+          console.log('Clearing bookingsByDate cache:', Object.keys(bookingsByDate));
+          Object.keys(bookingsByDate).forEach(key => {
+            console.log('Deleting cache for:', key);
+            delete bookingsByDate[key];
+          });
+        }
+        
+        // Force reload data from server with cache busting
+        console.log('Force reloading data for date:', selectedDate);
+        await ensureDateLoaded(selectedDate);
+        
+        // Force re-render
+        console.log('Re-rendering rows...');
+        renderRows();
+        
+        // Additional force refresh - trigger a manual refresh
+        setTimeout(() => {
+          console.log('Delayed refresh to ensure update...');
+          renderRows();
+        }, 100);
+        
+        // Final fallback - if still not working, force page refresh
+        setTimeout(() => {
+          console.log('Final check - if booking still visible, forcing page refresh...');
+          // Check if booking is still visible (this is a simple check)
+          const bookingElements = document.querySelectorAll('[data-booking-id]');
+          if (bookingElements.length > 0) {
+            console.log('Booking still visible, forcing page refresh...');
+            window.location.reload();
+          }
+        }, 500);
+        
+        console.log('Cache refreshed, booking should be removed from view');
+      } else {
+        showError(data.error || 'Failed to delete booking.');
+      }
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      showError('Failed to delete booking. Please try again.');
     }
   }
 
@@ -2871,6 +3079,7 @@
           </div>
           <div class="booking-actions">
             <button id="change-appointment-btn" class="btn-secondary">CHANGE APPOINTMENT</button>
+            <button id="admin-delete-btn" class="btn-secondary" style="margin-left: 10px;">ADMIN DELETE</button>
           </div>
         </div>
         
@@ -2904,6 +3113,7 @@
   el('change-appointment-btn').addEventListener('click', showOTPVerification);
   el('send-otp-btn').addEventListener('click', sendOTP);
   el('verify-otp-btn').addEventListener('click', verifyOTPAndDelete);
+  el('admin-delete-btn').addEventListener('click', promptAdminDeleteBooking);
   
   
 
