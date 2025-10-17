@@ -92,8 +92,9 @@ title: 首页 HOME
     <div class="how-to-step step-2">
       <div class="step-number">2</div>
       <h3 class="step-title">完成测试<br>PASS TEST</h3>
-      <p class="step-description-cn">使用工坊进行电路设计的同学,仅需完成<span class="highlight-blue">《基础安全》</span>测试;若需使用3D打印机或激光切割机,则须通过对应设备的测试。</p>
-      <p class="step-description-en">To use the workshop, everyone must complete 'Workshop Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue">equipment-specific tests</span> (see the equipment introduction page for test access).</p>
+      <p class="step-description-cn"><br>使用工坊进行电路设计的同学,仅需完成<span class="highlight-blue">《工坊使用考核规范》</span>;若需使用3D打印机或激光切割机,则须通过对应设备的测试。<br><span class="highlight-blue">《3D打印机使用规范考核》</span><br><span class="highlight-blue">《激光切割机使用规范考核》</span></p>
+      <p class="step-description-en">To use the workshop, everyone must complete 'Workshop Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue">equipment-specific tests</span> (see the equipment introduction page for test access).<br><span class="highlight-blue">《3D Printer Operation》</span><br><span class="highlight-blue">《Laser Cutter Operation》</span>
+      </p>
     </div>
     <!-- Arrow 2-3 -->
     <div class="step-arrow arrow-2-3">→</div>
