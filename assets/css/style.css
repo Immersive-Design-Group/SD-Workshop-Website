@@ -80,7 +80,7 @@ a {
   /* Adjust padding to control spacing around the text, and use this space for the lines. */
   padding: 1rem 0;
   color: #020202;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 1rem;
   font-family: 'Roboto', 'Source Han Sans CN', sans-serif;
   transition: color 0.3s ease;
@@ -110,7 +110,7 @@ a {
   bottom: 0.8rem; /* This moves the line closer to the text */
   left: 0;
   right: 100%; /* Initially hide the line */
-  height: 1px;
+  height: 2px;
   background: #000000;
   transition: right 0.3s ease; /* Animate the line's expansion */
 }
