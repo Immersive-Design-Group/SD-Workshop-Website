@@ -83,7 +83,7 @@ title: 首页 HOME
     <div class="how-to-step step-1">
       <div class="step-number">1</div>
       <h3 class="step-title">签署承诺书<br>SIGN PLEDGE</h3>
-      <p class="step-description-cn">所有使用工坊的同学,均需签署<span class="highlight-blue">《工坊安全使用承诺书</span>》,打印后提交至赵悦老师处备份,此为使用工坊的前提条件。</p>
+      <p class="step-description-cn">所有使用工坊的同学,均需签署<span class="highlight-blue">《工坊安全使用承诺书</span>》,打印后提交至工坊邮箱存档。</p>
       <p class="step-description-en">All Students must sign <span class="highlight-blue">Workshop Safety Pledge</span> before using the workshop. After signing, scan the document and send it to the workshop email for filing.</p>
     </div>
     <!-- Arrow 1-2 -->
@@ -93,7 +93,7 @@ title: 首页 HOME
       <div class="step-number">2</div>
       <h3 class="step-title">完成测试<br>PASS TEST</h3>
       <p class="step-description-cn">使用工坊进行电路设计的同学,仅需完成<span class="highlight-blue">《基础安全》</span>测试;若需使用3D打印机或激光切割机,则须通过对应设备的测试。</p>
-      <p class="step-description-en">To use the workshop, everyone must complete 'Basic Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue">equipment-specific tests</span> (see the equipment introduction page for test access).</p>
+      <p class="step-description-en">To use the workshop, everyone must complete 'Workshop Safety Test', users of 3D printers or laser cutters need to pass the <span class="highlight-blue">equipment-specific tests</span> (see the equipment introduction page for test access).</p>
     </div>
     <!-- Arrow 2-3 -->
     <div class="step-arrow arrow-2-3">→</div>

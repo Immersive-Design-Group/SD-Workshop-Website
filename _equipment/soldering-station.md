@@ -27,7 +27,7 @@ risk_level: Low
 risk_level_cn: 低
 risk_color: green
 requirements_cn: 需通过《<span class="test-name"><a href="https://wj.qq.com/s2/24256008/b1f0/" target="_blank" rel="noopener noreferrer">实验室安全</a></span>》后使用。
-requirements_en: use require passing '<span class="test-name"><a href="https://wj.qq.com/s2/24345990/8ktr/" target="_blank" rel="noopener noreferrer">Laboratory Safety test</a></span>'
+requirements_en: use require passing '<span class="test-name"><a href="https://wj.qq.com/s2/24345990/8ktr/" target="_blank" rel="noopener noreferrer">Workshop Safety Test </a></span>'
 
 process:
   title_en: "Soldering Process Guide"

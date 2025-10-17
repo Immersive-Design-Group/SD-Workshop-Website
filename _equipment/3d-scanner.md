@@ -22,7 +22,7 @@ risk_level: Low
 risk_level_cn: 低
 risk_color: green
 requirements_cn: 通过《<span class="test-name"><a href="https://wj.qq.com/s2/24256008/b1f0/" target="_blank" rel="noopener noreferrer">实验室安全</a></span>》测试后可预约使用。
-requirements_en: Reservation and use require passing the '<span class="test-name"><a href="https://wj.qq.com/s2/24345990/8ktr/" target="_blank" rel="noopener noreferrer">Laboratory Safety test</a></span>'.
+requirements_en: Reservation and use require passing the '<span class="test-name"><a href="https://wj.qq.com/s2/24345990/8ktr/" target="_blank" rel="noopener noreferrer">Workshop Safety Test </a></span>'.
 
 process:
   title_en: "Process Guide"
