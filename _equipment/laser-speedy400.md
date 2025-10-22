@@ -57,8 +57,8 @@ process:
       title_en: "Prepare the Bed & Material"
       pairs:
         - img: "/assets/images/Equipments/Laser-cutting-machine/laser-cutting3.png"
-          cn: "机器自检完成后，打开机器上盖。目的是确定材料的面积和厚度，以便后续的排版和参数设置。最后，将材料平整地放入工作区域，确保材料不会移动。"
-          en: "After the machine's self-test is completed, open the upper cover of the machine. The purpose is to determine the area and thickness of the material for subsequent layout and parameter setting. Finally, place the material flat in the working area, ensuring it does not shift."
+          cn: "机器自检完成后，打开机器上盖。确定材料的面积和厚度，以便后续的排版和参数设置。最后，将材料平整地放入工作区域，确保材料不会移动。"
+          en: "After the machine's self-test is completed, open the upper cover of the machine. Then determine the area and thickness of the material for subsequent layout and parameter setting. Finally, place the material flat in the working area, ensuring it does not shift."
     
     - title_cn: "定位与聚焦激光头"
       title_en: "Position and Focus the Laser Head"
