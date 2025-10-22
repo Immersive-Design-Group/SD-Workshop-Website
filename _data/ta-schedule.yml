@@ -4,16 +4,24 @@ days: [Mon, Tues, Wed, Thur, Fri]
 slots:
   - time: "09:00–12:00"
     people:
-      Mon: { cn: "解天择", en: "Xie Tianze" }
-      Tues: { en: "Xie Tianze" }
-      Wed: { en: "Xie Tianze" }
-      Thur: { en: "Xie Tianze" }
-      Fri: { en: "Xie Tianze" }
+      Mon: { cn: "孙湘宜", en: "Sun Xiangyi" }
+      Tues: { cn: "孙蕊", en: "Sun Rui" }
+      Wed: { cn: "雷深深", en: "Lei Shenshen" }
+      Thur: { cn: "田皓瑞", en: "Tian Haorui" }
+      Fri: { cn: "林琳", en: "Lin Lin" }
 
   - time: "14:00–17:00"
     people:
-      Mon: { en: "Xie Tianze" }
-      Tues: { cn: "王可卓", en: "Wang Kezhuo" }
-      Wed: { en: "Xie Tianze" }
-      Thur: { en: "Xie Tianze" }
-      Fri: { en: "Xie Tianze" }
+      Mon: { cn: "朱丽莎", en: "Zhu Lisha" }
+      Tues: { cn: "韩坤伶", en: "Han Kunling" }
+      Wed: { cn: "黄可心", en: "Huang Kexin" }
+      Thur: { cn: "陈悦", en: "Chen Yue" }
+      Fri: { cn: "张拓", en: "Zhang Tuo" }
+
+  - time: "19:00–21:00"
+    people:
+      Mon: { cn: "王嘉琦", en: "Wang Jiaqi" }
+      Tues: { cn: "张晶晶", en: "Zhang Jingjing" }
+      Wed: { cn: "陈维聪", en: "Chen Weicong" }
+      Thur: { cn: "廖佩雯", en: "Liao Peiwen" }
+      Fri: { cn: "葛文功", en: "Ge Wengong" }

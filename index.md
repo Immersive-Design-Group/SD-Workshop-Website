@@ -84,7 +84,7 @@ title: 首页 HOME
       <div class="step-number">1</div>
       <h3 class="step-title">签署承诺书<br>SIGN PLEDGE</h3>
       <p class="step-description-cn">所有使用工坊的同学,均需签署<span class="highlight-blue"><a href="https://www.jianguoyun.com/p/DerDhqoQvrv8DBigo5QGIAA" target="_blank" rel="noopener noreferrer">《工坊安全使用承诺书》</a></span>,打印后提交至工坊邮箱存档。</p>
-      <p class="step-description-en">All Students must sign <span class="highlight-blue"><a href="https://www.jianguoyun.com/p/DerDhqoQvrv8DBigo5QGIAA" target="_blank" rel="noopener noreferrer">Workshop Safety Pledge</a></span> before using the workshop. After signing, scan the document and send it to the workshop email for filing.</p>
+      <p class="step-description-en">All Students must sign <span class="highlight-blue"><a href="https://www.jianguoyun.com/p/DTAwWBcQvrv8DBiu6ZUGIAA" target="_blank" rel="noopener noreferrer">Workshop Safety Pledge</a></span> before using the workshop. After signing, scan the document and send it to the workshop email for filing.</p>
     </div>
     <!-- Arrow 1-2 -->
     <div class="step-arrow arrow-1-2">→</div>
