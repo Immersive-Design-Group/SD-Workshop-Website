@@ -2778,7 +2778,28 @@
         updateCombinedPurpose();
       };
       
-      purposeCategory.addEventListener('change', validatePurpose);
+      // Function to update placeholder based on category selection
+      const updatePlaceholder = () => {
+        const category = purposeCategory.value;
+        switch (category) {
+          case 'Course':
+            purposeDetails.placeholder = 'e.g., DS334';
+            break;
+          case 'Research':
+            purposeDetails.placeholder = 'e.g., Seungwoo research group';
+            break;
+          case 'Others':
+            purposeDetails.placeholder = 'e.g., Summer Camp';
+            break;
+          default:
+            purposeDetails.placeholder = 'Course number, research group, or other details';
+        }
+      };
+      
+      purposeCategory.addEventListener('change', () => {
+        validatePurpose();
+        updatePlaceholder();
+      });
       purposeDetails.addEventListener('input', validatePurpose);
     }
     
