@@ -291,6 +291,51 @@ async function handleGetBookings(event, headers) {
   }
 }
 
+/**
+ * 合并连续时间段为单个预订条目
+ * @param {Array} slots - 时间段数组
+ * @param {string} name - 用户姓名
+ * @param {string} email - 用户邮箱
+ * @param {string} purpose - 预订目的
+ * @returns {Object} 合并后的预订信息
+ */
+function combineConsecutiveSlots(slots, name, email, purpose) {
+  if (!slots || slots.length === 0) {
+    throw new Error('No slots provided');
+  }
+
+  // 按设备、日期和时间排序
+  const sortedSlots = slots.sort((a, b) => {
+    if (a.device !== b.device) return a.device.localeCompare(b.device);
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return a.start_time.localeCompare(b.start_time);
+  });
+
+  // 获取第一个时间段的信息
+  const firstSlot = sortedSlots[0];
+  const device = firstSlot.device || firstSlot.equipment;
+  const model = firstSlot.model || '';
+  const date = firstSlot.date;
+
+  // 计算总时间段数和总小时数
+  const totalSlots = sortedSlots.length;
+  const totalHours = (totalSlots * 30) / 60; // 每个时间段30分钟
+
+  // 获取最早开始时间和最晚结束时间
+  const startTime = sortedSlots.map(s => s.start_time).sort()[0];
+  const endTime = sortedSlots.map(s => s.end_time).sort().slice(-1)[0];
+
+  return {
+    device,
+    model,
+    date,
+    start_time: startTime,
+    end_time: endTime,
+    total_slots: totalSlots,
+    total_hours: totalHours
+  };
+}
+
 // POST /api/bookings
 // body: { name, email, purpose, slots: [{ device, model?, date, start_time, end_time, slots, hours }] }
 async function handleCreateBooking(body, headers) {
@@ -335,50 +380,49 @@ async function handleCreateBooking(body, headers) {
     }
     console.log('No conflicts found, proceeding with insertion...');
 
-    // 插入
+    // 插入 - 合并连续时间段为单个条目
     console.log('Starting insertion process...');
     const ids = [];
     const slotsJson = JSON.stringify(slots); // 保存原始 slots
     console.log('Slots JSON:', slotsJson);
     
-    for (const slot of slots) {
-      console.log('Processing slot for insertion:', JSON.stringify(slot));
-      const bookingId = crypto.randomUUID().replace(/-/g, '');
-      const device = slot.device || slot.equipment; // 兼容前端旧字段名
-      const model = slot.model ?? '';
+    // 合并连续时间段
+    const combinedBooking = combineConsecutiveSlots(slots, name, email, purpose);
+    console.log('Combined booking:', JSON.stringify(combinedBooking));
+    
+    const bookingId = crypto.randomUUID().replace(/-/g, '');
+    const device = combinedBooking.device;
+    const model = combinedBooking.model;
+    const dateString = combinedBooking.date;
+    const startTime = combinedBooking.start_time;
+    const endTime = combinedBooking.end_time;
+    const totalSlots = combinedBooking.total_slots;
+    const totalHours = combinedBooking.total_hours;
 
-      const totalSlots = Number(slot.slots ?? 1);
-      const totalHours = Number(slot.hours ?? 0);
-
-      console.log('Inserting booking with ID:', bookingId);
-      console.log('Original date from frontend:', slot.date);
-      
-      // Use the date string directly to avoid timezone conversion issues
-      const dateString = slot.date; // Keep as YYYY-MM-DD string
-      console.log('Using date string directly:', dateString);
-      
-      const [res] = await pool.execute(
-        `INSERT INTO \`bookings\`
-           (\`booking_id\`, \`name\`, \`email\`, \`purpose\`,
-            \`device\`, \`model\`, \`date\`, \`start_time\`, \`end_time\`,
-            \`total_slots\`, \`total_hours\`,
-            \`status\`, \`created_at\`, \`slots_json\`)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', NOW(), ?)`,
-        [
-          bookingId, name, email, purpose,
-          device, model, dateString, slot.start_time, slot.end_time,
-          totalSlots, totalHours,
-          slotsJson
-        ]
-      );
-      console.log('Insert result:', res);
-      ids.push(res.insertId);
-    }
-    console.log('All insertions completed, booking IDs:', ids);
+    console.log('Inserting combined booking with ID:', bookingId);
+    console.log('Booking details:', { device, dateString, startTime, endTime, totalSlots, totalHours });
+    
+    const [res] = await pool.execute(
+      `INSERT INTO \`bookings\`
+         (\`booking_id\`, \`name\`, \`email\`, \`purpose\`,
+          \`device\`, \`model\`, \`date\`, \`start_time\`, \`end_time\`,
+          \`total_slots\`, \`total_hours\`,
+          \`status\`, \`created_at\`, \`slots_json\`)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', NOW(), ?)`,
+      [
+        bookingId, name, email, purpose,
+        device, model, dateString, startTime, endTime,
+        totalSlots, totalHours,
+        slotsJson
+      ]
+    );
+    console.log('Insert result:', res);
+    ids.push(res.insertId);
+    console.log('Combined booking insertion completed, booking ID:', bookingId);
 
     // 发送预约成功邮件
     try {
-      await sendBookingSuccessEmail(name, email, slots);
+      await sendBookingSuccessEmail(name, email, combinedBooking);
       console.log(`Booking success email sent to ${email}`);
     } catch (emailError) {
       console.error('Failed to send booking success email:', emailError);
@@ -510,7 +554,7 @@ async function sendEmailViaSustech(emailData) {
 }
 
 // 发送预约成功邮件
-async function sendBookingSuccessEmail(name, email, slots) {
+async function sendBookingSuccessEmail(name, email, combinedBooking) {
   const emailData = {
     from: 'designworkshop@sustech.edu.cn',
     to: email,
@@ -531,19 +575,19 @@ async function sendBookingSuccessEmail(name, email, slots) {
           
           <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
             <h4 style="color: #374151; margin: 0 0 15px 0; font-size: 16px;">📋 预约详情</h4>
-            ${slots.map(slot => `
-              <div style="background: #fff; padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e5e7eb;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <span style="font-weight: bold; color: #1e3a8a;">${slot.device}</span>
-                  <span style="color: #6b7280; font-size: 14px;">${slot.model || ''}</span>
-                </div>
-                <div style="color: #374151; font-size: 14px;">
-                  <div>📅 日期：${slot.date}</div>
-                  <div>⏰ 时间：${slot.start_time} - ${slot.end_time}</div>
-                  <div>⏱️ 时长：${slot.hours}小时</div>
-                </div>
+            
+            <div style="background: #fff; padding: 20px; border-radius: 6px; border: 1px solid #e5e7eb;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span style="font-weight: bold; color: #1e3a8a; font-size: 18px;">${combinedBooking.device}</span>
+                <span style="color: #6b7280; font-size: 14px;">${combinedBooking.model || ''}</span>
               </div>
-            `).join('')}
+              <div style="color: #374151; font-size: 16px; line-height: 1.8;">
+                <div>📅 <strong>日期：</strong>${combinedBooking.date}</div>
+                <div>⏰ <strong>时间：</strong>${combinedBooking.start_time} - ${combinedBooking.end_time}</div>
+                <div>📊 <strong>总时间段：</strong>${combinedBooking.total_slots} 个时间段</div>
+                <div>⏱️ <strong>总时长：</strong>${combinedBooking.total_hours} 小时</div>
+              </div>
+            </div>
           </div>
           
           <div style="background: #fef3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">

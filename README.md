@@ -200,6 +200,6 @@ For technical support or questions:
 
 **Built with ❤️ for the SUSTech SD Community**
 
-*Last updated: August 19th, 2025*
+*Last updated: October 27th, 2025*
 
 
