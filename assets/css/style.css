@@ -2286,7 +2286,7 @@ a {
 /* Larger cards on desktop */
 .equip-row{
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important; /* wider */
-  grid-auto-rows: 360px !important; /* taller */
+  grid-auto-rows: 420px !important; /* taller to fit model text */
   gap: 1.5rem !important;
   padding: 1rem 5% 2rem !important;
 }
@@ -2329,7 +2329,7 @@ a {
 @media (min-width: 1600px){
   .equip-row{
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
-    grid-auto-rows: 380px !important;
+    grid-auto-rows: 440px !important;
   }
 }
 
