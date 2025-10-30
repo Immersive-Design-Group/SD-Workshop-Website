@@ -2617,49 +2617,114 @@
         };
       }
       
-      if (student.trainingstatus !== 'Completed') {
-        return { 
-          ok: false, 
-          error: 'Safety training not completed. Please complete training before booking equipment.',
-          trainingStatus: 'incomplete'
-        };
-      }
-      
-      // Check for basic safety training (required for all equipment)
-      const hasBasicSafety = student.equipmenttype && 
-        (student.equipmenttype.toLowerCase().includes('all') || 
-         student.equipmenttype.toLowerCase().includes('safety') ||
-         student.equipmenttype.toLowerCase().includes('basic'));
-      
-      if (!hasBasicSafety) {
-        return { 
-          ok: false, 
-          error: 'Basic safety training not completed. Please complete the workshop safety test before booking any equipment.',
-          trainingStatus: 'basic_safety_missing'
-        };
-      }
-      
-      // Check for equipment-specific training (required for 3D printer and laser cutter)
+      // Determine schema: new columns-based vs legacy
+      const normalize = (v) => String(v ?? '').trim().toLowerCase();
+      const isPass = (v) => {
+        const s = normalize(v);
+        return s === 'pass' || s === 'passed' || s === 'yes' || s === 'true' || s === '1' || s === 'completed' || s === 'ok' || s === 'y' || s === 'done';
+      };
+      const hasNewSchema = (
+        'workshopsafetytest' in student ||
+        'workshopsafetypledge' in student ||
+        '3dprintertest' in student ||
+        'lasercuttertest' in student
+      );
+
       const equipmentLower = equipment ? equipment.toLowerCase() : '';
       const is3DPrinter = equipmentLower.includes('3d') || equipmentLower.includes('printer') || equipmentLower.includes('bambu');
       const isLaserCutter = equipmentLower.includes('laser') || equipmentLower.includes('cutter') || equipmentLower.includes('speedy');
-      
-      if (is3DPrinter || isLaserCutter) {
-        const hasEquipmentTraining = student.equipmenttype && 
-          (student.equipmenttype.toLowerCase().includes('all') ||
-           (is3DPrinter && student.equipmenttype.toLowerCase().includes('3d')) ||
-           (isLaserCutter && student.equipmenttype.toLowerCase().includes('laser')));
-        
-        if (!hasEquipmentTraining) {
-          const equipmentType = is3DPrinter ? '3D printer' : 'laser cutter';
-          return { 
-            ok: false, 
-            error: `${equipmentType} specific training not completed. Please complete the ${equipmentType} operation test before booking this equipment.`,
-            trainingStatus: 'equipment_specific_missing'
+
+      if (hasNewSchema) {
+        // New schema: enforce mandatory Workshop Safety Test and Pledge for all, plus equipment tests
+        const safetyTest = student.workshopsafetytest ?? student.safetytest ?? '';
+        const safetyPledge = student.workshopsafetypledge ?? student.safetypledge ?? '';
+        if (!isPass(safetyTest)) {
+          return {
+            ok: false,
+            error: 'Workshop Safety Test not passed. Please pass it before booking.',
+            trainingStatus: 'safety_test_missing'
           };
         }
+        if (!isPass(safetyPledge)) {
+          return {
+            ok: false,
+            error: 'Workshop Safety Pledge not signed. Please sign and email the pledge before booking.',
+            trainingStatus: 'pledge_missing'
+          };
+        }
+        if (is3DPrinter) {
+          const test3d = student['3dprintertest'] ?? student['printer3dtest'] ?? '';
+          if (!isPass(test3d)) {
+            return {
+              ok: false,
+              error: '3D Printer Test not passed. Please pass it before booking 3D printers.',
+              trainingStatus: 'equipment_specific_missing'
+            };
+          }
+        }
+        if (isLaserCutter) {
+          const testLaser = student.lasercuttertest ?? student.lasertest ?? '';
+          if (!isPass(testLaser)) {
+            return {
+              ok: false,
+              error: 'Laser Cutter Test not passed. Please pass it before booking laser cutters.',
+              trainingStatus: 'equipment_specific_missing'
+            };
+          }
+        }
+      } else {
+     
+        const pledgeRaw = (
+          student.pledge ??
+          student.pledgestatus ??
+          student.safetypledge ??
+          student.workshoppledge ??
+          student.pledgesigned ??
+          ''
+        );
+        if (!isPass(pledgeRaw)) {
+          return {
+            ok: false,
+            error: 'Workshop safety pledge not signed. Please sign and email the pledge before booking.',
+            trainingStatus: 'pledge_missing'
+          };
+        }
+
+        if (student.trainingstatus !== 'Completed') {
+          return { 
+            ok: false, 
+            error: 'Safety training not completed. Please complete training before booking equipment.',
+            trainingStatus: 'incomplete'
+          };
+        }
+
+        // Basic and equipment-specific training via free-text field
+        const hasBasicSafety = student.equipmenttype && 
+          (student.equipmenttype.toLowerCase().includes('all') || 
+           student.equipmenttype.toLowerCase().includes('safety') ||
+           student.equipmenttype.toLowerCase().includes('basic'));
+        if (!hasBasicSafety) {
+          return { 
+            ok: false, 
+            error: 'Basic safety training not completed. Please complete the workshop safety test before booking any equipment.',
+            trainingStatus: 'basic_safety_missing'
+          };
+        }
+        if (is3DPrinter || isLaserCutter) {
+          const hasEquipmentTraining = student.equipmenttype && 
+            (student.equipmenttype.toLowerCase().includes('all') ||
+             (is3DPrinter && student.equipmenttype.toLowerCase().includes('3d')) ||
+             (isLaserCutter && student.equipmenttype.toLowerCase().includes('laser')));
+          if (!hasEquipmentTraining) {
+            const equipmentType = is3DPrinter ? '3D printer' : 'laser cutter';
+            return { 
+              ok: false, 
+              error: `${equipmentType} specific training not completed. Please complete the ${equipmentType} operation test before booking this equipment.`,
+              trainingStatus: 'equipment_specific_missing'
+            };
+          }
+        }
       }
-      
       return { 
         ok: true, 
         message: 'Training verification successful',

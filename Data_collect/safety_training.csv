@@ -1,19 +1,19 @@
-SID,Name,Email,Training Status,Training Date,Equipment Type
-12431493,Ashfaque Khowaja,12431493@mail.sustech.edu.cn,Completed,28/10/2025,All Equipment
-12431497,江炜韬,12431497@mail.sustech.edu.cn,Completed,22/10/2025,All Equipment
-12331479,解天择,12331479@mail.sustech.edu.cn,Completed,22/10/2025,All Equipment
-30028021,赵悦,30028021@mail.sustech.edu.cn,Completed,20/10/2025,3D and basic and laser
-12432392,邱望弘杰,12432392@mail.sustech.edu.cn,Completed,21/10/2025,3D and basic
-12413220,王新宇,12413220@mail.sustech.edu.cn,Completed,22/10/2025,3D and basic and laser
-12413013,杨灵熙,12413013@mail.sustech.edu.cn,Completed,22/10/2025,3D and basic and laser
-12433265,陈维聪,12433265@mail.sustech.edu.cn,Completed,23/10/2025,3D and basic and laser
-12531632,吴铭,12531632@mail.sustech.edu.cn,Completed,23/10/2025,3D
-12410238,凌欣怡,12410238@mail.sustech.edu.cn,Completed,23/10/2025,3D and basic
-12433280,张拓,12433280@mail.sustech.edu.cn,Completed,28/10/2025,3D and basic and laser
-12433051,葛文功,12433051@mail.sustech.edu.cn,Completed,28/10/2025,3D and basic and laser
-12413048,章欣彤,12413048@mail.sustech.edu.cn,Completed,28/10/2025,3D and basic and laser
-12531643,雷深深,12531643@mail.sustech.edu.cn,Completed,28/10/2025,3D
-12413050,袁心桐,12413050@mail.sustech.edu.cn,Completed,28/10/2025,3D and basic and laser
-12533223,姚钟庆,12533223@mail.sustech.edu.cn,Completed,28/10/2025,basic and laser
-12533224,廖佩雯,12533224@mail.sustech.edu.cn,Completed,30/10/2025,3D and basic and laser
-12410838,孙嘉仪,12410838@mail.sustech.edu.cn,Completed,29/10/2025,3D and basic and laser
+SID,Name,Email,Date,Workshop Safety Test,3D Printer Test,Laser Cutter Test,Workshop Safety Pledge
+12431493,Ashfaque Khowaja,12431493@mail.sustech.edu.cn,28/10/2025,pass,pass,pass,pass
+12431497,江炜韬,12431497@mail.sustech.edu.cn,22/10/2025,pass,pass,pass,pass
+12331479,解天择,12331479@mail.sustech.edu.cn,22/10/2025,pass,pass,pass,not yet
+30028021,赵悦,30028021@mail.sustech.edu.cn,20/10/2025,pass,pass,pass,not yet
+12432392,邱望弘杰,12432392@mail.sustech.edu.cn,21/10/2025,pass,pass,not yet,not yet
+12413220,王新宇,12413220@mail.sustech.edu.cn,22/10/2025,pass,pass,pass,not yet
+12413013,杨灵熙,12413013@mail.sustech.edu.cn,22/10/2025,pass,pass,pass,not yet
+12433265,陈维聪,12433265@mail.sustech.edu.cn,23/10/2025,pass,pass,pass,pass
+12531632,吴铭,12531632@mail.sustech.edu.cn,23/10/2025,not yet,pass,not yet,not yet
+12410238,凌欣怡,12410238@mail.sustech.edu.cn,23/10/2025,pass,pass,not yet,not yet
+12433280,张拓,12433280@mail.sustech.edu.cn,28/10/2025,pass,pass,pass,not yet
+12433051,葛文功,12433051@mail.sustech.edu.cn,28/10/2025,pass,pass,pass,not yet
+12413048,章欣彤,12413048@mail.sustech.edu.cn,28/10/2025,pass,pass,pass,not yet
+12531643,雷深深,12531643@mail.sustech.edu.cn,28/10/2025,not yet,pass,not yet,not yet
+12413050,袁心桐,12413050@mail.sustech.edu.cn,28/10/2025,pass,pass,pass,not yet
+12533223,姚钟庆,12533223@mail.sustech.edu.cn,28/10/2025,pass,not yet,pass,not yet
+12533224,廖佩雯,12533224@mail.sustech.edu.cn,30/10/2025,pass,pass,pass,pass
+12410838,孙嘉仪,12410838@mail.sustech.edu.cn,29/10/2025,pass,pass,pass,not yet
