@@ -2625,7 +2625,6 @@
       };
       const hasNewSchema = (
         'workshopsafetytest' in student ||
-        'workshopsafetypledge' in student ||
         '3dprintertest' in student ||
         'lasercuttertest' in student
       );
@@ -2635,21 +2634,13 @@
       const isLaserCutter = equipmentLower.includes('laser') || equipmentLower.includes('cutter') || equipmentLower.includes('speedy');
 
       if (hasNewSchema) {
-        // New schema: enforce mandatory Workshop Safety Test and Pledge for all, plus equipment tests
+        // New schema: enforce mandatory Workshop Safety Test for all, plus equipment tests
         const safetyTest = student.workshopsafetytest ?? student.safetytest ?? '';
-        const safetyPledge = student.workshopsafetypledge ?? student.safetypledge ?? '';
         if (!isPass(safetyTest)) {
           return {
             ok: false,
             error: 'Workshop Safety Test not passed. Please pass it before booking.',
             trainingStatus: 'safety_test_missing'
-          };
-        }
-        if (!isPass(safetyPledge)) {
-          return {
-            ok: false,
-            error: 'Workshop Safety Pledge not signed. Please sign and email the pledge before booking.',
-            trainingStatus: 'pledge_missing'
           };
         }
         if (is3DPrinter) {
@@ -2673,23 +2664,7 @@
           }
         }
       } else {
-     
-        const pledgeRaw = (
-          student.pledge ??
-          student.pledgestatus ??
-          student.safetypledge ??
-          student.workshoppledge ??
-          student.pledgesigned ??
-          ''
-        );
-        if (!isPass(pledgeRaw)) {
-          return {
-            ok: false,
-            error: 'Workshop safety pledge not signed. Please sign and email the pledge before booking.',
-            trainingStatus: 'pledge_missing'
-          };
-        }
-
+        // Legacy schema: original behavior
         if (student.trainingstatus !== 'Completed') {
           return { 
             ok: false, 
