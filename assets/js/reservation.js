@@ -759,6 +759,7 @@
 
       const strip = document.createElement('div');
       strip.className = 'row-slots';
+      strip.style.position = 'relative'; // Enable absolute positioning for booking blocks
 
       // Get existing bookings for this equipment and date
       const existingBookings = getExistingBookings(eq);
@@ -776,7 +777,7 @@
 
       console.log(`Booked slots for ${eq.name}:`, Array.from(bookedSlots));
 
-      // Render slots - each slot represents a 30-minute time period
+      // First, create all placeholder slots for spacing
       for (let i = 0; i < timeline.length - 1; i++) {
         const cell = document.createElement('div');
         cell.dataset.slotIndex = i;
@@ -788,60 +789,20 @@
         
         console.log(`Slot ${i} (${slotStartTime}-${slotEndTime}): isPast=${isPastSlot}, isBooked=${bookedSlots.has(i)}`);
         
-                 // If equipment is broken, show all slots as unavailable (without text)
-         if (isEquipmentBroken) {
-           cell.className = 'slot broken';
-           // No innerHTML - just show the visual styling
-           strip.appendChild(cell);
-           continue;
-         }
+        // If equipment is broken, show all slots as unavailable (without text)
+        if (isEquipmentBroken) {
+          cell.className = 'slot broken';
+          // No innerHTML - just show the visual styling
+          strip.appendChild(cell);
+          continue;
+        }
         
         if (bookedSlots.has(i)) {
-          // Find the original booking for this slot
-          let originalBooking = null;
-          for (const booking of existingBookings) {
-            if (i >= booking.startSlot && i < booking.endSlot) {
-              originalBooking = booking;
-              break;
-            }
-          }
-          
-          // Apply both booked and past classes if the slot is in the past
-          cell.className = isPastSlot ? 'slot booked past' : 'slot booked';
-          
-          // Only show booking info on the first slot of each booking
-          if (originalBooking) {
-            const startTime = timeline[originalBooking.startSlot];
-            const endTime = timeline[originalBooking.endSlot];
-            cell.innerHTML = `
-              <div class="booking-info">
-                <div class="booking-header">
-                  <div class="user-avatar">
-                    <div class="user-avatar-initial">${getInitial(originalBooking.name)}</div>
-                  </div>
-                  <div class="time-name">
-                    <div class="booking-time">${startTime}-${endTime}</div>
-                    <div class="user-name-container">
-                      <div class="user-name">${originalBooking.name}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="project-info">
-                  <div class="project-name">${originalBooking.purpose}</div>
-                </div>
-              </div>
-            `;
-            
-            // Add click handler to open booking management modal
-            cell.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openBookingManagementModal(originalBooking);
-            });
-            
-            // Add cursor pointer to indicate it's clickable
-            cell.style.cursor = 'pointer';
-          }
+          // Create invisible placeholder slot for booked slots (for spacing)
+          // Keep it visible but transparent so it maintains layout space
+          cell.className = 'slot booked-placeholder';
+          cell.style.opacity = '0';
+          cell.style.pointerEvents = 'none';
         } else if (isPastSlot) {
           // Past slots - not selectable
           cell.className = 'slot past';
@@ -1119,6 +1080,73 @@
           strip.appendChild(cell);
         }
       }
+
+      // Now create combined booking blocks that span multiple consecutive slots
+      // Calculate positions mathematically to avoid timing issues
+      existingBookings.forEach(booking => {
+        const slotCount = booking.endSlot - booking.startSlot;
+        if (slotCount <= 0) return;
+        
+        // Calculate position and width using helper functions (works immediately, no layout dependency)
+        const slotWidth = slotW();
+        const gap = GAP;
+        const paddingLeft = 30; // padding-left from row-slots CSS
+        
+        // Calculate left position: (startSlot * slotWidth) + (startSlot * gap) + padding
+        const left = (booking.startSlot * slotWidth) + (booking.startSlot * gap) + paddingLeft;
+        
+        // Calculate width: (slotCount * slotWidth) + ((slotCount - 1) * gap)
+        const width = (slotCount * slotWidth) + ((slotCount - 1) * gap);
+        
+        // Create the combined booking block
+        const bookingBlock = document.createElement('div');
+        bookingBlock.className = 'booking-block';
+        bookingBlock.style.position = 'absolute';
+        bookingBlock.style.left = `${left}px`;
+        bookingBlock.style.width = `${width}px`;
+        bookingBlock.style.height = 'var(--rsv-slot-h)';
+        bookingBlock.style.top = '0';
+        bookingBlock.style.zIndex = '2';
+        
+        const isPastBooking = isSlotInPast(booking.startSlot, selectedDate);
+        bookingBlock.className += isPastBooking ? ' slot booked past' : ' slot booked';
+        
+        // Get time range
+        const startTime = timeline[booking.startSlot];
+        const endTime = timeline[booking.endSlot];
+        
+        // Create booking content
+        bookingBlock.innerHTML = `
+          <div class="booking-info">
+            <div class="booking-header">
+              <div class="user-avatar">
+                <div class="user-avatar-initial">${getInitial(booking.name)}</div>
+              </div>
+              <div class="time-name">
+                <div class="booking-time">${startTime}-${endTime}</div>
+                <div class="user-name-container">
+                  <div class="user-name">${booking.name}</div>
+                </div>
+              </div>
+            </div>
+            <div class="project-info">
+              <div class="project-name">${booking.purpose}</div>
+            </div>
+          </div>
+        `;
+        
+        // Add click handler to open booking management modal
+        bookingBlock.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openBookingManagementModal(booking);
+        });
+        
+        // Add cursor pointer to indicate it's clickable
+        bookingBlock.style.cursor = 'pointer';
+        
+        strip.appendChild(bookingBlock);
+      });
 
       viewport.appendChild(strip);
       row.appendChild(viewport);
@@ -3046,32 +3074,46 @@
        el('rsv-success').hidden = false;
 
        // Add booking to cache immediately for instant UI update
+       // Create ONE combined booking (matching server behavior) instead of individual slots
        const dateKey = fmtISO(selectedDate);
        bookingsByDate[dateKey] = bookingsByDate[dateKey] || Object.create(null);
        const dev = lastModal.eq.name;
        bookingsByDate[dateKey][dev] = bookingsByDate[dateKey][dev] || [];
        
-       // Create individual bookings for each selected slot to prevent filling gaps
-       lastModal.sorted.forEach(slotIndex => {
-         bookingsByDate[dateKey][dev].push({
-           startSlot: slotIndex,
-           endSlot: slotIndex + 1, // Each slot covers exactly one 30-minute period
-           name,
-           purpose,
-           email,
-           id: data.bookingIds[0] // Use the database ID from server response
-         });
+       // Create a single combined booking that spans all selected slots
+       const sortedSlots = [...lastModal.sorted].sort((a, b) => a - b);
+       const startSlot = sortedSlots[0];
+       const endSlot = sortedSlots[sortedSlots.length - 1] + 1; // +1 because endSlot is exclusive
+       
+       bookingsByDate[dateKey][dev].push({
+         startSlot: startSlot,
+         endSlot: endSlot, // Combined booking spans all selected slots
+         name,
+         purpose,
+         email,
+         id: data.bookingIds[0], // Use the database ID from server response
+         device: dev
        });
        
        // Debug logging to show exactly what was booked
        console.log('Booking created successfully:');
        console.log('- Total slots booked:', lastModal.sorted.length);
        console.log('- Slots booked:', lastModal.sorted);
-       console.log('- Individual bookings created:', lastModal.sorted.length);
-       console.log('- No automatic gap filling - only selected slots are booked');
+       console.log('- Combined booking created: slots', startSlot, 'to', endSlot);
        
        renderRows();
        clearSelection();
+       
+       // Reload bookings from server after a short delay to ensure cache is in sync
+       // This ensures the combined booking from server matches what we displayed
+       setTimeout(async () => {
+         try {
+           await ensureDateLoaded(selectedDate);
+           renderRows(); // Re-render with server data to ensure accuracy
+         } catch (error) {
+           console.error('Error reloading bookings after creation:', error);
+         }
+       }, 500);
        
        // Reset submit button state after successful booking
        submitBtn.disabled = false;

@@ -1128,7 +1128,66 @@ body .reservation-container #rsv-rows .equip-row {
   display: none;
 }
 
+/* Combined booking block - spans multiple consecutive slots */
+#rsv-rows .booking-block {
+  background: #e8f4fd;
+  border: none;
+  color: #111827;
+  position: absolute;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.04);
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
 
+/* Make booking-info inside booking-block fill the space and remove duplicate background */
+#rsv-rows .booking-block .booking-info {
+  background: transparent;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+
+/* Past combined booking blocks - lighter blue background with grey text and light grey avatar */
+#rsv-rows .booking-block.slot.booked.past {
+  background: #f0f9ff;
+  border: none;
+  color: #6b7280;
+  opacity: 1;
+}
+
+#rsv-rows .booking-block.slot.booked.past .booking-info {
+  opacity: 1;
+}
+
+#rsv-rows .booking-block.slot.booked.past .user-avatar {
+  background: #d1d5db;
+}
+
+#rsv-rows .booking-block.slot.booked.past .user-avatar-initial {
+  color: #6b7280;
+}
+
+#rsv-rows .booking-block.slot.booked.past .booking-time,
+#rsv-rows .booking-block.slot.booked.past .user-name,
+#rsv-rows .booking-block.slot.booked.past .project-name {
+  color: #6b7280;
+}
+
+/* Placeholder slots for booked slots (transparent, used for spacing) */
+#rsv-rows .slot.booked-placeholder {
+  opacity: 0;
+  pointer-events: none;
+  /* Keep all other properties to maintain layout */
+  width: var(--rsv-slot-w);
+  height: var(--rsv-slot-h);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+}
 
 /* Remove pattern overlay for clean look */
 
