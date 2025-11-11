@@ -713,7 +713,7 @@
       row.className = 'equip-row';
 
       // Check equipment status
-      const isEquipmentBroken = eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service';
+      const isEquipmentBroken = eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed';
       
       if (isEquipmentBroken) {
         row.className = 'equip-row equip-row--broken';
@@ -732,6 +732,9 @@
         statusBadge = '<div class="equip-status equip-status--maintenance">🔧 MAINTENANCE</div>';
       } else if (eq.status === 'out_of_service') {
         statusBadge = '<div class="equip-status equip-status--out-of-service">⛔ OUT OF SERVICE</div>';
+      } else if (eq.status === 'borrowed') {
+        const borrowerText = eq.borrower || 'Borrowed';
+        statusBadge = `<div class="equip-status equip-status--borrowed">📦 BORROWED<br><span style="font-size: 11px; font-weight: 500;">${borrowerText}</span></div>`;
       }
 
       left.innerHTML = `
@@ -831,8 +834,9 @@
             e.preventDefault();
             
             // Prevent selection if equipment is broken
-            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
-              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
+              const statusText = eq.status === 'borrowed' && eq.borrower ? `borrowed (${eq.borrower})` : eq.status.replace('_', ' ');
+              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${statusText}.`);
               return;
             }
             
@@ -861,8 +865,8 @@
               }
               
               if (isDragging) {
-                // Prevent selection if equipment is broken
-                if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+                // Prevent selection if equipment is broken/borrowed
+                if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
                   return;
                 }
                 
@@ -885,8 +889,9 @@
             e.preventDefault();
             
             // Prevent selection if equipment is broken
-            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
-              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
+              const statusText = eq.status === 'borrowed' && eq.borrower ? `borrowed (${eq.borrower})` : eq.status.replace('_', ' ');
+              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${statusText}.`);
               return;
             }
             
@@ -939,8 +944,8 @@
             e.preventDefault();
             e.stopPropagation();
             
-            // Prevent selection if equipment is broken
-            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+            // Prevent selection if equipment is broken/borrowed
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
               return;
             }
             
@@ -964,8 +969,9 @@
             e.preventDefault();
             
             // Prevent selection if equipment is broken
-            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
-              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
+              const statusText = eq.status === 'borrowed' && eq.borrower ? `borrowed (${eq.borrower})` : eq.status.replace('_', ' ');
+              showError(`Cannot select slots for ${eq.name} - Equipment is currently ${statusText}.`);
               return;
             }
             
@@ -1022,8 +1028,8 @@
           cell.addEventListener('touchend', (e) => {
       e.preventDefault();
             
-            // Prevent selection if equipment is broken
-            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
+            // Prevent selection if equipment is broken/borrowed
+            if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
               return;
             }
             
@@ -1326,7 +1332,7 @@
           console.log('Global touch move - isDragging is true, updating selection for slot', slotIndex);
           
           // Prevent selection if equipment is broken
-          if (currentEquipment.status === 'broken' || currentEquipment.status === 'maintenance' || currentEquipment.status === 'out_of_service') {
+          if (currentEquipment.status === 'broken' || currentEquipment.status === 'maintenance' || currentEquipment.status === 'out_of_service' || currentEquipment.status === 'borrowed') {
             return;
           }
           
@@ -1674,9 +1680,10 @@
   function openModalWithSelectedSlots(eq) {
     if (selectedSlots.size === 0) return;
     
-    // Check if equipment is broken/out of service
-    if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service') {
-      showError(`Cannot book ${eq.name} - Equipment is currently ${eq.status.replace('_', ' ')}.`);
+    // Check if equipment is broken/out of service/borrowed
+    if (eq.status === 'broken' || eq.status === 'maintenance' || eq.status === 'out_of_service' || eq.status === 'borrowed') {
+      const statusText = eq.status === 'borrowed' && eq.borrower ? `borrowed (${eq.borrower})` : eq.status.replace('_', ' ');
+      showError(`Cannot book ${eq.name} - Equipment is currently ${statusText}.`);
       return;
     }
     

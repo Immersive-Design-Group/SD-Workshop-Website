@@ -12,7 +12,8 @@ rules:
     - "For use on holidays, please email the workshop administrator at designworkshop@sustech.edu.cn."
 
 
-#Status: working, broken, maintenance, out_of_service
+#Status: working, broken, maintenance, out_of_service, borrowed
+#For borrowed status, add optional 'borrower' field with name or course name
 
 equipment:
   - id: "eq1"
@@ -38,7 +39,8 @@ equipment:
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
     link: "/equipment/bambu-x1e/"
-    status: "out_of_service"
+    status: "borrowed"
+    borrower: "DS203"
   - id: "eq5"
     name: "3D PRINTER 5"
     model: "P1S"
@@ -56,7 +58,8 @@ equipment:
     model: "X1E (AMS)"
     image: "/assets/images/Equipments/bambulab X1E.png"
     link: "/equipment/bambu-x1e/"
-    status: "working"
+    status: "borrowed"
+    borrower: "DS203"
   - id: "eq8"
     name: "Laser Cutting Machine"
     model: " Speed 400"

@@ -14,6 +14,7 @@ The system now supports tracking equipment status to prevent users from booking 
 2. **`broken`** - Equipment is broken and cannot be used
 3. **`maintenance`** - Equipment is under maintenance/repair
 4. **`out_of_service`** - Equipment is temporarily out of service
+5. **`borrowed`** - Equipment is borrowed/on loan (requires optional `borrower` field)
 
 ### Status Values in YAML
 
@@ -25,7 +26,8 @@ equipment:
     name: "3D PRINTER 1"
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
-    status: "working"  # working, broken, maintenance, out_of_service
+    status: "working"  # working, broken, maintenance, out_of_service, borrowed
+    borrower: "John Doe"  # Optional: name or course name (only for borrowed status)
 ```
 
 ## Visual Indicators
@@ -34,6 +36,7 @@ equipment:
 - **Broken**: 🚫 BROKEN (red badge)
 - **Maintenance**: 🔧 MAINTENANCE (orange badge)  
 - **Out of Service**: ⛔ OUT OF SERVICE (dark red badge)
+- **Borrowed**: 📦 BORROWED (blue badge) - displays borrower name or course name if provided
 
 ### Equipment Appearance
 - Broken equipment shows grayscale images with reduced opacity
@@ -87,6 +90,18 @@ status: "maintenance"
 status: "out_of_service"
 ```
 
+### Mark Equipment as Borrowed
+```yaml
+status: "borrowed"
+borrower: "John Doe"  # Optional: name or course name
+```
+
+Or with a course name:
+```yaml
+status: "borrowed"
+borrower: "DS203 Course"
+```
+
 ### Restore Equipment to Working
 ```yaml
 status: "working"
@@ -110,7 +125,7 @@ status: "working"
 
 ### Equipment Still Shows as Available
 - Check YAML syntax for typos
-- Ensure status value matches exactly: `"broken"`, `"maintenance"`, `"out_of_service"`
+- Ensure status value matches exactly: `"broken"`, `"maintenance"`, `"out_of_service"`, `"borrowed"`
 - Verify file is saved and deployed
 
 ### Status Badge Not Displaying

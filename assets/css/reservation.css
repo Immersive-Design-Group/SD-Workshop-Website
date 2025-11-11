@@ -979,6 +979,20 @@ body .reservation-container #rsv-rows .equip-row {
   border: 2px solid #7f1d1d;
 }
 
+.equip-status--borrowed {
+  background: rgba(59, 130, 246, 0.95);
+  color: white;
+  border: 2px solid #2563eb;
+  line-height: 1.3;
+  padding: 8px 12px;
+}
+
+.equip-status--borrowed span {
+  display: block;
+  margin-top: 2px;
+  opacity: 0.95;
+}
+
 /* Broken equipment row styling */
 .equip-row--broken .equip-thumb {
   opacity: 0.7;
