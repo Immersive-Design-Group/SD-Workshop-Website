@@ -38,7 +38,7 @@ equipment:
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
     link: "/equipment/bambu-x1e/"
-    status: "working"
+    status: "out_of_service"
   - id: "eq5"
     name: "3D PRINTER 5"
     model: "P1S"
