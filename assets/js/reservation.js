@@ -2185,8 +2185,8 @@
     
     console.log('Initialized with today:', selectedDate.toDateString(), 'isWeekend/Holiday:', isWeekendOrHoliday(selectedDate));
     
-    // Update menu range around today - start from today, not past dates
-    menuStart = new Date(selectedDate); // Start from today
+    // Update menu range around today - start from 2 days ago to show past bookings
+    menuStart = new Date(selectedDate); menuStart.setDate(menuStart.getDate() - 2); // Start from 2 days ago
     menuEnd = new Date(selectedDate); menuEnd.setDate(menuEnd.getDate() + 28); // Show 4 weeks ahead
     
     initialMenu();
@@ -2337,8 +2337,23 @@
 
   menu.addEventListener('scroll', () => {
     const TH = 60;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    const minPastDate = new Date(today); minPastDate.setDate(minPastDate.getDate() - 2); // Limit to 2 days back
+    minPastDate.setHours(0, 0, 0, 0); // Normalize to start of day
+    
     if (menu.scrollTop < TH) {
-      // Don't load past dates - only allow scrolling to future dates
+      // Allow loading past dates, but only up to 2 days back
+      const beforeStart = new Date(menuStart);
+      beforeStart.setDate(beforeStart.getDate() - 14);
+      beforeStart.setHours(0, 0, 0, 0); // Normalize to start of day
+      
+      // Only load more past dates if we haven't reached the 2-day limit
+      if (beforeStart >= minPastDate) {
+        const end = new Date(menuStart.getTime() - 86400000);
+        renderRange(beforeStart, end, {prepend:true});
+        menuStart = beforeStart;
+      }
       return;
     }
 
