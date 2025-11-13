@@ -617,6 +617,7 @@
 	padding-left: 10px; /* Move time header text further left */
 	gap: var(--rsv-gap); 
   width: max-content;
+  min-width: calc(100% - 20px); /* Extend timebar to match container width, accounting for padding */
 }
 .timebar .time-label {
   min-width: var(--rsv-slot-w);
