@@ -39,7 +39,7 @@ equipment:
     model: "X1E"
     image: "/assets/images/Equipments/bambulab X1E.png"
     link: "/equipment/bambu-x1e/"
-    status: "working"
+    status: "out_of_service"
   - id: "eq5"
     name: "3D PRINTER 5"
     model: "P1S"
@@ -64,5 +64,5 @@ equipment:
     model: " Speed 400"
     image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
     link: "/equipment/laser-speedy400/"
-    status: "working"
+    status: "out_of_service"
  
