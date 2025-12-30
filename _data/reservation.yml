@@ -64,5 +64,5 @@ equipment:
     model: " Speed 400"
     image: "/assets/images/Equipments/Laser-cutting-machine/Speed400.png"
     link: "/equipment/laser-speedy400/"
-    status: "out_of_service"
+    status: "working"
  
