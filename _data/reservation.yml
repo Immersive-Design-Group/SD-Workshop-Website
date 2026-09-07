@@ -58,7 +58,7 @@ equipment:
     model: "X1E (AMS)"
     image: "/assets/images/Equipments/bambulab X1E.png"
     link: "/equipment/bambu-x1e/"
-    status: "working"
+    status: "out_of_service"
   - id: "eq8"
     name: "Laser Cutting Machine"
     model: " Speed 400"
