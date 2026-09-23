@@ -4,24 +4,24 @@ days: [Mon, Tues, Wed, Thur, Fri]
 slots:
   - time: "09:00–12:00"
     people:
-      Mon: { cn: "赵悦", en: "Zhao Yue" }
-      Tues: { cn: "孙蕊", en: "Sun Rui" }
-      Wed: { cn: "张拓", en: "Zhang Tuo" }
-      Thur: { cn: "雷深深", en: "Lei Shenshen" }
-      Fri: { cn: "朱丽莎", en: "Zhu Lisha" }
+      Mon: { cn: "唐浩天", en: "Tang Haotian" }
+      Tues: { cn: "徐欣悦", en: "Xu Xinyue" }
+      Wed: { cn: "黄怡莹", en: "Huang Yiying" }
+      Thur: { cn: "许跃骞", en: "Xu Yueqian" }
+      Fri: { cn: "陈梓馨", en: "Chen Zixin" }
 
   - time: "14:00–17:00"
     people:
-      Mon: { cn: "江炜韬", en: "Jiang Weitao" }
-      Tues: { cn: "刘大川", en: "Liu Dachuan" }
-      Wed: { cn: "田皓瑞", en: "Tian Haorui" }
-      Thur: { cn: "张握纬", en: "Zhang Wowei" }
-      Fri: { cn: "邱婵", en: "Qiu Chan" }
+      Mon: { cn: "陈柏慧", en: "Chen Baihui" }
+      Tues: { cn: "梅倩茹", en: "Mei Qianru" }
+      Wed: { cn: "朱丽莎", en: "Zhu Lisha" }
+      Thur: { cn: "解天择", en: "Xie Tianze" }
+      Fri: { cn: "赵悦", en: "Zhao Yue" }
 
   - time: "19:00–21:00"
     people:
-      Mon: { cn: "陈姿烨", en: "Chen Ziye" }
-      Tues: { cn: "刘亦帆", en: "Liu Yifan" }
-      Wed: { cn: "解天择", en: "Xie Tianze" }
-      Thur: { cn: "解天择", en: "Xie Tianze" }
-      Fri: { cn: "张明𬭎", en: "Zhang Minghong" }
+      Mon: { cn: "陈小川", en: "Chen Xiaochuan" }
+      Tues: { cn: "高雅", en: "Gao Ya" }
+      Wed: { cn: "陈维聪", en: "Chen Weicong" }
+      Thur: { cn: "陈姿烨", en: "Chen Ziye" }
+      Fri: { cn: "任蕊婷", en: "Ren Ruiting" }
